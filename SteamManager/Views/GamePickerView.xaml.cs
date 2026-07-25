@@ -20,7 +20,7 @@ public partial class GamePickerView : UserControl
         }
     }
 
-    private void GameCard_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void GameCard_GameSelected(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement element && element.DataContext is GameInfo game)
         {

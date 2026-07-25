@@ -9,6 +9,9 @@ public partial class MainWindow : FluentWindow
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = App.Services.GetRequiredService<MainViewModel>();
+        if (DataContext == null)
+        {
+            DataContext = App.Services.GetRequiredService<MainViewModel>();
+        }
     }
 }

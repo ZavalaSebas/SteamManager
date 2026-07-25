@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,26 +17,16 @@ public partial class App : Application
     public static SteamContext? SteamContext { get; private set; }
     private static DispatcherTimer? _callbackTimer;
 
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
-        if (e.Args.Length >= 2 && e.Args[0] == "--game")
-        {
-            if (uint.TryParse(e.Args[1], out uint appId))
-            {
-                StartGameHelperMode(appId);
-                return;
-            }
-        }
-
-        StartLauncherMode();
+        StartApplication();
     }
 
-    private void StartLauncherMode()
+    private void StartApplication()
     {
         var services = new ServiceCollection();
-        ConfigureLauncherServices(services);
+        ConfigureServices(services);
         Services = services.BuildServiceProvider();
 
         var imageCacheService = Services.GetRequiredService<IImageCacheService>();
@@ -49,27 +40,7 @@ public partial class App : Application
         _ = mainViewModel.LoadGamesCommand.ExecuteAsync(null);
     }
 
-    private void StartGameHelperMode(uint appId)
-    {
-        var services = new ServiceCollection();
-        ConfigureGameHelperServices(services, appId);
-        Services = services.BuildServiceProvider();
-
-        var imageCacheService = Services.GetRequiredService<IImageCacheService>();
-        UrlToCachedImageConverter.SetCacheService(imageCacheService);
-
-        var gameManagerVm = Services.GetRequiredService<GameManagerViewModel>();
-
-        var game = new GameInfo { AppId = appId };
-        gameManagerVm.SelectGameCommand.Execute(game);
-
-        var mainWindow = new MainWindow { DataContext = gameManagerVm };
-        mainWindow.Show();
-
-        InitializeGameHelperSteam(gameManagerVm, appId);
-    }
-
-    private static void ConfigureLauncherServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services)
     {
         services.AddLogging(builder =>
         {
@@ -89,23 +60,6 @@ public partial class App : Application
         services.AddTransient<GameManagerViewModel>();
     }
 
-    private static void ConfigureGameHelperServices(IServiceCollection services, uint appId)
-    {
-        services.AddLogging(builder =>
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
-        });
-
-        services.AddSingleton<SteamClient>();
-        services.AddSingleton<SteamContext>();
-        services.AddSingleton<IImageCacheService, ImageCacheService>();
-        services.AddSingleton<ISmartUnlockService, SmartUnlockService>();
-        services.AddSingleton<IConfigService, ConfigService>();
-
-        services.AddTransient<GameManagerViewModel>();
-    }
-
     private static async Task InitializeSteamAsync(MainViewModel mainViewModel)
     {
         try
@@ -116,6 +70,7 @@ public partial class App : Application
 
             bool initialized = await Task.Run(() =>
             {
+                CoInitializeEx(0, COINIT_APARTMENTTHREADED);
                 try
                 {
                     return SteamContext.Initialize(Config.SpacewarAppId);
@@ -123,6 +78,10 @@ public partial class App : Application
                 catch
                 {
                     return false;
+                }
+                finally
+                {
+                    CoUninitialize();
                 }
             });
 
@@ -143,24 +102,6 @@ public partial class App : Application
         catch (Exception ex)
         {
             mainViewModel.StatusMessage = $"Steam init error: {ex.Message}";
-        }
-    }
-
-    private static void InitializeGameHelperSteam(GameManagerViewModel gameManagerVm, uint appId)
-    {
-        SteamContext = Services.GetRequiredService<SteamContext>();
-
-        bool initialized = Task.Run(() => SteamContext.Initialize(appId)).Result;
-
-        if (initialized)
-        {
-            gameManagerVm.StatusMessage = $"Loaded {gameManagerVm.SelectedGame?.Name ?? appId.ToString()} achievements";
-            gameManagerVm.LoadAchievementsCommand.Execute(null);
-            StartCallbackTimer();
-        }
-        else
-        {
-            gameManagerVm.StatusMessage = "Failed to connect to Steam.";
         }
     }
 
@@ -191,4 +132,12 @@ public partial class App : Application
         SteamContext?.Dispose();
         base.OnExit(e);
     }
+
+    private const int COINIT_APARTMENTTHREADED = 0x2;
+
+    [DllImport("ole32.dll")]
+    private static extern void CoInitializeEx(IntPtr pvReserved, int dwCoInit);
+
+    [DllImport("ole32.dll")]
+    private static extern void CoUninitialize();
 }

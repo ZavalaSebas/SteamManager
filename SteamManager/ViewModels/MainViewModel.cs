@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamManager.Models;
@@ -12,6 +13,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IGameLibraryService _gameLibraryService;
     private readonly IImageCacheService _imageCacheService;
     private GamePickerViewModel? _gamePicker;
+    private GameManagerViewModel? _gameManager;
 
     [ObservableProperty]
     private ObservableObject? _currentViewModel;
@@ -35,7 +37,10 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadGamesAsync()
     {
-        _gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService);
+        _gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService)
+        {
+            OnGameSelected = NavigateToGame
+        };
         CurrentViewModel = _gamePicker;
         await _gamePicker.LoadGamesCommand.ExecuteAsync(null);
         StatusMessage = _gamePicker.StatusMessage;
@@ -49,5 +54,15 @@ public partial class MainViewModel : ObservableObject
             CurrentViewModel = _gamePicker;
             StatusMessage = _gamePicker.StatusMessage;
         }
+    }
+
+    private void NavigateToGame(GameInfo game)
+    {
+        _gameManager = new GameManagerViewModel(_steamContext, _imageCacheService);
+        _gameManager.RequestBack += () => BackToGamesCommand.Execute(null);
+        _gameManager.SelectGameCommand.Execute(game);
+        CurrentViewModel = _gameManager;
+        StatusMessage = $"Loading {game.Name}...";
+        _gameManager.LoadAchievementsCommand.Execute(null);
     }
 }

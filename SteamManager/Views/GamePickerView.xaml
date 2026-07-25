@@ -63,7 +63,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <controls:GameCard DataContext="{Binding}"
-                                          MouseLeftButtonUp="GameCard_MouseLeftButtonUp"
+                                          GameSelected="GameCard_GameSelected"
                                           Cursor="Hand"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

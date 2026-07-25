@@ -5,6 +5,32 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-07-25
+
+### Changed
+
+- **Multi-process architecture**: Launcher (`SteamManager.exe` without args) shows the game list. Game helper (`SteamManager.exe --game <appId>`) shows achievements for a specific game. This solves the `steamclient.dll` singleton problem — each game runs in its own process with its own AppId.
+- **Launcher mode** (`App.StartLauncherMode`): Initializes Steam with Spacewar AppId (480) for ownership verification. Downloads `games.xml` from gib.me and displays owned games only.
+- **Helper mode** (`App.StartGameHelperMode`): Initializes Steam with the specific game AppId, loads and displays achievements for that game only.
+- **`GamePickerViewModel.SelectGameCommand`**: Launches a new process (`SteamManager.exe --game <appId>`) instead of navigating within the same window.
+- **`GameCard` event routing**: Changed from `MouseLeftButtonUp` to a custom `GameSelected` routed event for reliable click handling.
+
+### Known Issues
+
+| Issue | Root Cause | Workaround |
+|-------|------------|------------|
+| **Helper window doesn't appear** | WPF + `steamclient.dll` multi-process has COM threading issues. The helper process starts and creates the window, but Steam initialization on a background thread doesn't properly update the UI. | None yet — requires investigation into WPF COM threading model with native DLL interop. |
+
+### Technical Notes
+
+**Why multi-process?** `steamclient.dll` maintains global state per process. When Steam is running (AppId=X) and we try to initialize with AppId=Y in the same process, Steam rejects it or returns wrong data. SAM solves this by having two executables: `SAM.Picker.exe` (lists games) and `SAM.Game.exe <appId>` (manages achievements for that specific game). We replicate this with a single exe that behaves differently based on command-line arguments.
+
+**Launcher** (`--game` absent): Initializes Steam with AppId=480 (Spacewar), downloads game list, filters by ownership via `IsSubscribedApp()`, displays owned games.
+
+**Helper** (`--game <appId>`): Creates window first, then initializes Steam with the game AppId on a background thread. **Known issue**: The background thread approach causes the window to appear but Steam initialization doesn't complete properly.
+
+---
+
 ## [0.2.1] - 2026-07-25
 
 ### Changed

@@ -43,9 +43,6 @@ public partial class GameManagerViewModel : ObservableObject
     {
         if (SelectedGame == null) return;
 
-        string logFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "steammanager_gamemanager.txt");
-        void Log(string msg) => System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss}] {msg}{Environment.NewLine}");
-
         IsLoading = true;
         StatusMessage = $"Loading {SelectedGame.Name}...";
 
@@ -53,9 +50,7 @@ public partial class GameManagerViewModel : ObservableObject
         {
             await Task.Run(() =>
             {
-                Log($"Changing AppId to {SelectedGame.AppId}...");
                 bool initResult = _steamContext.ChangeAppId(SelectedGame.AppId);
-                Log($"ChangeAppId result: {initResult}, IsInitialized: {_steamContext.IsInitialized}");
 
                 if (!_steamContext.IsInitialized)
                 {
@@ -70,7 +65,6 @@ public partial class GameManagerViewModel : ObservableObject
                 }
 
                 var achievements = _steamContext.Achievements.GetAllAchievements();
-                Log($"Got {achievements.Count} achievements");
 
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -84,7 +78,6 @@ public partial class GameManagerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Log($"Exception: {ex}");
             StatusMessage = $"Error: {ex.Message}";
         }
         finally

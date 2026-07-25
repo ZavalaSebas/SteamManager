@@ -40,71 +40,44 @@ public class SteamClient : IDisposable
         if (_initialized)
             return true;
 
-        string logFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "steammanager_init.txt");
-        void Log(string msg) => System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss.fff}] {msg}{Environment.NewLine}");
-
-        Log($"Init({appId}) starting");
-
         CurrentAppId = appId;
         Environment.SetEnvironmentVariable("SteamAppId", appId.ToString());
-        Log("Set SteamAppId env var");
 
         // Load steamclient.dll
         if (!SteamLoader.Load())
-        {
-            Log("SteamLoader.Load() failed");
             return false;
-        }
-        Log("Steam loaded");
 
         // Create root client object
         IntPtr clientObj = SteamLoader.CreateInterface("SteamClient018");
         if (clientObj == IntPtr.Zero)
-        {
-            Log("CreateInterface returned null");
             return false;
-        }
-        Log($"CreateInterface got clientObj=0x{clientObj:X}");
 
         _steamClient = new SteamClient018();
         _steamClient.SetupFunctions(clientObj);
 
         // Create IPC pipe
         _pipe = _steamClient.CreateSteamPipe();
-        Log($"CreateSteamPipe returned pipe={_pipe}");
         if (_pipe == 0)
             return false;
 
         // Connect to global user
         _user = _steamClient.ConnectToGlobalUser(_pipe);
-        Log($"ConnectToGlobalUser returned user={_user}");
         if (_user == 0)
             return false;
 
         // Get ISteamUtils first to verify appID (matches SAM initialization order)
         IntPtr utilsObj = _steamClient.GetISteamUtils(_pipe, "SteamUtils005");
         if (utilsObj == IntPtr.Zero)
-        {
-            Log("GetISteamUtils returned null");
             return false;
-        }
-        Log($"GetISteamUtils got utilsObj=0x{utilsObj:X}");
 
         _steamUtils = new SteamUtils005();
         _steamUtils.SetupFunctions(utilsObj);
-
-        uint actualAppId = _steamUtils.GetAppId();
-        Log($"GetAppId returned {actualAppId}");
 
         // Get ISteamUserStats interface
         IntPtr userStatsObj = _steamClient.GetISteamUserStats(
             _user, _pipe, "STEAMUSERSTATS_INTERFACE_VERSION013");
         if (userStatsObj == IntPtr.Zero)
-        {
-            Log("GetISteamUserStats returned null");
             return false;
-        }
-        Log("Got UserStats interface");
 
         _userStats = new SteamUserStats013();
         _userStats.SetupFunctions(userStatsObj);
@@ -113,11 +86,7 @@ public class SteamClient : IDisposable
         IntPtr appsObj = _steamClient.GetISteamApps(
             _user, _pipe, "STEAMAPPS_INTERFACE_VERSION008");
         if (appsObj == IntPtr.Zero)
-        {
-            Log("GetISteamApps returned null");
             return false;
-        }
-        Log("Got Apps interface");
 
         _steamApps = new SteamApps008();
         _steamApps.SetupFunctions(appsObj);
@@ -125,11 +94,7 @@ public class SteamClient : IDisposable
         // Get ISteamUser interface (for SteamID)
         IntPtr userObj = _steamClient.GetISteamUser(_user, _pipe, "SteamUser012");
         if (userObj == IntPtr.Zero)
-        {
-            Log("GetISteamUser returned null");
             return false;
-        }
-        Log("Got User interface");
 
         _steamUser = new SteamUser012();
         _steamUser.SetupFunctions(userObj);
@@ -138,17 +103,12 @@ public class SteamClient : IDisposable
         IntPtr apps001Obj = _steamClient.GetISteamApps(
             _user, _pipe, "STEAMAPPS_INTERFACE_VERSION001");
         if (apps001Obj == IntPtr.Zero)
-        {
-            Log("GetISteamApps(001) returned null");
             return false;
-        }
-        Log("Got Apps001 interface");
 
         _steamApps001 = new SteamApps001();
         _steamApps001.SetupFunctions(apps001Obj);
 
         _initialized = true;
-        Log($"Init({appId}) succeeded! actualAppId={actualAppId}");
         return true;
     }
 
