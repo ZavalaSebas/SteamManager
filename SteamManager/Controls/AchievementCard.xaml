@@ -5,63 +5,292 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              Cursor="Hand">
+    <UserControl.Resources>
+        <Storyboard x:Key="UnlockFlash">
+            <DoubleAnimation Storyboard.TargetName="FlashOverlay"
+                           Storyboard.TargetProperty="Opacity"
+                           From="0.8" To="0" Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Key="HoverEnter">
+            <DoubleAnimation Storyboard.TargetName="CardBorder"
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                           To="-2" Duration="0:0:0.1"/>
+        </Storyboard>
+        <Storyboard x:Key="HoverLeave">
+            <DoubleAnimation Storyboard.TargetName="CardBorder"
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                           To="0" Duration="0:0:0.1"/>
+        </Storyboard>
+    </UserControl.Resources>
+
     <Border x:Name="CardBorder"
             CornerRadius="6"
-            Background="#252525"
-            BorderBrush="{Binding IsSelected, Converter={StaticResource SelectedBorderConverter}}"
-            BorderThickness="1"
-            Padding="12"
-            MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
+            Padding="0"
+            Cursor="Hand"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <TranslateTransform/>
+        </Border.RenderTransform>
+        <Border.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard Storyboard="{StaticResource HoverEnter}"/>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard Storyboard="{StaticResource HoverLeave}"/>
+            </EventTrigger>
+        </Border.Triggers>
+
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="32"/>
-                <ColumnDefinition Width="48"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <CheckBox Grid.Column="0"
-                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                      VerticalAlignment="Center"
-                      Cursor="Hand"/>
-
-            <Border Grid.Column="1"
-                    Width="40" Height="40"
-                    CornerRadius="4"
-                    Background="#1A1A1A"
-                    VerticalAlignment="Center">
-                <Image Source="{Binding Icon}"
-                       Stretch="Uniform"
-                       Width="32" Height="32"/>
+            <!-- Flash overlay for unlock animation -->
+            <Border x:Name="FlashOverlay"
+                    CornerRadius="6"
+                    Opacity="0"
+                    IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#FF2ECC71" Offset="0"/>
+                        <GradientStop Color="#002ECC71" Offset="1"/>
+                    </RadialGradientBrush>
+                </Border.Background>
             </Border>
 
-            <StackPanel Grid.Column="2"
-                        VerticalAlignment="Center"
-                        Margin="12,0,0,0">
-                <TextBlock Text="{Binding DisplayName}"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           Foreground="White"
-                           TextTrimming="CharacterEllipsis"/>
-                <TextBlock Text="{Binding Description}"
-                           FontSize="11"
-                           Foreground="#888888"
-                           TextTrimming="CharacterEllipsis"
-                           MaxWidth="400"/>
-            </StackPanel>
+            <!-- Main Card Background -->
+            <Border CornerRadius="6"
+                    Padding="12">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#2A2A2A" Offset="0"/>
+                                    <GradientStop Color="#1E1E1E" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsUnlocked}" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#2A3A2A" Offset="0"/>
+                                            <GradientStop Color="#1E2E1E" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#2A203A" Offset="0"/>
+                                            <GradientStop Color="#1E1530" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
 
-            <Border Grid.Column="3"
-                    Width="24" Height="24"
-                    CornerRadius="12"
-                    Background="{Binding IsUnlocked, Converter={StaticResource UnlockStatusToColorConverter}}"
-                    VerticalAlignment="Center"
-                    Margin="8,0,0,0">
-                <TextBlock Text="&#xE73E;"
-                           FontFamily="Segoe MDL2 Assets"
-                           FontSize="12"
-                           Foreground="White"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8"
+                                     ShadowDepth="2"
+                                     Direction="270"
+                                     Color="Black"
+                                     Opacity="0.3"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="48"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Selection Checkbox -->
+                    <CheckBox Grid.Column="0"
+                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Margin="0,0,12,0"
+                              Cursor="Hand">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="CheckBox">
+                                            <Border x:Name="checkBorder"
+                                                    Width="20" Height="20"
+                                                    CornerRadius="4"
+                                                    Background="#3A3A3A"
+                                                    BorderBrush="#5A5A5A"
+                                                    BorderThickness="1">
+                                                <TextBlock x:Name="checkMark"
+                                                          Text="&#xE73E;"
+                                                          FontFamily="Segoe MDL2 Assets"
+                                                          FontSize="12"
+                                                          Foreground="White"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          Visibility="Collapsed"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="checkBorder" Property="Background" Value="#66C0F4"/>
+                                                    <Setter TargetName="checkBorder" Property="BorderBrush" Value="#66C0F4"/>
+                                                    <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="checkBorder" Property="BorderBrush" Value="#66C0F4"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+
+                    <!-- Achievement Icon -->
+                    <Border Grid.Column="1"
+                            Width="44" Height="44"
+                            CornerRadius="6"
+                            VerticalAlignment="Center"
+                            Background="#1A1A1A">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BorderBrush" Value="#3A3A3A"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUnlocked}" Value="True">
+                                        <Setter Property="BorderBrush" Value="#2ECC71"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                                        <Setter Property="BorderBrush" Value="#9B59B6"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Image Source="{Binding Icon}"
+                                   Stretch="Uniform"
+                                   Width="32" Height="32"/>
+                            <TextBlock x:Name="HiddenIcon"
+                                       Text="&#xE721;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="20"
+                                       Foreground="#9B59B6"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Visibility="Collapsed"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Achievement Info -->
+                    <StackPanel Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Margin="14,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding DisplayName}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFFFFF"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="350"/>
+                            <!-- Hidden Badge -->
+                            <Border Margin="8,0,0,0"
+                                    Background="#9B59B6"
+                                    CornerRadius="3"
+                                    Padding="6,2"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsHidden, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="HIDDEN"
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Description}"
+                                   FontSize="12"
+                                   Foreground="#8A8A8A"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="350"
+                                   Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding UnlockTimeText}"
+                                   FontSize="10"
+                                   Foreground="#5A5A5A"
+                                   Margin="0,2,0,0"
+                                   Visibility="{Binding IsUnlocked, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </StackPanel>
+
+                    <!-- Status Indicator -->
+                    <Border Grid.Column="3"
+                            Width="28" Height="28"
+                            CornerRadius="14"
+                            VerticalAlignment="Center"
+                            Margin="12,0,0,0"
+                            Cursor="Hand"
+                            MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUnlocked}" Value="True">
+                                        <Setter Property="Background">
+                                            <Setter.Value>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#2ECC71" Offset="0"/>
+                                                    <GradientStop Color="#27AE60" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                                   FontSize="14"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="&#xE73E;"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsUnlocked}" Value="True">
+                                            <Setter Property="Text" Value="&#xE73E;"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsUnlocked}" Value="False">
+                                            <Setter Property="Text" Value="&#xE711;"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Selection Glow -->
+            <Border CornerRadius="6"
+                    BorderThickness="2"
+                    BorderBrush="#66C0F4"
+                    Opacity="0"
+                    IsHitTestVisible="False">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="BorderBrush" Value="#66C0F4"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="Opacity" Value="1"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
             </Border>
         </Grid>
     </Border>

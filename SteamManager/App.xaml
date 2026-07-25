@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
+                <ResourceDictionary Source="Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
@@ -20,6 +21,10 @@
             <converters:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColorConverter"/>
             <converters:SelectedBorderConverter x:Key="SelectedBorderConverter"/>
             <converters:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter"/>
+            <converters:AchievementBackgroundConverter x:Key="AchievementBackgroundConverter"/>
+            <converters:ProgressToWidthConverter x:Key="ProgressToWidthConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
             <controls:UnlockStatusToColorConverter x:Key="UnlockStatusToColorConverter"/>
 
             <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">

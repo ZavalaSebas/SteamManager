@@ -20,6 +20,19 @@ public partial class GamePickerView : UserControl
         }
     }
 
+    private void ClearSearch_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is ViewModels.GamePickerViewModel vm)
+        {
+            vm.SearchText = string.Empty;
+        }
+        if (SearchBox != null)
+        {
+            SearchBox.Text = string.Empty;
+            SearchBox.Focus();
+        }
+    }
+
     private void GameCard_GameSelected(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement element && element.DataContext is GameInfo game)

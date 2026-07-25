@@ -4,10 +4,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:SteamManager.Controls"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              Background="#1A1A1A">
-    <Grid Margin="20">
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -16,115 +17,418 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-            <Button Content="&#xE72B;"
-                    FontFamily="Segoe MDL2 Assets"
-                    FontSize="16"
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Back Button -->
+            <Button Grid.Column="0"
                     Command="{Binding BackCommand}"
                     Background="Transparent"
-                    Foreground="#888888"
                     BorderThickness="0"
-                    Padding="8,4"
-                    VerticalAlignment="Center"
-                    Cursor="Hand"/>
-            <TextBlock Text="{Binding SelectedGame.Name}"
-                       FontSize="24"
-                       FontWeight="Light"
-                       Foreground="White"
-                       VerticalAlignment="Center"/>
-        </StackPanel>
+                    Padding="8"
+                    Cursor="Hand"
+                    VerticalAlignment="Center">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+                <TextBlock Text="&#xE72B;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="20"
+                           Foreground="#6B6B6B"/>
+            </Button>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Foreground="#666666" FontSize="13" VerticalAlignment="Center">
-                <Run Text="{Binding UnlockedCount, Mode=OneWay}"/>
-                <Run Text="/"/>
-                <Run Text="{Binding TotalCount, Mode=OneWay}"/>
-                <Run Text=" achievements unlocked"/>
-            </TextBlock>
-            <TextBlock Text=" | "
-                       Foreground="#444444"
-                       FontSize="13"
-                       VerticalAlignment="Center"
-                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <ProgressBar IsIndeterminate="True"
-                          Width="100"
-                          Height="8"
-                          VerticalAlignment="Center"
-                          Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <Button Content="Lock All"
-                    Command="{Binding LockAllCommand}"
-                    Background="#3A3A3A"
-                    Foreground="White"
-                    Padding="12,6"
-                    BorderThickness="0"
-                    Margin="16,0,0,0"
-                    Cursor="Hand"/>
-            <Button Content="Unlock All"
-                    Command="{Binding UnlockAllCommand}"
-                    Background="#3A3A3A"
-                    Foreground="White"
-                    Padding="12,6"
-                    BorderThickness="0"
-                    Margin="8,0,0,0"
-                    Cursor="Hand"/>
-            <Button Content="Select All"
-                    Command="{Binding SelectAllCommand}"
-                    Background="#3A3A3A"
-                    Foreground="White"
-                    Padding="10,6"
-                    BorderThickness="0"
-                    Margin="16,0,0,0"
-                    Cursor="Hand"/>
-            <Button Content="Deselect"
-                    Command="{Binding DeselectAllCommand}"
-                    Background="#3A3A3A"
-                    Foreground="White"
-                    Padding="10,6"
-                    BorderThickness="0"
-                    Margin="4,0,0,0"
-                    Cursor="Hand"/>
-            <TextBlock Text="Filter:"
-                       Foreground="#666666"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       Margin="24,0,8,0"/>
-            <Button Content="All"
-                    Command="{Binding SetFilterAllCommand}"
-                    Background="{Binding AchievementFilter, Converter={StaticResource FilterToBackgroundConverter}, ConverterParameter=All}"
-                    Foreground="White"
-                    Padding="10,6"
-                    BorderThickness="0"
-                    Cursor="Hand"/>
-            <Button Content="Unlocked"
-                    Command="{Binding SetFilterUnlockedCommand}"
-                    Background="{Binding AchievementFilter, Converter={StaticResource FilterToBackgroundConverter}, ConverterParameter=Unlocked}"
-                    Foreground="White"
-                    Padding="10,6"
-                    BorderThickness="0"
-                    Margin="4,0,0,0"
-                    Cursor="Hand"/>
-            <Button Content="Locked"
-                    Command="{Binding SetFilterLockedCommand}"
-                    Background="{Binding AchievementFilter, Converter={StaticResource FilterToBackgroundConverter}, ConverterParameter=Locked}"
-                    Foreground="White"
-                    Padding="10,6"
-                    BorderThickness="0"
-                    Margin="4,0,0,0"
-                    Cursor="Hand"/>
-            <Button Content="Hidden"
-                    Command="{Binding SetFilterHiddenCommand}"
-                    Background="{Binding AchievementFilter, Converter={StaticResource FilterToBackgroundConverter}, ConverterParameter=Hidden}"
-                    Foreground="White"
-                    Padding="10,6"
-                    BorderThickness="0"
-                    Margin="4,0,0,0"
-                    Cursor="Hand"/>
-        </StackPanel>
+            <!-- Game Title & Stats -->
+            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding SelectedGame.Name}"
+                           FontSize="26"
+                           FontWeight="Light"
+                           Foreground="#FFFFFF"
+                           TextTrimming="CharacterEllipsis"/>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                    <!-- Achievement Progress Circle -->
+                    <Grid Width="24" Height="24">
+                        <Ellipse Stroke="#3A3A3A" StrokeThickness="2" Fill="Transparent"/>
+                        <Path x:Name="ProgressArc"
+                              Stroke="#66C0F4"
+                              StrokeThickness="2"
+                              Fill="Transparent"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round">
+                            <Path.Data>
+                                <PathGeometry>
+                                    <PathFigure StartPoint="12,2">
+                                        <ArcSegment x:Name="ProgressArcSegment"
+                                                   Size="10,10"
+                                                   SweepDirection="Clockwise"
+                                                   IsLargeArc="False"
+                                                   Point="12,2"/>
+                                    </PathFigure>
+                                </PathGeometry>
+                            </Path.Data>
+                        </Path>
+                    </Grid>
+                    <TextBlock Foreground="#8A8A8A" FontSize="13" VerticalAlignment="Center" Margin="10,0,0,0">
+                        <Run Text="{Binding UnlockedCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="#2ECC71"/>
+                        <Run Text="/"/>
+                        <Run Text="{Binding TotalCount, Mode=OneWay}"/>
+                        <Run Text=" achievements"/>
+                    </TextBlock>
+                    <TextBlock Text="•"
+                               Foreground="#4A4A4A"
+                               Margin="12,0"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CompletionPercentage, StringFormat='{}{0:F1}% complete'}"
+                               Foreground="#66C0F4"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
 
+            <!-- Action Buttons -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Command="{Binding LockAllCommand}"
+                        Padding="14,8"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#2A2A2A"/>
+                            <Setter Property="Foreground" Value="#E74C3C"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="6"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE72D;"
+                                                          FontFamily="Segoe MDL2 Assets"
+                                                          FontSize="14"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,8,0"/>
+                                                <TextBlock Text="Lock All"
+                                                          FontSize="13"
+                                                          FontWeight="SemiBold"
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#3A2A2A"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Command="{Binding UnlockAllCommand}"
+                        Margin="8,0,0,0"
+                        Padding="14,8"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#2A3A2A"/>
+                            <Setter Property="Foreground" Value="#2ECC71"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="6"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE73E;"
+                                                          FontFamily="Segoe MDL2 Assets"
+                                                          FontSize="14"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,8,0"/>
+                                                <TextBlock Text="Unlock All"
+                                                          FontSize="13"
+                                                          FontWeight="SemiBold"
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#3A4A3A"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1"
+                Background="#252525"
+                CornerRadius="8"
+                Padding="12,10"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Selection Buttons -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button Command="{Binding SelectAllCommand}"
+                            Padding="10,6"
+                            Cursor="Hand"
+                            Background="Transparent"
+                            BorderThickness="0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Text="Select All"
+                                                          FontSize="12"
+                                                          Foreground="#8A8A8A"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#3A3A3A"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding DeselectAllCommand}"
+                            Padding="10,6"
+                            Margin="4,0,0,0"
+                            Cursor="Hand"
+                            Background="Transparent"
+                            BorderThickness="0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Text="Deselect"
+                                                          FontSize="12"
+                                                          Foreground="#8A8A8A"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#3A3A3A"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+
+                <TextBlock Grid.Column="1"
+                           Text="|"
+                           Foreground="#3A3A3A"
+                           FontSize="14"
+                           Margin="12,0"
+                           VerticalAlignment="Center"/>
+
+                <!-- Filter Buttons -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Command="{Binding SetFilterAllCommand}"
+                            Cursor="Hand"
+                            Padding="12,6">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Setter Property="Foreground" Value="#B0B0B0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Text="All"
+                                                          FontSize="12"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding SetFilterUnlockedCommand}"
+                            Margin="6,0,0,0"
+                            Cursor="Hand"
+                            Padding="12,6">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Setter Property="Foreground" Value="#B0B0B0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Text="Unlocked"
+                                                          FontSize="12"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding SetFilterLockedCommand}"
+                            Margin="6,0,0,0"
+                            Cursor="Hand"
+                            Padding="12,6">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Setter Property="Foreground" Value="#B0B0B0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Text="Locked"
+                                                          FontSize="12"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding SetFilterHiddenCommand}"
+                            Margin="6,0,0,0"
+                            Cursor="Hand"
+                            Padding="12,6">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Setter Property="Foreground" Value="#B0B0B0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Text="Hidden"
+                                                          FontSize="12"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+
+                <!-- Loading Indicator -->
+                <StackPanel Grid.Column="3"
+                            Orientation="Horizontal"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="60"
+                                 Height="4"
+                                 Foreground="#66C0F4"
+                                 Background="#3A3A3A"/>
+                    <TextBlock Text="Loading..."
+                               FontSize="11"
+                               Foreground="#6B6B6B"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Achievements List -->
         <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding Achievements}">
+            <ItemsControl ItemsSource="{Binding Achievements}"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel/>
@@ -134,24 +438,109 @@
                     <DataTemplate>
                         <controls:AchievementCard DataContext="{Binding}"
                                                   ToggleCommand="{Binding DataContext.ToggleAchievementCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                  Margin="0,0,0,4"/>
+                                                  Margin="0,0,0,6"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
+        <!-- Stats Editor Expander -->
         <Expander Grid.Row="3"
                   Header="Stats Editor"
                   IsExpanded="False"
                   Background="#252525"
-                  Foreground="White"
+                  Foreground="#FFFFFF"
                   BorderThickness="0"
                   Margin="0,16,0,0"
-                  Padding="12">
+                  Padding="0">
+            <Expander.Style>
+                <Style TargetType="Expander">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Expander">
+                                <Border Background="#252525"
+                                        CornerRadius="8"
+                                        Padding="16">
+                                    <StackPanel>
+                                        <ToggleButton x:Name="HeaderSite"
+                                                     IsChecked="{Binding IsExpanded, Mode=TwoWay}"
+                                                     Cursor="Hand">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="Transparent" Padding="0">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="&#xE9F9;"
+                                                                          FontFamily="Segoe MDL2 Assets"
+                                                                          FontSize="16"
+                                                                          Foreground="#66C0F4"
+                                                                          VerticalAlignment="Center"
+                                                                          Margin="0,0,12,0"/>
+                                                                <TextBlock Text="Stats Editor"
+                                                                          FontSize="15"
+                                                                          FontWeight="SemiBold"
+                                                                          Foreground="#FFFFFF"
+                                                                          VerticalAlignment="Center"/>
+                                                                <TextBlock Text="Edit game statistics"
+                                                                          FontSize="12"
+                                                                          Foreground="#6B6B6B"
+                                                                          VerticalAlignment="Center"
+                                                                          Margin="16,0,0,0"/>
+                                                            </StackPanel>
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="&#xE70D;"
+                                                                       FontFamily="Segoe MDL2 Assets"
+                                                                       FontSize="14"
+                                                                       Foreground="#6B6B6B"
+                                                                       VerticalAlignment="Center"
+                                                                       RenderTransformOrigin="0.5,0.5">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="RenderTransform">
+                                                                            <Setter.Value>
+                                                                                <RotateTransform Angle="0"/>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsChecked, ElementName=HeaderSite}" Value="True">
+                                                                                <Setter Property="RenderTransform">
+                                                                                    <Setter.Value>
+                                                                                        <RotateTransform Angle="180"/>
+                                                                                    </Setter.Value>
+                                                                                </Setter>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                        <ContentPresenter x:Name="ExpandSite"
+                                                         Visibility="Collapsed"
+                                                         Margin="0,16,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsExpanded" Value="True">
+                                        <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Expander.Style>
             <StackPanel Margin="0,8,0,0">
                 <TextBlock Text="Select a stat or enter a custom name (stats are game-specific)"
-                           FontSize="11"
-                           Foreground="#666666"
+                           FontSize="12"
+                           Foreground="#6B6B6B"
                            Margin="0,0,0,12"/>
 
                 <Grid>
@@ -166,74 +555,170 @@
                               ItemsSource="{Binding AvailableStats}"
                               SelectedItem="{Binding SelectedStat}"
                               Background="#1A1A1A"
-                              Foreground="White"
+                              Foreground="#FFFFFF"
                               BorderBrush="#3A3A3A"
                               BorderThickness="1"
-                              Padding="8,6"
+                              Padding="12,10"
                               FontSize="13"
                               IsEditable="True"
                               Text="{Binding StatName, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Grid.Column="1"
                                Text=" = "
-                               Foreground="#888888"
-                               FontSize="13"
+                               Foreground="#6B6B6B"
+                               FontSize="14"
                                VerticalAlignment="Center"
-                               Margin="8,0"/>
+                               Margin="12,0"/>
                     <TextBox Grid.Column="2"
                              Text="{Binding StatValue, UpdateSourceTrigger=PropertyChanged}"
                              Background="#1A1A1A"
-                             Foreground="White"
+                             Foreground="#FFFFFF"
                              BorderBrush="#3A3A3A"
                              BorderThickness="1"
-                             Padding="8,6"
+                             Padding="12,10"
                              FontSize="13"
-                             CaretBrush="White"/>
+                             CaretBrush="#66C0F4"/>
                     <Button Grid.Column="3"
                             Content="Get"
                             Command="{Binding GetStatCommand}"
-                            Background="#3A3A3A"
-                            Foreground="White"
-                            Padding="16,6"
-                            BorderThickness="0"
-                            Margin="8,0,0,0"
-                            Cursor="Hand"/>
+                            Padding="20,10"
+                            Margin="12,0,0,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
 
-                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                     <Button Content="Set"
                             Command="{Binding SetStatCommand}"
-                            Background="#3A3A3A"
-                            Foreground="White"
-                            Padding="16,6"
-                            BorderThickness="0"
-                            Cursor="Hand"/>
+                            Padding="20,10"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A3A3A"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Button Content="Reset All Stats"
                             Command="{Binding ResetAllStatsCommand}"
-                            Background="#3A3A3A"
-                            Foreground="White"
-                            Padding="16,6"
-                            BorderThickness="0"
+                            Padding="20,10"
                             Margin="8,0,0,0"
-                            Cursor="Hand"/>
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3A2A2A"/>
+                                <Setter Property="Foreground" Value="#E74C3C"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#4A2A2A"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </Expander>
 
-        <StackPanel Grid.Row="4"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,16,0,0">
-            <TextBlock Text="{Binding StatusMessage}"
-                       FontSize="12"
-                       Foreground="#666666"
-                       VerticalAlignment="Center"
-                       Margin="0,0,16,0"/>
-            <Button Content="Store Stats"
-                    Command="{Binding StoreStatsCommand}"
-                    Background="#3A3A3A"
-                    Foreground="White"
-                    Padding="16,8"
-                    BorderThickness="0"/>
-        </StackPanel>
+        <!-- Footer -->
+        <Border Grid.Row="4"
+                Margin="0,16,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="12"
+                           Foreground="#6B6B6B"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1"
+                        Content="Store Stats"
+                        Command="{Binding StoreStatsCommand}"
+                        Padding="20,10"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#66C0F4"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="4"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#8FCDFF"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

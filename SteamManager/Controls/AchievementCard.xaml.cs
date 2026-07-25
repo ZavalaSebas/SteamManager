@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
+using System.Windows.Media.Animation;
 using SteamManager.Models;
 
 namespace SteamManager.Controls;
@@ -24,9 +24,28 @@ public partial class AchievementCard : UserControl
 
     private void CardBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is AchievementInfo achievement && ToggleCommand?.CanExecute(achievement) == true)
+        if (sender is Border border && border.DataContext is AchievementInfo achievement)
         {
-            ToggleCommand.Execute(achievement);
+            if (ToggleCommand?.CanExecute(achievement) == true)
+            {
+                if (!achievement.IsUnlocked)
+                {
+                    PlayUnlockAnimation();
+                }
+                ToggleCommand.Execute(achievement);
+            }
+        }
+    }
+
+    private void PlayUnlockAnimation()
+    {
+        try
+        {
+            var storyboard = (Storyboard)FindResource("UnlockFlash");
+            storyboard?.Begin();
+        }
+        catch
+        {
         }
     }
 }
@@ -36,8 +55,10 @@ public class UnlockStatusToColorConverter : System.Windows.Data.IValueConverter
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
         if (value is bool isUnlocked)
-            return isUnlocked ? new SolidColorBrush(Color.FromRgb(0x2E, 0xA8, 0x2E)) : new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x3A));
-        return new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x3A));
+            return isUnlocked
+                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2E, 0xA8, 0x2E))
+                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3A, 0x3A, 0x3A));
+        return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3A, 0x3A, 0x3A));
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
