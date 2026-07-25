@@ -206,6 +206,56 @@ GetOrDownloadAsync(url):
   4. If not → download, save to cache, return
 ```
 
+## Auto-Update System (v2.0)
+
+> NOT implemented in v1.0. Documented here for future development.
+
+### How it works
+
+1. On launch, `MainViewModel` calls `Updater.CheckForUpdateAsync()`
+2. Hits `https://api.github.com/repos/ZavalaSebas/SteamNexus/releases/latest`
+3. Compares remote tag version vs local `AssemblyVersion`
+4. If newer, finds the first `.exe` asset and returns download URL
+5. `UpdateWindow` shows progress, calls `Updater.DownloadAndApplyUpdateAsync()`
+6. Download swaps: `SteamNexus.exe` → `SteamNexus.exe.old`, new → `SteamNexus.exe`, starts new process, exits
+7. On next launch, `Updater.CleanupOldExe()` deletes the `.old` file
+
+### Requirements
+- `NetworkHelper` **must** set `User-Agent` header — GitHub API returns 403 without it
+- HTTP client timeout: 10 seconds
+- Assembly version must match csproj `<Version>` or update check compares wrong values
+
+### Planned implementation
+- `Services/Updater.cs` — update check, download, swap, cleanup
+- `Services/NetworkHelper.cs` — HTTP client with User-Agent, JSON fetching
+- `UI/Windows/UpdateWindow.xaml` — download progress UI
+- Config keys: `GitHubApiUrl`, `RequestTimeout`
+
+## GitHub Pages (v2.0)
+
+> NOT implemented in v1.0. Documented here for future development.
+
+### What it is
+
+A landing page at `https://zavalasebas.github.io/SteamNexus/` showing version, download link, and release info. Deployed automatically on push to `main`.
+
+### Setup
+- `docs/index.html` — landing page
+- Repo Settings → Pages → Source: "GitHub Actions"
+- CTA download button auto-updates version from GitHub Releases API
+
+### Structure
+```
+docs/
+├── index.html          # Landing page
+├── sitemap.xml
+├── og-image.svg        # Social preview
+└── assets/
+    ├── favicon.ico
+    ├── logo.png
+    └── screenshot.png
+```
+
 ## Workflow Rules
 
 **These are strict rules that must always be followed:**
@@ -253,7 +303,10 @@ bump v0.2.0
 | `src/SteamNexus/Services/SmartUnlockService.cs` | Anti-detection delay logic |
 | `src/SteamNexus/Services/ImageCacheService.cs` | Local image caching |
 | `src/SteamNexus/Services/ConfigService.cs` | Settings persistence |
+| `src/SteamNexus/Services/Updater.cs` | Update check, download, swap (v2.0) |
+| `src/SteamNexus/Services/NetworkHelper.cs` | HTTP client with User-Agent (v2.0) |
 | `.github/workflows/release.yml` | CI/CD pipeline |
+| `docs/index.html` | GitHub Pages landing page (v2.0) |
 | `PLAN.md` | Full project plan with phases and features |
 
 ## Known Limitations
@@ -264,6 +317,8 @@ bump v0.2.0
 | No cross-platform | Steam API is Windows-only | None (by design) |
 | No WebP support | WPF doesn't decode WebP natively | Use PNG/JPG from Steam CDN |
 | Achievement icons async | Steam API returns handle 0 initially, fetches in background | Wait for `UserAchievementIconFetched_t` callback |
+| No auto-update | Not implemented in v1.0 | Manual download from GitHub Releases |
+| No GitHub Pages | Not implemented in v1.0 | README serves as documentation |
 
 ---
 
