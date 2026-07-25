@@ -2,9 +2,15 @@
 
 # SteamNexus
 
-### Modern Steam Achievement Manager -- Built in C# / .NET 9
+### Your Steam library, your rules.
 
-[.NET 9](https://dotnet.microsoft.com/download/dotnet/9.0) · [WPF Desktop](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/) · [Windows 10/11](https://www.microsoft.com/windows/windows-11) · [MIT](LICENSE) · v0.1.0
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET 9](https://img.shields.io/badge/.NET-9-purple.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![Windows](https://img.shields.io/badge/Windows-10%2F11-0078d4.svg)](https://www.microsoft.com/windows)
+[![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20WPFUI-9b59b6.svg)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
+[![Version](https://img.shields.io/badge/Version-0.1.0-2ecc71.svg)](https://github.com/ZavalaSebas/SteamNexus/releases)
+
+Manage your Steam achievements and statistics with a modern, clean interface.
 
 [Get Started](#get-started) · [Features](#features) · [How It Works](#how-it-works) · [Build from Source](#build-from-source)
 
@@ -20,9 +26,23 @@ SteamNexus replaces the aging [Steam Achievement Manager (SAM)](https://github.c
 
 No memory injection. No process hooking. No modified files. Just the official Steamworks API doing what it was designed to do.
 
+> Born from the idea behind Steam Achievement Manager by Gibbed, rebuilt from scratch in .NET 9 with a native WPF interface and the official Steamworks SDK.
+
+---
+
+## Screenshot
+
+<div align="center">
+
+> Screenshot coming soon — v0.1.0
+
+</div>
+
 ---
 
 ## How It Works
+
+The way Steam manages achievements is through its official API. SteamNexus connects to `steam_api64.dll`, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the official API endpoints.
 
 1. Launch **SteamNexus** (Steam must be running and logged in)
 2. Your game library loads with covers and playtime
@@ -30,7 +50,7 @@ No memory injection. No process hooking. No modified files. Just the official St
 4. Toggle achievements, edit statistics, or use smart unlock
 5. Changes are committed to Steam's servers via the official API
 
-The app communicates directly with `steam_api64.dll` — Valve's official C API. No reverse engineering, no internal DLLs, no fragile hacks.
+The fake process runs until you close it. Steam keeps detecting it the entire time. Since achievement management doesn't involve kernel-level anti-cheat, there's nothing watching for API calls.
 
 ---
 
@@ -76,7 +96,12 @@ dotnet publish src/SteamNexus/SteamNexus.csproj -c Release -r win-x64 --self-con
 
 ## Architecture
 
-No bloated frameworks, no unnecessary dependencies — pure .NET with minimal packages.
+No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
+
+- **P/Invoke** — Direct calls to `steam_api64.dll`, no wrapper libraries
+- **MVVM** — CommunityToolkit.Mvvm source generators, no code-behind
+- **Async** — UI stays fluid while Steam API calls run in background threads
+- **Virtualized** — `VirtualizingStackPanel` renders only visible items
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -97,11 +122,6 @@ No bloated frameworks, no unnecessary dependencies — pure .NET with minimal pa
 └─────────────────────────────────────────────────┘
 ```
 
-- **P/Invoke** — Direct calls to `steam_api64.dll`, no wrapper libraries
-- **MVVM** — CommunityToolkit.Mvvm source generators, no code-behind
-- **Async** — UI stays fluid while Steam API calls run in background threads
-- **Virtualized** — `VirtualizingStackPanel` renders only visible items
-
 ---
 
 ## Development
@@ -118,22 +138,6 @@ No bloated frameworks, no unnecessary dependencies — pure .NET with minimal pa
 | CI/CD | GitHub Actions |
 | Steam API | `steam_api64.dll` via P/Invoke |
 
-### Project Structure
-
-```
-SteamNexus/
-├── src/SteamNexus/           # Main application
-│   ├── Steam/                # Steam API integration layer
-│   ├── Models/               # Data models
-│   ├── ViewModels/           # MVVM ViewModels
-│   ├── Views/                # WPF Views
-│   ├── Controls/             # Custom controls
-│   ├── Services/             # Business logic services
-│   ├── Converters/           # Value converters
-│   └── Helpers/              # Utilities
-└── tests/SteamNexus.Tests/   # Unit tests
-```
-
 ### Build & Test
 
 ```bash
@@ -146,6 +150,8 @@ dotnet test SteamNexus.slnx -c Release
 # Publish (single exe)
 dotnet publish src/SteamNexus/SteamNexus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for the full project guide, architecture, and workflow rules.
 
 ---
 
@@ -160,10 +166,12 @@ dotnet publish src/SteamNexus/SteamNexus.csproj -c Release -r win-x64 --self-con
 - Favorites and search
 
 ### v2.0 (Planned)
+- Auto-update system
 - Multi-idling (rotate through games automatically)
 - Achievement rarity percentages
 - Friend activity
 - Cloud save management
+- GitHub Pages landing page
 
 ---
 
@@ -176,6 +184,15 @@ This project is licensed under the [MIT License](LICENSE).
 ## Acknowledgments
 
 Built with inspiration from [Gibbed's Steam Achievement Manager](https://github.com/gibbed/SteamAchievementManager) — the original tool that pioneered Steam achievement management.
+
+---
+
+## Sponsor
+
+If you find SteamNexus useful, consider supporting the project:
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Me-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/sebastianzavala82573)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Support%20Me-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/ZavalaSebas)
 
 ---
 
