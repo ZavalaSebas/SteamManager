@@ -1,6 +1,6 @@
 <div align="center">
 
-# SteamNexus
+# SteamManager
 
 ### Your Steam library, your rules.
 
@@ -8,7 +8,7 @@
 [![.NET 10](https://img.shields.io/badge/.NET-10-purple.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-0078d4.svg)](https://www.microsoft.com/windows)
 [![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20WPFUI-9b59b6.svg)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
-[![Version](https://img.shields.io/badge/Version-0.1.0-2ecc71.svg)](https://github.com/ZavalaSebas/SteamNexus/releases)
+[![Version](https://img.shields.io/badge/Version-0.1.0-2ecc71.svg)](https://github.com/ZavalaSebas/SteamManager/releases)
 
 Manage your Steam achievements and statistics with a modern, clean interface.
 
@@ -18,11 +18,11 @@ Manage your Steam achievements and statistics with a modern, clean interface.
 
 ---
 
-## What is SteamNexus?
+## What is SteamManager?
 
 A modern Windows desktop application for managing Steam game achievements and statistics. Built with **C# / .NET 10** and the official [Steamworks SDK](https://partner.steamgames.com/doc/sdk/api) (`steam_api64.dll`), it provides a clean, fast interface for viewing, unlocking, and locking achievements across your entire game library.
 
-SteamNexus replaces the aging [Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager) with a modern codebase — UI virtualization for large libraries, smart unlock with anti-detection delays, image caching, and a single portable executable.
+SteamManager replaces the aging [Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager) with a modern codebase — UI virtualization for large libraries, smart unlock with anti-detection delays, image caching, and a single portable executable.
 
 No memory injection. No process hooking. No modified files. Just the official Steamworks API doing what it was designed to do.
 
@@ -42,9 +42,9 @@ No memory injection. No process hooking. No modified files. Just the official St
 
 ## How It Works
 
-The way Steam manages achievements is through its official API. SteamNexus connects to `steam_api64.dll`, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the official API endpoints.
+The way Steam manages achievements is through its official API. SteamManager connects to `steam_api64.dll`, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the official API endpoints.
 
-1. Launch **SteamNexus** (Steam must be running and logged in)
+1. Launch **SteamManager** (Steam must be running and logged in)
 2. Your game library loads with covers and playtime
 3. Select a game to manage its achievements and stats
 4. Toggle achievements, edit statistics, or use smart unlock
@@ -58,14 +58,14 @@ The fake process runs until you close it. Steam keeps detecting it the entire ti
 
 **Download a Release**
 
-Grab the latest `SteamNexus.exe` from [GitHub Releases](https://github.com/ZavalaSebas/SteamNexus/releases). Self-contained, no .NET required. Just run it.
+Grab the latest `SteamManager.exe` from [GitHub Releases](https://github.com/ZavalaSebas/SteamManager/releases). Self-contained, no .NET required. Just run it.
 
 **Build from Source**
 
 ```bash
-git clone https://github.com/ZavalaSebas/SteamNexus.git
-cd SteamNexus
-dotnet publish src/SteamNexus/SteamNexus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+git clone https://github.com/ZavalaSebas/SteamManager.git
+cd SteamManager
+dotnet publish src/SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
 ---
@@ -142,13 +142,13 @@ No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
 
 ```bash
 # Build
-dotnet build SteamNexus.slnx -c Release
+dotnet build SteamManager.slnx -c Release
 
 # Test
-dotnet test SteamNexus.slnx -c Release
+dotnet test SteamManager.slnx -c Release
 
 # Publish (single exe)
-dotnet publish src/SteamNexus/SteamNexus.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet publish src/SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for the full project guide, architecture, and workflow rules.
@@ -189,7 +189,7 @@ Built with inspiration from [Gibbed's Steam Achievement Manager](https://github.
 
 ## Sponsor
 
-If you find SteamNexus useful, consider supporting the project:
+If you find SteamManager useful, consider supporting the project:
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Me-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/sebastianzavala82573)
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Support%20Me-ea4aaa?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/ZavalaSebas)

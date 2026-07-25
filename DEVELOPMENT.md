@@ -1,12 +1,12 @@
-# SteamNexus — Project Guide
+# SteamManager — Project Guide
 
 This document serves as a guide to this specific project AND as a reference for the architecture, workflow, and decisions made during planning.
 
-## Why SteamNexus?
+## Why SteamManager?
 
-SteamNexus is a modern rewrite of [Gibbed's Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager), originally built in 2008 with .NET Framework and Windows Forms. The original uses reverse-engineered access to Steam's internal `steamclient.dll`, has two separate executables, a broken image loading system, and a UI that hasn't aged well.
+SteamManager is a modern rewrite of [Gibbed's Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager), originally built in 2008 with .NET Framework and Windows Forms. The original uses reverse-engineered access to Steam's internal `steamclient.dll`, has two separate executables, a broken image loading system, and a UI that hasn't aged well.
 
-SteamNexus replaces it with:
+SteamManager replaces it with:
 - **.NET 10 + WPF + WPFUI** — modern, GPU-accelerated UI with virtualization
 - **Official Steamworks SDK** (`steam_api64.dll`) — stable, documented, no reverse engineering
 - **Single executable** — portable, no installation, no dependencies
@@ -58,10 +58,10 @@ SteamNexus replaces it with:
 ## Project Structure
 
 ```
-SteamNexus/
-├── SteamNexus.slnx                    # Solution file (.slnx format)
-├── src/SteamNexus/                     # Main WPF application
-│   ├── SteamNexus.csproj              # Version, target framework, packages
+SteamManager/
+├── SteamManager.slnx                    # Solution file (.slnx format)
+├── src/SteamManager/                     # Main WPF application
+│   ├── SteamManager.csproj              # Version, target framework, packages
 │   ├── App.xaml / App.xaml.cs         # Application entry, theme setup
 │   ├── Steam/                         # Steam API integration layer
 │   │   ├── SteamNative.cs            # All P/Invoke declarations
@@ -80,7 +80,7 @@ SteamNexus/
 │   ├── Converters/                    # Value converters
 │   ├── Helpers/                       # Utilities
 │   └── Resources/                     # Styles, icons, images
-├── tests/SteamNexus.Tests/            # xUnit test project
+├── tests/SteamManager.Tests/            # xUnit test project
 ├── .github/workflows/release.yml      # CI/CD pipeline
 ├── README.md
 ├── DEVELOPMENT.md                     # This file
@@ -92,7 +92,7 @@ SteamNexus/
 
 ### How it works
 
-SteamNexus uses P/Invoke to call functions from `steam_api64.dll` directly. No wrapper libraries, no NuGet packages for Steam — just raw interop.
+SteamManager uses P/Invoke to call functions from `steam_api64.dll` directly. No wrapper libraries, no NuGet packages for Steam — just raw interop.
 
 ### Initialization sequence
 
@@ -131,11 +131,11 @@ All DllImport declarations for `steam_api64.dll` go here. Key functions:
 3. Use `GetImageSize(handle)` to get width/height
 4. Use `GetImageRGBA(handle, buffer, size)` to get pixel data
 5. Convert to `WriteableBitmap` for WPF binding
-6. Cache to disk as PNG in `%LocalAppData%\SteamNexus\cache\images\`
+6. Cache to disk as PNG in `%LocalAppData%\SteamManager\cache\images\`
 
 ## Version Management
 
-**Single source of truth**: `<Version>` in `src/SteamNexus/SteamNexus.csproj`
+**Single source of truth**: `<Version>` in `src/SteamManager/SteamManager.csproj`
 
 ```xml
 <Version>0.1.0</Version>
@@ -152,8 +152,8 @@ All DllImport declarations for `steam_api64.dll` go here. Key functions:
 On push to `main`, `.github/workflows/release.yml` runs:
 
 1. **Check version change** — compares `<Version>` in HEAD vs HEAD~1
-2. **Build** — `dotnet build SteamNexus.slnx -c Release`
-3. **Test** — `dotnet test SteamNexus.slnx -c Release --no-build`
+2. **Build** — `dotnet build SteamManager.slnx -c Release`
+3. **Test** — `dotnet test SteamManager.slnx -c Release --no-build`
 4. **Release** (only if version changed):
    - `dotnet publish` as self-contained single-file
    - Generate body from commit message
@@ -162,15 +162,15 @@ On push to `main`, `.github/workflows/release.yml` runs:
 ### Critical workflow details
 - `fetch-depth: 0` — required so `git show HEAD~1:path` can access the parent commit
 - `permissions: contents: write` — required for `softprops/action-gh-release`
-- Csproj path: `src/SteamNexus/SteamNexus.csproj`
+- Csproj path: `src/SteamManager/SteamManager.csproj`
 - Release body comes from the **commit body** — write it with `### Added/Fixed/Changed` sections
 
 ## Solution File (.slnx)
 
 ```xml
 <Solution>
-  <Project Path="src/SteamNexus/SteamNexus.csproj" />
-  <Project Path="tests/SteamNexus.Tests/SteamNexus.Tests.csproj" />
+  <Project Path="src/SteamManager/SteamManager.csproj" />
+  <Project Path="tests/SteamManager.Tests/SteamManager.Tests.csproj" />
 </Solution>
 ```
 
@@ -178,7 +178,7 @@ Benefits: human-readable, merge-friendly, no VS-generated garbage.
 
 ## Tests
 
-Run with: `dotnet test SteamNexus.slnx -c Release`
+Run with: `dotnet test SteamManager.slnx -c Release`
 
 ### Planned test categories
 
@@ -189,7 +189,7 @@ Run with: `dotnet test SteamNexus.slnx -c Release`
 
 ## Caching System
 
-All cache files stored in `%LocalAppData%\SteamNexus\`:
+All cache files stored in `%LocalAppData%\SteamManager\`:
 
 | Path | Content | TTL |
 |------|---------|-----|
@@ -213,11 +213,11 @@ GetOrDownloadAsync(url):
 ### How it works
 
 1. On launch, `MainViewModel` calls `Updater.CheckForUpdateAsync()`
-2. Hits `https://api.github.com/repos/ZavalaSebas/SteamNexus/releases/latest`
+2. Hits `https://api.github.com/repos/ZavalaSebas/SteamManager/releases/latest`
 3. Compares remote tag version vs local `AssemblyVersion`
 4. If newer, finds the first `.exe` asset and returns download URL
 5. `UpdateWindow` shows progress, calls `Updater.DownloadAndApplyUpdateAsync()`
-6. Download swaps: `SteamNexus.exe` → `SteamNexus.exe.old`, new → `SteamNexus.exe`, starts new process, exits
+6. Download swaps: `SteamManager.exe` → `SteamManager.exe.old`, new → `SteamManager.exe`, starts new process, exits
 7. On next launch, `Updater.CleanupOldExe()` deletes the `.old` file
 
 ### Requirements
@@ -237,7 +237,7 @@ GetOrDownloadAsync(url):
 
 ### What it is
 
-A landing page at `https://zavalasebas.github.io/SteamNexus/` showing version, download link, and release info. Deployed automatically on push to `main`.
+A landing page at `https://zavalasebas.github.io/SteamManager/` showing version, download link, and release info. Deployed automatically on push to `main`.
 
 ### Setup
 - `docs/index.html` — landing page
@@ -272,9 +272,9 @@ docs/
 
 6. **Commit messages matter** — subject line ≤72 chars, body describes what was done and why. For version bumps, body becomes release notes with `### Added / Fixed / Changed` sections.
 
-7. **Always build before pushing** — run `dotnet build SteamNexus.slnx -c Release` and make sure there are no errors.
+7. **Always build before pushing** — run `dotnet build SteamManager.slnx -c Release` and make sure there are no errors.
 
-8. **Always test before pushing** — run `dotnet test SteamNexus.slnx -c Release` and make sure all tests pass.
+8. **Always test before pushing** — run `dotnet test SteamManager.slnx -c Release` and make sure all tests pass.
 
 Good commit structure:
 ```
@@ -295,16 +295,16 @@ bump v0.2.0
 
 | File | Purpose |
 |------|---------|
-| `src/SteamNexus/SteamNexus.csproj` | Version, target framework, NuGet packages |
-| `src/SteamNexus/Steam/SteamNative.cs` | All P/Invoke declarations for steam_api64.dll |
-| `src/SteamNexus/Steam/SteamClient.cs` | Steam API lifecycle (Init, Shutdown, RunCallbacks) |
-| `src/SteamNexus/Steam/SteamAchievements.cs` | Achievement read/write operations |
-| `src/SteamNexus/Steam/SteamStats.cs` | Stats read/write operations |
-| `src/SteamNexus/Services/SmartUnlockService.cs` | Anti-detection delay logic |
-| `src/SteamNexus/Services/ImageCacheService.cs` | Local image caching |
-| `src/SteamNexus/Services/ConfigService.cs` | Settings persistence |
-| `src/SteamNexus/Services/Updater.cs` | Update check, download, swap (v2.0) |
-| `src/SteamNexus/Services/NetworkHelper.cs` | HTTP client with User-Agent (v2.0) |
+| `src/SteamManager/SteamManager.csproj` | Version, target framework, NuGet packages |
+| `src/SteamManager/Steam/SteamNative.cs` | All P/Invoke declarations for steam_api64.dll |
+| `src/SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init, Shutdown, RunCallbacks) |
+| `src/SteamManager/Steam/SteamAchievements.cs` | Achievement read/write operations |
+| `src/SteamManager/Steam/SteamStats.cs` | Stats read/write operations |
+| `src/SteamManager/Services/SmartUnlockService.cs` | Anti-detection delay logic |
+| `src/SteamManager/Services/ImageCacheService.cs` | Local image caching |
+| `src/SteamManager/Services/ConfigService.cs` | Settings persistence |
+| `src/SteamManager/Services/Updater.cs` | Update check, download, swap (v2.0) |
+| `src/SteamManager/Services/NetworkHelper.cs` | HTTP client with User-Agent (v2.0) |
 | `.github/workflows/release.yml` | CI/CD pipeline |
 | `docs/index.html` | GitHub Pages landing page (v2.0) |
 | `PLAN.md` | Full project plan with phases and features |

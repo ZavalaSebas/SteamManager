@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SteamNexus - Modern Steam Achievement Manager</title>
+    <title>SteamManager - Modern Steam Achievement Manager</title>
     <meta name="description" content="A modern Windows desktop application for managing Steam game achievements and statistics. Built in C# / .NET 10.">
-    <meta property="og:title" content="SteamNexus">
+    <meta property="og:title" content="SteamManager">
     <meta property="og:description" content="Modern Steam Achievement Manager - Built in C# / .NET 10">
     <meta property="og:type" content="website">
     <style>
@@ -140,7 +140,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>SteamNexus</h1>
+        <h1>SteamManager</h1>
         <p class="subtitle">Modern Steam Achievement Manager</p>
 
         <span class="version" id="version">v0.1.0</span>
@@ -151,10 +151,10 @@
         </p>
 
         <div>
-            <a href="https://github.com/ZavalaSebas/SteamNexus/releases/latest" class="btn btn-primary" id="download-btn">
+            <a href="https://github.com/ZavalaSebas/SteamManager/releases/latest" class="btn btn-primary" id="download-btn">
                 Download Latest
             </a>
-            <a href="https://github.com/ZavalaSebas/SteamNexus" class="btn btn-secondary">
+            <a href="https://github.com/ZavalaSebas/SteamManager" class="btn btn-secondary">
                 View on GitHub
             </a>
         </div>
@@ -185,7 +185,7 @@
 
     <script>
         // Auto-update version from GitHub Releases API
-        fetch('https://api.github.com/repos/ZavalaSebas/SteamNexus/releases/latest')
+        fetch('https://api.github.com/repos/ZavalaSebas/SteamManager/releases/latest')
             .then(r => r.json())
             .then(data => {
                 if (data.tag_name) {

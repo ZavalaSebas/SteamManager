@@ -1,16 +1,16 @@
-# SteamNexus - Plan de Proyecto
+# SteamManager - Plan de Proyecto
 
 ## Decisión Técnica Final
 
 | Aspecto | Decisión |
 |---------|----------|
-| Nombre | **SteamNexus** |
+| Nombre | **SteamManager** |
 | Runtime | .NET 10 |
 | UI | WPF + WPFUI |
 | Steam API | `steam_api64.dll` via P/Invoke directo (NO steamclient.dll) |
 | Patrón | MVVM con CommunityToolkit.Mvvm |
 | Empaquetado | `PublishSingleFile` + `SelfContained` = 1 exe portable |
-| Caché | `%LocalAppData%\SteamNexus\` |
+| Caché | `%LocalAppData%\SteamManager\` |
 
 ---
 
@@ -55,11 +55,11 @@ Replicar y mejorar las capacidades core del SAM original:
 ## Estructura del Proyecto
 
 ```
-SteamNexus/
-├── SteamNexus.sln
+SteamManager/
+├── SteamManager.sln
 ├── src/
-│   └── SteamNexus/
-│       ├── SteamNexus.csproj
+│   └── SteamManager/
+│       ├── SteamManager.csproj
 │       ├── App.xaml / App.xaml.cs
 │       │
 │       ├── Steam/                          # Capa de integración con Steam
@@ -124,7 +124,7 @@ SteamNexus/
 │       └── launchSettings.json
 │
 └── tests/
-    └── SteamNexus.Tests/
+    └── SteamManager.Tests/
         ├── SteamNativeTests.cs
         └── SmartUnlockTests.cs
 ```
@@ -308,7 +308,7 @@ public async Task UnlockAchievementsAsync(
 **ImageCacheService:**
 
 ```
-Ruta: %LocalAppData%\SteamNexus\cache\images\
+Ruta: %LocalAppData%\SteamManager\cache\images\
 Formato: PNG
 Clave: {appId}_{achievementId or "cover"}.png
 Limpieza: Borrar archivos > 7 días
@@ -317,7 +317,7 @@ Limpieza: Borrar archivos > 7 días
 **ConfigService:**
 
 ```
-Ruta: %LocalAppData%\SteamNexus\config.json
+Ruta: %LocalAppData%\SteamManager\config.json
 Contenido:
 - FavoriteGameIds (lista de IDs fijados arriba)
 - DefaultUnlockDelay (min/max seconds)
@@ -383,7 +383,7 @@ Contenido:
 ## Orden de Construcción
 
 ### Sprint 1 - Core Steam (sin UI)
-1. Crear solution y proyecto `SteamNexus`
+1. Crear solution y proyecto `SteamManager`
 2. `SteamNative.cs` — todos los P/Invoke
 3. `SteamClient.cs` — Init/Shutdown/RunCallbacks
 4. `SteamAchievements.cs` — lectura de logros
