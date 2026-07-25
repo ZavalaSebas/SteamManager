@@ -233,8 +233,7 @@ On push to `main`, `.github/workflows/release.yml` runs:
 
 1. **Check version change** — compares `<Version>` in HEAD vs HEAD~1
 2. **Build** — `dotnet build SteamManager.slnx -c Release`
-3. **Test** — `dotnet test SteamManager.slnx -c Release --no-build`
-4. **Release** (only if version changed):
+3. **Release** (only if version changed):
    - `dotnet publish` as self-contained single-file
    - Generate body from commit message
    - Create tag + release with `.exe`
@@ -945,7 +944,7 @@ If critical bug found after release:
 | `SteamManager/App.xaml` | WPF-UI theme (`Dark`) + DataTemplates for ViewModel→View mapping |
 | `SteamManager/App.xaml.cs` | DI setup, async Steam init, callback DispatcherTimer |
 | `SteamManager/MainWindow.xaml/.cs` | Shell window — `ContentControl` bound to `MainViewModel.CurrentViewModel` |
-| `SteamManager.Tests/` | xUnit test project (no tests written yet) |
+| `SteamManager.Tests/` | xUnit test project (13 tests — verified locally, not CI) |
 | `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, `workflow_dispatch` only) |
 | `PLAN.md` | Full project plan with phases and features |
 | `CHANGELOG.md` | Version history (v0.1.0 → v1.0.0 with full feature set) |
