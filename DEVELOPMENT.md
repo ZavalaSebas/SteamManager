@@ -157,11 +157,11 @@ Callbacks are dispatched via `Steam_BGetCallback` polling. The callback timer fi
 **Single source of truth**: `<Version>` in `SteamManager/SteamManager.csproj`
 
 ```xml
-<Version>0.1.0</Version>
+<Version>1.0.0</Version>
 <AssemblyVersion>$(Version).0</AssemblyVersion>
 ```
 
-- `AssemblyVersion` derives from `$(Version)` so assembly version is correct (e.g., `0.1.0.0`)
+- `AssemblyVersion` derives from `$(Version)` so assembly version is correct (e.g., `1.0.0.0`)
 - The Updater (future) will compare local vs remote version using `Version.TryParse`
 
 **To bump the version**: edit `<Version>` in the csproj, commit with a descriptive message, push to `main`.
@@ -259,6 +259,8 @@ Benefits: human-readable, merge-friendly, no VS-generated garbage.
 ## Tests
 
 Run with: `dotnet test SteamManager.slnx -c Release`
+
+> **Note**: Tests require the main project to be built with x86 architecture first. Due to `<RuntimeIdentifier>win-x86</RuntimeIdentifier>` in the main project, the test runner (AnyCPU/64-bit) cannot load the 32-bit SteamManager.dll directly. Build the solution first with `dotnet build SteamManager.slnx -c Release` to ensure SteamManager.dll is available in the test output directory.
 
 ### Planned test structure
 
@@ -668,7 +670,7 @@ public class SmartUnlockService
 |-------------|---------|-------|
 | OS | Windows 10/11 | Steam API is Windows-only |
 | .NET SDK | 10.0 | `dotnet --version` to verify |
-| IDE | Visual Studio 2022 / Rider / VS Code | Any works |
+| IDE | Visual Studio 2022 17.10+ / Visual Studio 2026 / Rider / VS Code | .NET 10 requires VS 2022 17.10+ or VS 2026 |
 | Steam | Installed | Required for testing |
 | Git | Latest | For version control |
 
@@ -694,7 +696,7 @@ dotnet run --project SteamManager/SteamManager.csproj
 
 ### IDE Setup
 
-**Visual Studio 2022:**
+**Visual Studio 2022 (17.10+) or Visual Studio 2026:**
 - Install ".NET desktop development" workload
 - Install "WPF" component
 
@@ -986,9 +988,9 @@ If critical bug found after release:
 | **Same 5 achievements (Spacewar) for all games** | `steamclient.dll` is a **process-level singleton**. When Steam client is running with AppId=X, initializing with AppId=Y in the same process either fails or returns Spacewar achievements. `ChangeAppId()` re-created interfaces but they all pointed to the same global Steam state. | Multi-process architecture: launcher (`SteamManager.exe`) shows game list without Steam init. Helper (`SteamManager.exe --game <appId>`) initializes Steam with the specific game AppId in its own process. Each process has an isolated `steamclient.dll` state. |
 | **Launcher freezes showing 40902 games** | When Steam was not initialized in the launcher, `GetOwnedGamesAsync()` returned all games from `games.xml` without filtering by ownership. | Launcher now initializes Steam with Spacewar AppId (480) first, then filters by ownership via `IsSubscribedApp()`. Shows 189 owned games instead of all 40902. |
 | **Helper window doesn't appear** | `MainWindow` constructor was overwriting DataContext passed from `App.StartGameHelperMode` with a new instance from Services | Added null check in `MainWindow` constructor: only set DataContext from Services if DataContext is null |
-| **Achievement icons not loading** | Not yet implemented - `AchievementInfo` has `IconHandle` but no icon download/display | Pending fix |
-| **Back button doesn't work in helper** | Helper mode doesn't have navigation back to launcher - it's a separate process | Pending fix - could relaunch launcher or use in-process navigation for picker |
-| **Loading status stays forever in helper** | Steam init happens on main thread but loading is async; status never updates after initial message | Pending fix - need to proper async flow in helper mode |
+| **Achievement icons not loading** | Not yet implemented - `AchievementInfo` has `IconHandle` but no icon download/display | Fixed — Icons now load from Steam CDN when local handle unavailable, with `IconUrl` and `IconLockedUrl` properties |
+| **Back button doesn't work in helper** | Helper mode doesn't have navigation back to launcher - it's a separate process | Fixed — Multi-process architecture: helper closes independently, launcher stays open and refreshes on return |
+| **Loading status stays forever in helper** | Steam init happens on main thread but loading is async; status never updates after initial message | Fixed — Steam initialization now completes before loading games list, proper async flow |
 
 ---
 
