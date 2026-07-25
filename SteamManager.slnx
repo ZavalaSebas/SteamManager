@@ -1,4 +1,4 @@
 <Solution>
   <Project Path="SteamManager/SteamManager.csproj" />
-  <Project Path="tests/SteamManager.Tests/SteamManager.Tests.csproj" />
+  <Project Path="SteamManager.Tests/SteamManager.Tests.csproj" />
 </Solution>
