@@ -1,29 +1,107 @@
+using System.IO;
+using System.Net.Http;
+using System.Xml;
 using SteamManager.Models;
 using SteamManager.Steam;
 
 namespace SteamManager.Services;
 
-/// <summary>
-/// Implementation of IGameLibraryService that reads from the Steam API.
-/// </summary>
 public class SteamGameLibraryService : IGameLibraryService
 {
     private readonly SteamContext _steamContext;
+    private readonly HttpClient _httpClient;
+    private const string GamesListUrl = "https://gib.me/sam/games.xml";
 
     public SteamGameLibraryService(SteamContext steamContext)
     {
         _steamContext = steamContext;
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", Config.UserAgent);
     }
 
-    public Task<List<GameInfo>> GetOwnedGamesAsync()
+    public async Task<List<GameInfo>> GetOwnedGamesAsync()
     {
-        // For now, return a placeholder list.
-        // Full implementation will use SteamApps to enumerate owned games.
-        var games = new List<GameInfo>
+        if (!_steamContext.IsInitialized)
+            return [];
+
+        var games = new List<GameInfo>();
+
+        List<uint> appIds;
+        try
         {
-            new() { AppId = Config.SpacewarAppId, Name = "Spacewar (Test)", PlaytimeMinutes = 0 }
+            appIds = await DownloadGameListAsync();
+        }
+        catch
+        {
+            var single = TryGetSingleGame();
+            if (single != null)
+                games.Add(single);
+            return games;
+        }
+
+        foreach (var appId in appIds)
+        {
+            if (_steamContext.Apps.IsSubscribedApp(appId))
+            {
+                string name = _steamContext.Apps.GetAppData(appId, "name") ?? $"App {appId}";
+
+                games.Add(new GameInfo
+                {
+                    AppId = appId,
+                    Name = name,
+                    PlaytimeMinutes = 0,
+                    CoverUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
+                    HeaderImageUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
+                    LogoUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/logo.png",
+                    ImgIconUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/capsule_32x32.jpg"
+                });
+            }
+        }
+
+        return games;
+    }
+
+    private async Task<List<uint>> DownloadGameListAsync()
+    {
+        var appIds = new List<uint>();
+
+        string xml = await _httpClient.GetStringAsync(GamesListUrl);
+
+        using var stringReader = new StringReader(xml);
+        var settings = new XmlReaderSettings
+        {
+            DtdProcessing = DtdProcessing.Ignore,
+            XmlResolver = null
         };
 
-        return Task.FromResult(games);
+        using var xmlReader = XmlReader.Create(stringReader, settings);
+
+        while (xmlReader.Read())
+        {
+            if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "game")
+            {
+                if (uint.TryParse(xmlReader.ReadElementContentAsString(), out uint appId) && appId > 0)
+                {
+                    appIds.Add(appId);
+                }
+            }
+        }
+
+        return appIds;
+    }
+
+    private GameInfo? TryGetSingleGame()
+    {
+        if (_steamContext.Apps.IsSubscribedApp(Config.SpacewarAppId))
+        {
+            string name = _steamContext.Apps.GetAppData(Config.SpacewarAppId, "name") ?? "Spacewar (Test)";
+            return new GameInfo
+            {
+                AppId = Config.SpacewarAppId,
+                Name = name,
+                PlaytimeMinutes = 0
+            };
+        }
+        return null;
     }
 }

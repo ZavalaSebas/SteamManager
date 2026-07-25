@@ -13,6 +13,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly SteamContext _steamContext;
     private readonly IGameLibraryService _gameLibraryService;
+    private readonly IImageCacheService _imageCacheService;
 
     [ObservableProperty]
     private ObservableObject? _currentViewModel;
@@ -23,10 +24,14 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
-    public MainViewModel(SteamContext steamContext, IGameLibraryService gameLibraryService)
+    public MainViewModel(
+        SteamContext steamContext,
+        IGameLibraryService gameLibraryService,
+        IImageCacheService imageCacheService)
     {
         _steamContext = steamContext;
         _gameLibraryService = gameLibraryService;
+        _imageCacheService = imageCacheService;
     }
 
     /// <summary>
@@ -38,7 +43,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (_steamContext.IsInitialized)
         {
-            var gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService);
+            var gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService);
             CurrentViewModel = gamePicker;
             await gamePicker.LoadGamesCommand.ExecuteAsync(null);
             StatusMessage = gamePicker.StatusMessage;

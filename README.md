@@ -8,7 +8,7 @@
 [![.NET 10](https://img.shields.io/badge/.NET-10-purple.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-0078d4.svg)](https://www.microsoft.com/windows)
 [![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20WPFUI-9b59b6.svg)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
-[![Version](https://img.shields.io/badge/Version-0.1.0-2ecc71.svg)](https://github.com/ZavalaSebas/SteamManager/releases)
+[![Version](https://img.shields.io/badge/Version-0.2.1-2ecc71.svg)](https://github.com/ZavalaSebas/SteamManager/releases)
 
 Manage your Steam achievements and statistics with a modern, clean interface.
 

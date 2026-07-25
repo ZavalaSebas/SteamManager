@@ -77,6 +77,9 @@ public class SteamClient018 : NativeWrapper<ISteamClient018>
     private delegate IntPtr NativeGetISteamApps(IntPtr self, int user, int pipe, IntPtr version);
 
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    private delegate IntPtr NativeGetISteamUser(IntPtr self, int user, int pipe, IntPtr version);
+
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     private delegate IntPtr NativeGetISteamUtils(IntPtr self, int pipe, IntPtr version);
 
     public int CreateSteamPipe()
@@ -118,5 +121,12 @@ public class SteamClient018 : NativeWrapper<ISteamClient018>
         using var nativeVersion = NativeStrings.StringToStringHandle(version);
         return Call<IntPtr, NativeGetISteamUtils>(
             Functions.GetISteamUtils, pipe, nativeVersion.DangerousGetHandle());
+    }
+
+    public IntPtr GetISteamUser(int user, int pipe, string version)
+    {
+        using var nativeVersion = NativeStrings.StringToStringHandle(version);
+        return Call<IntPtr, NativeGetISteamUser>(
+            Functions.GetISteamUser, user, pipe, nativeVersion.DangerousGetHandle());
     }
 }

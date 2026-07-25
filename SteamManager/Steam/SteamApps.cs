@@ -21,4 +21,12 @@ public class SteamApps
     {
         return _client.Apps.IsSubscribedApp(appId);
     }
+
+    /// <summary>
+    /// Gets app metadata (name, logo, etc.) from steamclient.dll.
+    /// </summary>
+    public string? GetAppData(uint appId, string key)
+    {
+        return _client.Apps001.GetAppData(appId, key);
+    }
 }

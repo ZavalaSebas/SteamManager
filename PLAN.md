@@ -33,9 +33,9 @@
 - `GameCard.xaml` ✅
 - `AchievementCard.xaml` ✅
 
-### Fase 3 (Servicios de Negocio) — ⏳ En espera
-- `SteamGameLibraryService.cs` existe como **placeholder** — devuelve "Spacewar (Test)" hardcodeado
-- `SmartUnlockService`, `ImageCacheService`, `ConfigService` — no implementados
+### Fase 3 (Servicios de Negocio) — ✅ Completada
+- `SteamGameLibraryService.cs` ✅ — implementación real usando approach de SAM
+- `SmartUnlockService`, `ImageCacheService`, `ConfigService` — no implementados aún
 
 ### Plataforma: win-x86 (32-bit)
 -steamclient.dll de Steam es de 32 bits — el proyecto usa `<RuntimeIdentifier>win-x86</RuntimeIdentifier>`
@@ -60,6 +60,58 @@ Cambiar a `steamclient.dll` (la biblioteca interna de Steam), igual que el proye
 
 ### Documentación del Cambio
 Ver [ADR-004](DEVELOPMENT.md#adr-004-use-steamclientdll-instead-of-steam_api64dll) para el análisis completo.
+
+---
+
+## Enumeración de Juegos (Phase 3)
+
+### Problema: Steam Web API requiere API Key
+
+Intentamos usar el endpoint `GetOwnedGames` de la API de Steam (`api.steampowered.com`) pero:
+- **Requiere API Key** — Devuelve **404 Not Found** sin ella
+- La API key de Steam es por desarrollador, no por usuario
+
+Intentamos también `steamcommunity.com/profiles/{id}/games/?xml=1`:
+- **Requiere cookies de sesión** — Devuelve página HTML "Sign In"
+- **Perfiles privados** — Devuelven HTML aunque haya sesión
+
+### Solución: Approach de SAM
+
+SAM usa un enfoque simple y robusto:
+1. Descarga `games.xml` desde `https://gib.me/sam/games.xml` (lista maestra de appIds)
+2. Itera por cada appId conocido
+3. Para cada uno, llama `IsSubscribedApp(appId)` vía `steamclient.dll` local
+4. Si el usuario lo posee, obtiene metadata con `GetAppData(appId, "name")`
+
+```
+PARA CADA appId EN games.xml:
+    SI steamClient.IsSubscribedApp(appId) == true:
+        AGREGAR a lista de juegos con nombre de GetAppData()
+```
+
+**Ventajas:**
+- Sin API key
+- Perfil privado no importa
+- No necesita login de Steam Community
+- Consulta directo al cliente Steam local (sesión ya autenticada)
+- Funciona out-of-the-box
+
+**Desventaja:**
+- La lista `games.xml` es estática (puede no incluir juegos muy nuevos)
+- Si Gibbed deja de mantener `games.xml`, habría que hostear nuestra propia copia
+
+### Implementación Actual
+
+| Componente | Estado |
+|------------|--------|
+| `SteamGameLibraryService.GetOwnedGamesAsync()` | ✅ Implementado |
+| `ISteamUser012` wrapper (`GetSteamId()`) | ✅ Implementado |
+| `ISteamApps001` wrapper (`GetAppData()`) | ✅ Implementado |
+| `SteamContext.SteamId` | ✅ Implementado |
+| Fallback si `games.xml` falla | ✅ Spacewar (480) |
+| `ImageCacheService` | ⏳ Pendiente |
+| `SmartUnlockService` | ⏳ Pendiente |
+| `ConfigService` | ⏳ Pendiente |
 
 ---
 

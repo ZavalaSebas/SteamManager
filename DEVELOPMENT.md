@@ -909,36 +909,44 @@ If critical bug found after release:
 | File | Purpose |
 |------|---------|
 | `SteamManager/SteamManager.csproj` | Version, target framework, NuGet packages, `RuntimeIdentifier=win-x86` |
-| `SteamManager/Config.cs` | Centralized constants (SteamDll, registry keys, timeouts, AppIds) |
+| `SteamManager/Config.cs` | Centralized constants (SteamDll, registry keys, timeouts, AppIds, SteamCommunityUrl) |
 | `SteamManager/Steam/SteamLoader.cs` | Loads steamclient.dll from registry, resolves `CreateInterface`/`GetCallback`/`FreeLastCallback` |
 | `SteamManager/Steam/NativeMethods.cs` | `LoadLibraryExW`, `GetProcAddress` (ANSI), `SetDllDirectoryW` P/Invoke |
 | `SteamManager/Steam/NativeStrings.cs` | UTF-8 marshaling utilities (`StringToStringHandle`, `PointerToString`) |
 | `SteamManager/Steam/NativeWrapper.cs` | Generic vtable extraction base class; `GetFunction<T>()` + `Call<>()` |
-| `SteamManager/Steam/ISteamClient018.cs` | vtable struct + `SteamClient018` wrapper (vtable indices 0–39) |
+| `SteamManager/Steam/ISteamClient018.cs` | vtable struct + `SteamClient018` wrapper (vtable indices 0–39, added `GetISteamUser`) |
 | `SteamManager/Steam/ISteamUserStats013.cs` | vtable struct + `SteamUserStats013` wrapper (achievements/stats) |
-| `SteamManager/Steam/ISteamApps008.cs` | vtable struct + `SteamApps008` wrapper (game ownership) |
+| `SteamManager/Steam/ISteamUser012.cs` | vtable struct + `SteamUser012` wrapper (SteamID retrieval via `GetSteamId()`) |
+| `SteamManager/Steam/ISteamApps008.cs` | vtable struct + `SteamApps008` wrapper (game ownership via `IsSubscribedApp()`) |
+| `SteamManager/Steam/ISteamApps001.cs` | vtable struct + `SteamApps001` wrapper (app metadata via `GetAppData()`) |
 | `SteamManager/Steam/ISteamUtils005.cs` | vtable struct + `SteamUtils005` wrapper (AppId, image RGBA) |
-| `SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init → GetPipe → ConnectUser → get interfaces) |
-| `SteamManager/Steam/SteamContext.cs` | Groups SteamClient + Achievements/Stats/Apps; runs callbacks on timer |
+| `SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init → GetPipe → ConnectUser → get interfaces); exposes `User` (SteamUser012) and `Apps001` (SteamApps001) |
+| `SteamManager/Steam/SteamContext.cs` | Groups SteamClient + Achievements/Stats/Apps; exposes `SteamId` (user's SteamID64); runs callbacks on timer |
 | `SteamManager/Steam/SteamAchievements.cs` | Achievement read/write via `SteamUserStats013` wrapper |
 | `SteamManager/Steam/SteamStats.cs` | Stats read/write via `SteamUserStats013` wrapper |
-| `SteamManager/Steam/SteamApps.cs` | App subscription check via `SteamApps008` wrapper |
+| `SteamManager/Steam/SteamApps.cs` | App subscription check + `GetAppData()` via `SteamApps008` and `SteamApps001` wrappers |
 | `SteamManager/Steam/SteamIcons.cs` | RGBA image decoding via `SteamUtils005.GetImageSize/GetImageRGBA` |
 | `SteamManager/Steam/SteamCallbacks.cs` | `CallbackMessage` struct + `UserStatsReceived_t` etc. + `EResult` enum |
 | `SteamManager/Steam/SteamCallbackHandler.cs` | Polls `Steam_BGetCallback` and dispatches to registered handlers |
-| `SteamManager/Models/` | `GameInfo`, `AchievementInfo`, `StatInfo` data models |
-| `SteamManager/ViewModels/` | `MainViewModel`, `GamePickerViewModel`, `GameManagerViewModel` |
-| `SteamManager/Views/` | `GamePickerView`, `GameManagerView` (UserControls, auto-mapped via DataTemplate) |
-| `SteamManager/Controls/` | `GameCard`, `AchievementCard` (reusable WPF UserControls) |
-| `SteamManager/Services/IGameLibraryService.cs` | Interface for game enumeration |
-| `SteamManager/Services/SteamGameLibraryService.cs` | Placeholder — returns hardcoded Spacewar (Phase 3 will implement real enumeration) |
+| `SteamManager/Models/GameInfo.cs` | `AppId`, `Name`, `PlaytimeMinutes`, `CoverUrl`, `HeaderImageUrl`, `LogoUrl`, `ImgIconUrl`, `IsFavorite` |
+| `SteamManager/Models/AchievementInfo.cs` | `Id`, `Name`, `Description`, `IsUnlocked`, `UnlockTime`, `Icon` |
+| `SteamManager/Models/StatInfo.cs` | `Name`, `Type`, `Value`, `Min`, `Max`, `Permission` |
+| `SteamManager/ViewModels/MainViewModel.cs` | Shell navigation + `CurrentViewModel` |
+| `SteamManager/ViewModels/GamePickerViewModel.cs` | Game list, search, favorites, `LoadGamesCommand` |
+| `SteamManager/ViewModels/GameManagerViewModel.cs` | Selected game achievements/stats management |
+| `SteamManager/Views/GamePickerView.xaml/.cs` | Grid of game cards (UserControl, auto-mapped via DataTemplate) |
+| `SteamManager/Views/GameManagerView.xaml/.cs` | Achievement list + stats editor (UserControl, auto-mapped via DataTemplate) |
+| `SteamManager/Controls/GameCard.xaml/.cs` | Game card with cover image and name |
+| `SteamManager/Controls/AchievementCard.xaml/.cs` | Achievement card with icon, name, unlock toggle |
+| `SteamManager/Services/IGameLibraryService.cs` | Interface: `GetOwnedGamesAsync()` returns `List<GameInfo>` |
+| `SteamManager/Services/SteamGameLibraryService.cs` | Downloads `games.xml` from `gib.me/sam/`, iterates appIds, calls `IsSubscribedApp()` + `GetAppData()` for owned games |
 | `SteamManager/App.xaml` | WPF-UI theme (`Dark`) + DataTemplates for ViewModel→View mapping |
 | `SteamManager/App.xaml.cs` | DI setup, async Steam init, callback DispatcherTimer |
 | `SteamManager/MainWindow.xaml/.cs` | Shell window — `ContentControl` bound to `MainViewModel.CurrentViewModel` |
 | `SteamManager.Tests/` | xUnit test project (no tests written yet) |
 | `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, `workflow_dispatch` only) |
 | `PLAN.md` | Full project plan with phases and features |
-| `CHANGELOG.md` | Version history (v0.1.0 → v0.2.0 with full ADR-004 migration notes |
+| `CHANGELOG.md` | Version history (v0.1.0 → v0.2.1 with game enumeration fix) |
 
 ## Known Limitations
 
@@ -972,6 +980,8 @@ If critical bug found after release:
 | `IsSubscribedApp` not found in vtable | Field was named `BIsSubscribedApp`; SAM names it `IsSubscribedApp` at the same index | Renamed field to `IsSubscribedApp` in `ISteamApps008` |
 | `MainViewModel.StatusMessage` stuck on "Connecting to Steam" | `InitializeSteam()` swallowed exceptions to `Debug.WriteLine`; status never went back to the VM | `App.xaml.cs:InitializeSteamAsync` now sets `mainViewModel.StatusMessage` on success/failure and calls `LoadGamesCommand` to refresh |
 | No Steam callbacks fire | `SteamClient.RunCallbacks()` was never called | Added a `DispatcherTimer` (`Config.CallbackTimerMs` = 100 ms) in `App.xaml.cs:StartCallbackTimer` that ticks `SteamContext.RunCallbacks()` |
+| **"0 games loaded" after XML parse error** | `XDocument.Parse()` threw `XmlException: An error occurred while parsing EntityName` — games with `&` in name (e.g., "Age of Empires II & Conquerors") break the parser | Replaced with manual string parsing and `XmlReader` with `DtdProcessing.Ignore` |
+| **"0 games loaded" after "Sign In" HTML** | `api.steampowered.com/IPlayerService/GetOwnedGames` requires **API key** (returns 404); `steamcommunity.com/profiles/{id}/games/?xml=1` requires session cookies + returns HTML for private profiles | Switched to SAM approach: download `games.xml` from `https://gib.me/sam/games.xml`, iterate all known appIds, call `IsSubscribedApp()` per-game via `steamclient.dll` |
 
 ---
 

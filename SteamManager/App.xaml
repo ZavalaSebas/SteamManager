@@ -4,13 +4,16 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:local="clr-namespace:SteamManager"
              xmlns:views="clr-namespace:SteamManager.Views"
-             xmlns:viewModels="clr-namespace:SteamManager.ViewModels">
+             xmlns:viewModels="clr-namespace:SteamManager.ViewModels"
+             xmlns:converters="clr-namespace:SteamManager.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
+
+            <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
 
             <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">
                 <views:GamePickerView />

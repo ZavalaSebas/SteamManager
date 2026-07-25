@@ -15,6 +15,7 @@ public class SteamContext : IDisposable
 
     public bool IsInitialized => _client.IsInitialized;
     public uint AppId => _client.CurrentAppId;
+    public ulong SteamId => _client.IsInitialized ? _client.User.GetSteamId() : 0;
 
     public SteamContext()
     {

@@ -11,6 +11,8 @@ public class SteamClient : IDisposable
     private SteamUserStats013? _userStats;
     private SteamApps008? _steamApps;
     private SteamUtils005? _steamUtils;
+    private SteamUser012? _steamUser;
+    private SteamApps001? _steamApps001;
     private int _pipe;
     private int _user;
     private bool _initialized;
@@ -21,6 +23,8 @@ public class SteamClient : IDisposable
     public SteamUserStats013 UserStats => _userStats ?? throw new InvalidOperationException("Steam not initialized");
     public SteamApps008 Apps => _steamApps ?? throw new InvalidOperationException("Steam not initialized");
     public SteamUtils005 Utils => _steamUtils ?? throw new InvalidOperationException("Steam not initialized");
+    public SteamUser012 User => _steamUser ?? throw new InvalidOperationException("Steam not initialized");
+    public SteamApps001 Apps001 => _steamApps001 ?? throw new InvalidOperationException("Steam not initialized");
 
     public SteamClient()
     {
@@ -98,6 +102,23 @@ public class SteamClient : IDisposable
 
         _steamApps = new SteamApps008();
         _steamApps.SetupFunctions(appsObj);
+
+        // Get ISteamUser interface (for SteamID)
+        IntPtr userObj = _steamClient.GetISteamUser(_user, _pipe, "SteamUser012");
+        if (userObj == IntPtr.Zero)
+            return false;
+
+        _steamUser = new SteamUser012();
+        _steamUser.SetupFunctions(userObj);
+
+        // Get ISteamApps001 interface (for GetAppData)
+        IntPtr apps001Obj = _steamClient.GetISteamApps(
+            _user, _pipe, "STEAMAPPS_INTERFACE_VERSION001");
+        if (apps001Obj == IntPtr.Zero)
+            return false;
+
+        _steamApps001 = new SteamApps001();
+        _steamApps001.SetupFunctions(apps001Obj);
 
         _initialized = true;
         return true;

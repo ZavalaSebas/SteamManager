@@ -2,6 +2,7 @@
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SteamManager.Converters;
 using SteamManager.Services;
 using SteamManager.Steam;
 using SteamManager.ViewModels;
@@ -21,6 +22,9 @@ public partial class App : Application
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
+
+        var imageCacheService = Services.GetRequiredService<IImageCacheService>();
+        UrlToCachedImageConverter.SetCacheService(imageCacheService);
 
         var mainViewModel = Services.GetRequiredService<MainViewModel>();
         var mainWindow = new MainWindow { DataContext = mainViewModel };
@@ -42,6 +46,9 @@ public partial class App : Application
         services.AddSingleton<SteamClient>();
         services.AddSingleton<SteamContext>();
         services.AddSingleton<IGameLibraryService, SteamGameLibraryService>();
+        services.AddSingleton<IImageCacheService, ImageCacheService>();
+        services.AddSingleton<ISmartUnlockService, SmartUnlockService>();
+        services.AddSingleton<IConfigService, ConfigService>();
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<GamePickerViewModel>();

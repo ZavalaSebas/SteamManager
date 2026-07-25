@@ -15,6 +15,7 @@ public partial class GamePickerViewModel : ObservableObject
 {
     private readonly SteamContext _steamContext;
     private readonly IGameLibraryService _gameLibraryService;
+    private readonly IImageCacheService _imageCacheService;
     private List<GameInfo> _allGames = new();
 
     [ObservableProperty]
@@ -29,10 +30,14 @@ public partial class GamePickerViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
-    public GamePickerViewModel(SteamContext steamContext, IGameLibraryService gameLibraryService)
+    public GamePickerViewModel(
+        SteamContext steamContext,
+        IGameLibraryService gameLibraryService,
+        IImageCacheService imageCacheService)
     {
         _steamContext = steamContext;
         _gameLibraryService = gameLibraryService;
+        _imageCacheService = imageCacheService;
     }
 
     [RelayCommand]
@@ -46,6 +51,8 @@ public partial class GamePickerViewModel : ObservableObject
             _allGames = await _gameLibraryService.GetOwnedGamesAsync();
             Games = new ObservableCollection<GameInfo>(_allGames);
             StatusMessage = $"{Games.Count} games loaded";
+
+            _ = LoadCoversAsync();
         }
         catch (Exception ex)
         {
@@ -54,6 +61,21 @@ public partial class GamePickerViewModel : ObservableObject
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private async Task LoadCoversAsync()
+    {
+        foreach (var game in _allGames)
+        {
+            if (game.CoverImage != null || string.IsNullOrEmpty(game.CoverUrl))
+                continue;
+
+            var image = await _imageCacheService.GetOrDownloadAsync(game.CoverUrl!);
+            if (image != null)
+            {
+                game.CoverImage = image;
+            }
         }
     }
 

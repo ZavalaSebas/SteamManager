@@ -16,6 +16,7 @@ public static class Config
     public const int CallbackTimerMs = 100;
     public const int RequestTimeoutSeconds = 10;
     public const string GitHubApiUrl = "https://api.github.com/repos/ZavalaSebas/SteamManager/releases/latest";
+    public const string SteamCommunityUrl = "https://steamcommunity.com";
     public static string UserAgent => $"SteamManager/{AssemblyVersion}";
 
     public static string CachePath =>
