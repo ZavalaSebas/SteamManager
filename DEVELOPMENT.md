@@ -258,7 +258,9 @@ Benefits: human-readable, merge-friendly, no VS-generated garbage.
 
 ## Tests
 
-Run with: `dotnet test SteamManager.slnx -c Release`
+Run locally with: `dotnet test SteamManager.slnx -c Release`
+
+> **Note**: Tests require `<RuntimeIdentifier>win-x86</RuntimeIdentifier>` to run (both main and test projects). Locally tests pass. **CI cannot run tests** because GitHub Actions uses a 64-bit Windows runner and .NET 10 doesn't ship a 32-bit runtime - the test process fails to start with `hostfxr.dll` loading error. Tests are verified locally before each release.
 
 ### Planned test structure
 
