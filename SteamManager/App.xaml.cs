@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,7 +79,8 @@ public partial class App : Application
         }
 
         var gameManagerVm = new GameManagerViewModel(SteamContext, imageCacheService);
-        var game = new GameInfo { AppId = appId };
+        var gameName = SteamContext.Apps.GetAppData(appId, "name") ?? $"Game {appId}";
+        var game = new GameInfo { AppId = appId, Name = gameName };
         gameManagerVm.SelectGameCommand.Execute(game);
 
         var mainVm = new MainViewModel(
@@ -92,6 +94,14 @@ public partial class App : Application
 
         var mainWindow = new MainWindow { DataContext = mainVm };
         mainWindow.Show();
+
+        gameManagerVm.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(GameManagerViewModel.StatusMessage))
+            {
+                mainVm.StatusMessage = gameManagerVm.StatusMessage;
+            }
+        };
 
         StartCallbackTimer();
         gameManagerVm.LoadAchievementsCommand.Execute(null);

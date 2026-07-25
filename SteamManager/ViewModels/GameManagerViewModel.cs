@@ -48,33 +48,35 @@ public partial class GameManagerViewModel : ObservableObject
 
         try
         {
-            await Task.Run(() =>
+            var achievements = await Task.Run(() =>
             {
-                bool initResult = _steamContext.ChangeAppId(SelectedGame.AppId);
+                if (!_steamContext.IsInitialized)
+                {
+                    _steamContext.ChangeAppId(SelectedGame.AppId);
+                }
 
                 if (!_steamContext.IsInitialized)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        StatusMessage = "Failed to initialize Steam for this game";
-                        Achievements = new ObservableCollection<AchievementInfo>();
-                        TotalCount = 0;
-                        UnlockedCount = 0;
-                    });
-                    return;
+                    return null;
                 }
 
-                var achievements = _steamContext.Achievements.GetAllAchievements();
-
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Achievements = new ObservableCollection<AchievementInfo>(achievements);
-                    TotalCount = achievements.Count;
-                    UnlockedCount = achievements.Count(a => a.IsUnlocked);
-                });
+                return _steamContext.Achievements.GetAllAchievements();
             });
 
-            StatusMessage = $"{UnlockedCount}/{TotalCount} achievements unlocked";
+            if (achievements == null)
+            {
+                StatusMessage = "Failed to load achievements";
+                Achievements = new ObservableCollection<AchievementInfo>();
+                TotalCount = 0;
+                UnlockedCount = 0;
+            }
+            else
+            {
+                Achievements = new ObservableCollection<AchievementInfo>(achievements);
+                TotalCount = achievements.Count;
+                UnlockedCount = achievements.Count(a => a.IsUnlocked);
+                StatusMessage = $"{UnlockedCount}/{TotalCount} achievements unlocked";
+            }
         }
         catch (Exception ex)
         {
