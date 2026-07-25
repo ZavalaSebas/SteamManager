@@ -4,7 +4,7 @@
 
 ### Your Steam library, your rules.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10-purple.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-0078d4.svg)](https://www.microsoft.com/windows)
 [![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20WPFUI-9b59b6.svg)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
@@ -65,7 +65,7 @@ Grab the latest `SteamManager.exe` from [GitHub Releases](https://github.com/Zav
 ```bash
 git clone https://github.com/ZavalaSebas/SteamManager.git
 cd SteamManager
-dotnet publish src/SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
 ---
@@ -130,7 +130,7 @@ No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
 
 | Component | Technology |
 |-----------|------------|
-| Language | C# 12 |
+| Language | C# 14 |
 | Runtime | .NET 10 |
 | UI | WPF + WPFUI |
 | MVVM | CommunityToolkit.Mvvm |
@@ -148,7 +148,7 @@ dotnet build SteamManager.slnx -c Release
 dotnet test SteamManager.slnx -c Release
 
 # Publish (single exe)
-dotnet publish src/SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for the full project guide, architecture, and workflow rules.
@@ -177,7 +177,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for the full project guide, architecture, a
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 ---
 

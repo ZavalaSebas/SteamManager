@@ -56,77 +56,75 @@ Replicar y mejorar las capacidades core del SAM original:
 
 ```
 SteamManager/
-├── SteamManager.sln
-├── src/
-│   └── SteamManager/
-│       ├── SteamManager.csproj
-│       ├── App.xaml / App.xaml.cs
-│       │
-│       ├── Steam/                          # Capa de integración con Steam
-│       │   ├── SteamNative.cs              # P/Invoke declarations (steam_api64.dll)
-│       │   ├── SteamClient.cs              # Wrapper: Init, Shutdown, RunCallbacks
-│       │   ├── SteamAchievements.cs        # Lectura/escritura de logros
-│       │   ├── SteamStats.cs               # Lectura/escritura de estadísticas
-│       │   ├── SteamApps.cs                # Lista de juegos, ownership, playtime
-│       │   ├── SteamIcons.cs               # Descarga y caché de iconos/logos
-│       │   ├── SteamCallbackHandler.cs     # Sistema de callbacks
-│       │   └── SteamContext.cs             # Modelo de sesión activa para un AppID
-│       │
-│       ├── Models/                         # Modelos de datos
-│       │   ├── GameInfo.cs                 # AppId, Name, Playtime, CoverUrl, IsFavorite
-│       │   ├── AchievementInfo.cs          # Id, Name, Desc, IsUnlocked, UnlockTime, Icon
-│       │   ├── StatInfo.cs                 # Name, Type, Value, Min, Max, Permission
-│       │   └── AppSettings.cs              # Configuración persistente
-│       │
-│       ├── ViewModels/                     # ViewModels MVVM
-│       │   ├── MainViewModel.cs            # Shell: navega entre vistas
-│       │   ├── GamePickerViewModel.cs      # Selector de juegos con búsqueda
-│       │   ├── GameManagerViewModel.cs     # Editor de logros/stats de 1 juego
-│       │   ├── AchievementViewModel.cs     # VM de un logro individual
-│       │   ├── StatViewModel.cs            # VM de una stat individual
-│       │   └── SettingsViewModel.cs        # VM de configuración
-│       │
-│       ├── Views/                          # Vistas WPF
-│       │   ├── MainWindow.xaml             # Ventana principal (shell)
-│       │   ├── GamePickerView.xaml         # Grid virtualizado de carátulas
-│       │   ├── GameManagerView.xaml        # Editor de logros + stats
-│       │   └── SettingsView.xaml           # Configuración
-│       │
-│       ├── Controls/                       # Controles custom
-│       │   ├── GameCard.xaml               # Tarjeta de juego (portada + nombre)
-│       │   ├── AchievementCard.xaml        # Tarjeta de logro (icono + nombre + check)
-│       │   └── ProgressOverlay.xaml        # Overlay de progreso de desbloqueo
-│       │
-│       ├── Services/                       # Servicios de negocio
-│       │   ├── IGameLibraryService.cs      # Interfaz: obtener juegos del usuario
-│       │   ├── GameLibraryService.cs       # Implementación: llama a SteamApps
-│       │   ├── IImageCacheService.cs       # Interfaz: caché de imágenes
-│       │   ├── ImageCacheService.cs        # Descarga + caché en disco
-│       │   ├── IAchievementUnlocker.cs     # Interfaz: desbloqueo con lógica anti-ban
-│       │   ├── SmartUnlockService.cs       # Desbloqueo inteligente con delays
-│       │   └── ConfigService.cs            # Persistencia de settings (JSON)
-│       │
-│       ├── Converters/                     # Value converters
-│       │   ├── BoolToVisibilityConverter.cs
-│       │   ├── AchievementToIconConverter.cs
-│       │   └── PercentageToColorConverter.cs
-│       │
-│       ├── Helpers/                        # Utilidades
-│       │   ├── Paths.cs                    # Rutas de caché, datos, etc.
-│       │   └── NativeMethods.cs            # P/Invoke auxiliares
-│       │
-│       ├── Resources/                      # Recursos estáticos
-│       │   ├── Styles.xaml                 # Estilos globales
-│       │   ├── Icons.xaml                  # Iconos vectoriales
-│       │   └── Images/                     # Placeholder images
-│       │
-│       ├── app.manifest
-│       └── launchSettings.json
+├── SteamManager.slnx
+├── SteamManager/
+│   ├── SteamManager.csproj
+│   ├── App.xaml / App.xaml.cs
+│   │
+│   ├── Steam/                          # Capa de integración con Steam
+│   │   ├── SteamNative.cs              # P/Invoke declarations (steam_api64.dll)
+│   │   ├── SteamClient.cs              # Wrapper: Init, Shutdown, RunCallbacks
+│   │   ├── SteamAchievements.cs        # Lectura/escritura de logros
+│   │   ├── SteamStats.cs               # Lectura/escritura de estadísticas
+│   │   ├── SteamApps.cs                # Lista de juegos, ownership, playtime
+│   │   ├── SteamIcons.cs               # Descarga y caché de iconos/logos
+│   │   ├── SteamCallbackHandler.cs     # Sistema de callbacks
+│   │   └── SteamContext.cs             # Modelo de sesión activa para un AppID
+│   │
+│   ├── Models/                         # Modelos de datos
+│   │   ├── GameInfo.cs                 # AppId, Name, Playtime, CoverUrl, IsFavorite
+│   │   ├── AchievementInfo.cs          # Id, Name, Desc, IsUnlocked, UnlockTime, Icon
+│   │   ├── StatInfo.cs                 # Name, Type, Value, Min, Max, Permission
+│   │   └── AppSettings.cs              # Configuración persistente
+│   │
+│   ├── ViewModels/                     # ViewModels MVVM
+│   │   ├── MainViewModel.cs            # Shell: navega entre vistas
+│   │   ├── GamePickerViewModel.cs      # Selector de juegos con búsqueda
+│   │   ├── GameManagerViewModel.cs     # Editor de logros/stats de 1 juego
+│   │   ├── AchievementViewModel.cs     # VM de un logro individual
+│   │   ├── StatViewModel.cs            # VM de una stat individual
+│   │   └── SettingsViewModel.cs        # VM de configuración
+│   │
+│   ├── Views/                          # Vistas WPF
+│   │   ├── MainWindow.xaml             # Ventana principal (shell)
+│   │   ├── GamePickerView.xaml         # Grid virtualizado de carátulas
+│   │   ├── GameManagerView.xaml        # Editor de logros + stats
+│   │   └── SettingsView.xaml           # Configuración
+│   │
+│   ├── Controls/                       # Controles custom
+│   │   ├── GameCard.xaml               # Tarjeta de juego (portada + nombre)
+│   │   ├── AchievementCard.xaml        # Tarjeta de logro (icono + nombre + check)
+│   │   └── ProgressOverlay.xaml        # Overlay de progreso de desbloqueo
+│   │
+│   ├── Services/                       # Servicios de negocio
+│   │   ├── IGameLibraryService.cs      # Interfaz: obtener juegos del usuario
+│   │   ├── GameLibraryService.cs       # Implementación: llama a SteamApps
+│   │   ├── IImageCacheService.cs       # Interfaz: caché de imágenes
+│   │   ├── ImageCacheService.cs        # Descarga + caché en disco
+│   │   ├── IAchievementUnlocker.cs     # Interfaz: desbloqueo con lógica anti-ban
+│   │   ├── SmartUnlockService.cs       # Desbloqueo inteligente con delays
+│   │   └── ConfigService.cs            # Persistencia de settings (JSON)
+│   │
+│   ├── Converters/                     # Value converters
+│   │   ├── BoolToVisibilityConverter.cs
+│   │   ├── AchievementToIconConverter.cs
+│   │   └── PercentageToColorConverter.cs
+│   │
+│   ├── Helpers/                        # Utilidades
+│   │   ├── Paths.cs                    # Rutas de caché, datos, etc.
+│   │   └── NativeMethods.cs            # P/Invoke auxiliares
+│   │
+│   ├── Resources/                      # Recursos estáticos
+│   │   ├── Styles.xaml                 # Estilos globales
+│   │   ├── Icons.xaml                  # Iconos vectoriales
+│   │   └── Images/                     # Placeholder images
+│   │
+│   ├── app.manifest
+│   └── launchSettings.json
 │
-└── tests/
-    └── SteamManager.Tests/
-        ├── SteamNativeTests.cs
-        └── SmartUnlockTests.cs
+└── SteamManager.Tests/
+    ├── SteamNativeTests.cs
+    └── SmartUnlockTests.cs
 ```
 
 ---
@@ -352,7 +350,7 @@ Contenido:
 | Publish | `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` |
 | Icono | Icono custom de app (.ico) |
 | README | Instrucciones de uso |
-| Licencia | MIT |
+| Licencia | GPL v3 |
 
 ---
 

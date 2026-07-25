@@ -60,9 +60,10 @@ SteamManager replaces it with:
 ```
 SteamManager/
 ├── SteamManager.slnx                    # Solution file (.slnx format)
-├── src/SteamManager/                     # Main WPF application
+├── SteamManager/                         # Main WPF application
 │   ├── SteamManager.csproj              # Version, target framework, packages
 │   ├── App.xaml / App.xaml.cs         # Application entry, theme setup
+│   ├── Config.cs                      # Centralized constants (URLs, paths, timeouts)
 │   ├── Steam/                         # Steam API integration layer
 │   │   ├── SteamNative.cs            # All P/Invoke declarations
 │   │   ├── SteamClient.cs            # Init, Shutdown, RunCallbacks
@@ -80,12 +81,12 @@ SteamManager/
 │   ├── Converters/                    # Value converters
 │   ├── Helpers/                       # Utilities
 │   └── Resources/                     # Styles, icons, images
-├── tests/SteamManager.Tests/            # xUnit test project
+├── SteamManager.Tests/                  # xUnit test project
 ├── .github/workflows/release.yml      # CI/CD pipeline
 ├── README.md
 ├── DEVELOPMENT.md                     # This file
 ├── CHANGELOG.md
-└── LICENSE                            # MIT
+└── LICENSE                            # GPL v3
 ```
 
 ## Steam API Integration
@@ -135,7 +136,7 @@ All DllImport declarations for `steam_api64.dll` go here. Key functions:
 
 ## Version Management
 
-**Single source of truth**: `<Version>` in `src/SteamManager/SteamManager.csproj`
+**Single source of truth**: `<Version>` in `SteamManager/SteamManager.csproj`
 
 ```xml
 <Version>0.1.0</Version>
@@ -147,7 +148,68 @@ All DllImport declarations for `steam_api64.dll` go here. Key functions:
 
 **To bump the version**: edit `<Version>` in the csproj, commit with a descriptive message, push to `main`.
 
+### Constants Pattern (`Config.cs`)
+
+**Prefer keeping constants centralized** in a dedicated `Config.cs` file rather than scattered across classes. This includes URLs, paths, timeouts, and other magic values.
+
+```csharp
+// Example structure (to be implemented)
+public static class Config
+{
+    public const string GitHubApiUrl = "https://api.github.com/repos/ZavalaSebas/SteamManager/releases/latest";
+    public const int RequestTimeoutSeconds = 10;
+    public const string CachePath = "%LocalAppData%\\SteamManager";
+    // ... etc
+}
+```
+
+> **Why this matters**: Centralizing constants prevents typos, makes values easy to find/change, and follows the pattern validated in OrbSpoofer.
+
+### Welcome Sentinel (v2.0)
+
+> **Remember to implement this when building the settings/config system.**
+
+A per-version flag that shows a "What's New" dialog on first launch of a new version. OrbSpoofer uses this pattern successfully:
+
+1. App reads `App.Settings.WelcomeShownVersion`
+2. If different from `Config.AssemblyVersion`, show `WelcomeWindow`
+3. User clicks "Continue", save current version to settings
+
+This is a nice UX touch that helps users discover new features. Defer implementation until the config system is in place.
+
+## Semantic Versioning (SemVer)
+
+> **Always follow SemVer for version numbers.**
+
+Format: `MAJOR.MINOR.PATCH`
+
+```
+MAJOR.MINOR.PATCH
+  │     │     │
+  │     │     └── Fixes, bugs, security patches
+  │     └──────── New features (backwards compatible)
+  └────────────── Breaking changes (incompatible with previous)
+```
+
+### When to bump
+
+| Change Type | Bump | Example |
+|-------------|------|---------|
+| Fix bug | PATCH | `0.1.0` → `0.1.1` |
+| New feature | MINOR | `0.1.1` → `0.2.0` |
+| Breaking change | MAJOR | `0.2.0` → `1.0.0` |
+| Pre-release | Suffix | `1.0.0-beta.1` |
+
+### Rules
+
+1. **Start at 0.x.y** — while in development, MAJOR is 0
+2. **Once 1.0.0** — public API is stable
+3. **Never reuse versions** — if you delete a release, don't reuse that version number
+4. **Update CHANGELOG.md** — document what changed in each version
+
 ## Release Process (CI/CD)
+
+> **DISABLED for development** — workflow only runs on manual trigger (`workflow_dispatch`). Re-enable push/PR triggers in `.github/workflows/release.yml` when ready for production.
 
 On push to `main`, `.github/workflows/release.yml` runs:
 
@@ -162,15 +224,15 @@ On push to `main`, `.github/workflows/release.yml` runs:
 ### Critical workflow details
 - `fetch-depth: 0` — required so `git show HEAD~1:path` can access the parent commit
 - `permissions: contents: write` — required for `softprops/action-gh-release`
-- Csproj path: `src/SteamManager/SteamManager.csproj`
+- Csproj path: `SteamManager/SteamManager.csproj`
 - Release body comes from the **commit body** — write it with `### Added/Fixed/Changed` sections
 
 ## Solution File (.slnx)
 
 ```xml
 <Solution>
-  <Project Path="src/SteamManager/SteamManager.csproj" />
-  <Project Path="tests/SteamManager.Tests/SteamManager.Tests.csproj" />
+  <Project Path="SteamManager/SteamManager.csproj" />
+  <Project Path="SteamManager.Tests/SteamManager.Tests.csproj" />
 </Solution>
 ```
 
@@ -180,12 +242,28 @@ Benefits: human-readable, merge-friendly, no VS-generated garbage.
 
 Run with: `dotnet test SteamManager.slnx -c Release`
 
-### Planned test categories
+### Planned test structure
 
-- **SteamNativeTests** — validate P/Invoke declarations compile correctly
-- **SmartUnlockTests** — verify delay logic, cancellation, progress reporting
-- **AchievementTests** — mock Steam API responses, verify model creation
-- **ConfigTests** — verify AssemblyVersion format and csproj consistency
+Tests will follow the pattern validated in OrbSpoofer (21 xUnit tests). Categories and specific tests will be defined as we implement each feature:
+
+| Category | Purpose | When to implement |
+|----------|---------|-------------------|
+| **SteamNativeTests** | Validate P/Invoke declarations compile correctly, test marshaling | Phase 2 (Steam API) |
+| **SmartUnlockTests** | Verify delay logic, cancellation token handling, progress reporting | Phase 2 (Smart Unlock) |
+| **AchievementTests** | Mock Steam API responses, verify model creation and state transitions | Phase 3 (Game Manager) |
+| **ConfigTests** | Verify `AssemblyVersion` matches `<Version>` in csproj, test config persistence | Phase 1 (Foundation) |
+| **ImageCacheTests** | Test cache hit/miss, TTL expiration, disk write/read | Phase 2 (Image Cache) |
+| **IconDecoderTests** | Test RGBA to Bitmap conversion, handle 0 retry logic | Phase 2 (Image Cache) |
+
+> **Note**: Add specific test names here as they are implemented. Follow the pattern: `MethodName_Condition_ExpectedResult` (e.g., `SetAchievement_ValidId_ReturnsTrue`).
+
+### Test conventions
+
+- One `[Fact]` per test method (no `[Theory]` unless data-driven)
+- No test dependencies — each test is independent
+- Arrange → Act → Assert pattern
+- Test class name = Service/Class name + "Tests" (e.g., `SmartUnlockServiceTests`)
+- Namespace mirrors source: `SteamManager.Tests.Services.SmartUnlockServiceTests`
 
 ## Caching System
 
@@ -228,7 +306,7 @@ GetOrDownloadAsync(url):
 ### Planned implementation
 - `Services/Updater.cs` — update check, download, swap, cleanup
 - `Services/NetworkHelper.cs` — HTTP client with User-Agent, JSON fetching
-- `UI/Windows/UpdateWindow.xaml` — download progress UI
+- `Views/UpdateWindow.xaml` — download progress UI
 - Config keys: `GitHubApiUrl`, `RequestTimeout`
 
 ## GitHub Pages (v2.0)
@@ -291,20 +369,489 @@ bump v0.2.0
 - Replaced WinForms ListView with WPF VirtualizingPanel
 ```
 
+## Git Best Practices
+
+> **Follow these conventions for clean git history.**
+
+### Branch Naming
+
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `feat/feature-name` | New feature | `feat/smart-unlock` |
+| `fix/bug-description` | Bug fix | `fix/achievement-icon` |
+| `docs/topic` | Documentation | `docs/update-readme` |
+| `refactor/what` | Code refactoring | `refactor/steam-client` |
+| `test/what` | Adding tests | `test/smart-unlock` |
+| `hotfix/vX.Y.Z` | Critical fix | `hotfix/v1.0.1` |
+
+### Commit Atomicity
+
+One logical change per commit:
+
+```bash
+# ✅ Good — one feature
+git add SteamNative.cs
+git commit -m "feat: add SteamNative P/Invoke declarations"
+
+# ❌ Bad — unrelated changes mixed
+git add SteamNative.cs MainWindow.xaml README.md
+git commit -m "misc stuff"
+```
+
+### Commit Message Format
+
+```
+<type>: <description>
+
+[optional body]
+```
+
+| Type | When to use |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Formatting (no code change) |
+| `refactor` | Code restructuring |
+| `test` | Adding tests |
+| `chore` | Build, CI, tooling |
+
+### Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feat/my-feature
+
+# 2. Work and commit atomically
+git add file1.cs
+git commit -m "feat: add service interface"
+
+git add file2.cs
+git commit -m "feat: implement service"
+
+# 3. Push branch
+git push -u origin feat/my-feature
+
+# 4. Create PR (or merge directly if solo)
+
+# 5. Delete branch after merge
+git branch -d feat/my-feature
+git push origin --delete feat/my-feature
+```
+
+### Never Do This
+
+- ❌ Commit directly to `main` (always use branches)
+- ❌ Force push shared branches
+- ❌ Commit secrets or API keys
+- ❌ Commit generated files (`bin/`, `obj/`, `.vs/`)
+- ❌ Write essays in commit messages (keep it concise)
+
+## Development Patterns
+
+> **Follow these patterns when implementing features.** Documented before coding starts to ensure consistency.
+
+### Dependency Injection
+
+Use `Microsoft.Extensions.DependencyInjection` for service management. Register services in `App.xaml.cs`:
+
+```csharp
+// App.xaml.cs
+var services = new ServiceCollection();
+services.AddSingleton<SteamClient>();
+services.AddSingleton<SmartUnlockService>();
+services.AddSingleton<ConfigService>();
+services.AddSingleton<ImageCacheService>();
+ServiceProvider = services.BuildServiceProvider();
+```
+
+**Benefits**: Testable, loose coupling, clear service lifetimes.
+
+### Async/Await Patterns
+
+All Steam API calls should be async. Use `Task<T>` return types:
+
+```csharp
+// ✅ Correct
+public async Task<bool> SetAchievementAsync(string name);
+public async Task<List<AchievementInfo>> GetAchievementsAsync();
+
+// ❌ Avoid
+public bool SetAchievement(string name);  // Blocks UI thread
+public void SetAchievement(string name);  // No way to report errors
+```
+
+### Threading Model
+
+Steam API callbacks arrive on a background thread. Marshal to UI thread using WPFUI's dispatcher:
+
+```csharp
+// In ViewModel or Service
+_dispatcherQueue.TryEnqueue(() =>
+{
+    // Update UI properties here
+    Achievements = new ObservableCollection<AchievementInfo>(achievements);
+});
+```
+
+### Error Handling
+
+Use structured error handling:
+
+```csharp
+// Option 1: Try-catch for expected errors
+try
+{
+    await _steamClient.SetAchievementAsync("achievement_name");
+}
+catch (SteamApiException ex)
+{
+    _logger.LogError(ex, "Failed to set achievement");
+    ShowErrorNotification($"Failed: {ex.Message}");
+}
+
+// Option 2: Result type for user-facing errors
+public class Result<T>
+{
+    public bool IsSuccess { get; }
+    public T Value { get; }
+    public string Error { get; }
+}
+```
+
+### Logging
+
+Use `Microsoft.Extensions.Logging` for all services:
+
+```csharp
+// Constructor injection
+public SmartUnlockService(ILogger<SmartUnlockService> logger)
+{
+    _logger = logger;
+}
+
+// Usage
+_logger.LogInformation("Starting smart unlock for {Count} achievements", achievements.Count);
+_logger.LogWarning("Achievement {Name} already unlocked, skipping", name);
+_logger.LogError(ex, "Failed to unlock achievement {Name}", name);
+```
+
+### Steam API Testing
+
+Steam API cannot be mocked directly. Use interfaces:
+
+```csharp
+// Interface for testability
+public interface ISteamAchievements
+{
+    Task<bool> SetAsync(string name);
+    Task<List<AchievementInfo>> GetAllAsync();
+}
+
+// Real implementation uses P/Invoke
+public class SteamAchievements : ISteamAchievements { }
+
+// Test implementation returns predefined data
+public class FakeSteamAchievements : ISteamAchievements { }
+```
+
+### Code Quality
+
+Add to `.csproj` for consistent code style:
+
+```xml
+<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.*">
+  <PrivateAssets>all</PrivateAssets>
+</PackageReference>
+```
+
+### WPFUI Navigation
+
+Use WPFUI's `NavigationView` for page navigation:
+
+```csharp
+// MainViewModel
+public void NavigateToGame(GameInfo game)
+{
+    // WPFUI handles page lifecycle and transitions
+    _navigationService.NavigateTo(new GameManagerView(game));
+}
+```
+
+### Key Packages
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `WPF-UI` | 3.0.5 | Modern UI controls and theming |
+| `CommunityToolkit.Mvvm` | 8.4.0 | MVVM source generators |
+| `Microsoft.Extensions.DependencyInjection` | (add) | Service management |
+| `Microsoft.Extensions.Logging` | (add) | Structured logging |
+| `StyleCop.Analyzers` | 1.2.0-beta | Code style enforcement |
+
+## Coding Standards
+
+> **Follow these conventions for consistent code style.**
+
+### Naming Conventions
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| Classes | PascalCase | `SmartUnlockService` |
+| Interfaces | `I` prefix | `ISteamAchievements` |
+| Methods | PascalCase | `SetAchievementAsync()` |
+| Async methods | `Async` suffix | `GetAchievementsAsync()` |
+| Properties | PascalCase | `IsUnlocked` |
+| Private fields | `_camelCase` | `_logger` |
+| Parameters | camelCase | `achievementName` |
+| Local variables | camelCase | `unlockTime` |
+| Constants | PascalCase | `MaxRetryCount` |
+| Files | Match class name | `SmartUnlockService.cs` |
+
+### File Organization
+
+```csharp
+// 1. Using directives
+using System;
+using System.Collections.Generic;
+
+// 2. Namespace
+namespace SteamManager.Services;
+
+// 3. Class declaration
+public class SmartUnlockService
+{
+    // 4. Private fields
+    private readonly ILogger<SmartUnlockService> _logger;
+    
+    // 5. Constructor
+    public SmartUnlockService(ILogger<SmartUnlockService> logger)
+    {
+        _logger = logger;
+    }
+    
+    // 6. Public properties
+    public bool IsRunning { get; private set; }
+    
+    // 7. Public methods
+    public async Task UnlockAsync(List<AchievementInfo> achievements) { }
+    
+    // 8. Private methods
+    private void DelayBetweenUnlocks() { }
+}
+```
+
+## Development Environment Setup
+
+> **For new contributors.** What you need to get started.
+
+### Requirements
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| OS | Windows 10/11 | Steam API is Windows-only |
+| .NET SDK | 10.0 | `dotnet --version` to verify |
+| IDE | Visual Studio 2022 / Rider / VS Code | Any works |
+| Steam | Installed | Required for testing |
+| Git | Latest | For version control |
+
+### First Steps
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/ZavalaSebas/SteamManager.git
+cd SteamManager
+
+# 2. Restore packages
+dotnet restore
+
+# 3. Build
+dotnet build SteamManager.slnx -c Release
+
+# 4. Run tests
+dotnet test SteamManager.slnx -c Release
+
+# 5. Run the app (requires Steam running)
+dotnet run --project SteamManager/SteamManager.csproj
+```
+
+### IDE Setup
+
+**Visual Studio 2022:**
+- Install ".NET desktop development" workload
+- Install "WPF" component
+
+**Rider:**
+- Install "WPF" plugin (usually included)
+
+**VS Code:**
+- Install C# Dev Kit extension
+- Install .NET Extension Pack
+
+## Git Hooks
+
+> **Automated validation before every commit.**
+
+### Pre-commit Hook
+
+Create `.git/hooks/pre-commit`:
+
+```bash
+#!/bin/sh
+# Build
+dotnet build SteamManager.slnx -c Release --no-restore
+if [ $? -ne 0 ]; then
+  echo "❌ Build failed. Commit aborted."
+  exit 1
+fi
+
+# Test
+dotnet test SteamManager.slnx -c Release --no-build
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Commit aborted."
+  exit 1
+fi
+
+echo "✅ Build and tests passed."
+```
+
+### Setup
+
+```bash
+# Make hook executable (Git Bash on Windows)
+chmod +x .git/hooks/pre-commit
+```
+
+## Architecture Decision Records (ADR)
+
+> **Document why we made certain decisions.** Future contributors will thank you.
+
+### ADR-001: Use `steam_api64.dll` instead of `steamclient.dll`
+
+**Status:** Accepted
+
+**Context:**
+The original SAM uses `steamclient.dll` which is reverse-engineered and breaks with Steam updates.
+
+**Decision:**
+Use `steam_api64.dll` from the official Steamworks SDK.
+
+**Consequences:**
+- ✅ Stable, documented, supported by Valve
+- ✅ No reverse engineering required
+- ❌ Only one AppID per process (cannot idle multiple games simultaneously)
+- ❌ Some advanced features unavailable (e.g., internal Steam state)
+
+### ADR-002: WPF + WPFUI instead of WinUI 3 or Avalonia
+
+**Status:** Accepted
+
+**Context:**
+Need a modern UI framework for Windows desktop.
+
+**Decision:**
+Use WPF with WPFUI for modern styling.
+
+**Consequences:**
+- ✅ Mature, well-documented, large ecosystem
+- ✅ Single-file publishing works
+- ✅ WPFUI provides modern Fluent design
+- ❌ No cross-platform (but Steam API is Windows-only anyway)
+- ❌ XAML can be verbose
+
+### ADR-003: Single executable instead of installer
+
+**Status:** Accepted
+
+**Context:**
+Users want portability and easy distribution.
+
+**Decision:**
+Publish as self-contained single-file executable.
+
+**Consequences:**
+- ✅ No installation required
+- ✅ Easy to distribute (one .exe file)
+- ✅ Portable (can run from USB)
+- ❌ Larger file size (~60-80MB with runtime)
+- ❌ No automatic updates (need custom implementation)
+
+### Creating New ADRs
+
+When making a significant decision, create a new file `docs/adr/004-decision-title.md`:
+
+```markdown
+# ADR-004: [Decision Title]
+
+**Status:** Proposed | Accepted | Deprecated | Superseded by [ADR-XXX]
+
+**Context:**
+[What is the issue?]
+
+**Decision:**
+[What did we decide?]
+
+**Consequences:**
+- ✅ [Positive outcomes]
+- ❌ [Negative outcomes]
+```
+
+## Release Checklist
+
+> **Follow this checklist before every release.**
+
+### Pre-release
+
+- [ ] All features for this version are complete
+- [ ] All tests pass locally
+- [ ] No compiler warnings (or warnings documented)
+- [ ] Code reviewed (if working with others)
+
+### Version Bump
+
+- [ ] Update `<Version>` in `SteamManager/SteamManager.csproj`
+- [ ] Update `CHANGELOG.md` with new version and changes
+- [ ] Commit with message: `bump vX.Y.Z`
+
+### Commit & Push
+
+- [ ] `git status` — no unexpected changes
+- [ ] `git diff` — review all changes
+- [ ] `git log --oneline -3` — verify commit history
+- [ ] `git push origin main`
+
+### Post-release
+
+- [ ] Verify GitHub Actions workflow completed
+- [ ] Check release page on GitHub
+- [ ] Test downloaded .exe works
+- [ ] Update documentation if needed
+
+### Hotfix Process
+
+If critical bug found after release:
+
+1. Create branch `hotfix/vX.Y.Z`
+2. Fix the bug
+3. Bump patch version (e.g., `1.0.0` → `1.0.1`)
+4. Commit and push
+5. Run workflow manually
+6. Merge back to `main`
+
 ## Key Files Quick Reference
 
 | File | Purpose |
 |------|---------|
-| `src/SteamManager/SteamManager.csproj` | Version, target framework, NuGet packages |
-| `src/SteamManager/Steam/SteamNative.cs` | All P/Invoke declarations for steam_api64.dll |
-| `src/SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init, Shutdown, RunCallbacks) |
-| `src/SteamManager/Steam/SteamAchievements.cs` | Achievement read/write operations |
-| `src/SteamManager/Steam/SteamStats.cs` | Stats read/write operations |
-| `src/SteamManager/Services/SmartUnlockService.cs` | Anti-detection delay logic |
-| `src/SteamManager/Services/ImageCacheService.cs` | Local image caching |
-| `src/SteamManager/Services/ConfigService.cs` | Settings persistence |
-| `src/SteamManager/Services/Updater.cs` | Update check, download, swap (v2.0) |
-| `src/SteamManager/Services/NetworkHelper.cs` | HTTP client with User-Agent (v2.0) |
+| `SteamManager/SteamManager.csproj` | Version, target framework, NuGet packages |
+| `SteamManager/Config.cs` | Centralized constants (URLs, paths, timeouts) |
+| `SteamManager/Steam/SteamNative.cs` | All P/Invoke declarations for steam_api64.dll |
+| `SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init, Shutdown, RunCallbacks) |
+| `SteamManager/Steam/SteamAchievements.cs` | Achievement read/write operations |
+| `SteamManager/Steam/SteamStats.cs` | Stats read/write operations |
+| `SteamManager/Services/SmartUnlockService.cs` | Anti-detection delay logic |
+| `SteamManager/Services/ImageCacheService.cs` | Local image caching |
+| `SteamManager/Services/ConfigService.cs` | Settings persistence |
+| `SteamManager/Services/Updater.cs` | Update check, download, swap (v2.0) |
+| `SteamManager/Services/NetworkHelper.cs` | HTTP client with User-Agent (v2.0) |
 | `.github/workflows/release.yml` | CI/CD pipeline |
 | `docs/index.html` | GitHub Pages landing page (v2.0) |
 | `PLAN.md` | Full project plan with phases and features |
@@ -319,6 +866,14 @@ bump v0.2.0
 | Achievement icons async | Steam API returns handle 0 initially, fetches in background | Wait for `UserAchievementIconFetched_t` callback |
 | No auto-update | Not implemented in v1.0 | Manual download from GitHub Releases |
 | No GitHub Pages | Not implemented in v1.0 | README serves as documentation |
+
+## Known Issues & Resolutions
+
+> **Document issues here as you find and fix them.** Include the symptoms, root cause, and how it was resolved. This helps future contributors avoid the same pitfalls.
+
+| Issue | Root Cause | Resolution |
+|-------|------------|------------|
+| *No issues documented yet* | — | — |
 
 ---
 
