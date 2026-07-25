@@ -47,6 +47,20 @@
                 </Border.Background>
             </Border>
 
+            <Button Grid.Row="0"
+                    Content="&#xE734;"
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="16"
+                    Click="OnFavoriteClick"
+                    Background="#80000000"
+                    Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
+                    BorderThickness="0"
+                    Padding="6"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="4"
+                    Cursor="Hand"/>
+
             <StackPanel Grid.Row="1" Margin="8,6">
                 <TextBlock Text="{Binding Name}"
                            FontSize="12"

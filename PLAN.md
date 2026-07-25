@@ -2,7 +2,7 @@
 
 ## Estado Actual de Implementación
 
-> Última actualización: 2026-07-25 (v0.3.0)
+> Última actualización: 2026-07-25 (v1.0.0)
 
 ### Fase 1 (Core Steam API) — ✅ Completada
 - `SteamLoader.cs` ✅ — carga de `steamclient.dll` desde registro
@@ -117,17 +117,17 @@ PARA CADA appId EN games.xml:
 
 **Problema**: `steamclient.dll` es un singleton por proceso. No se puede cambiar el AppId en el mismo proceso.
 
-**Solución implementada** (v0.3.0):
-- **Launcher** (`SteamManager.exe` sin args): Inicializa Steam con Spacewar (AppId=480), muestra lista de juegos
-- **Helper** (`SteamManager.exe --game <appId>`): Inicializa Steam con el AppId específico del juego, muestra logros
+**Solución implementada** (v1.0):
+- **Launcher** (`SteamManager.exe` sin args): Inicializa Steam con Spacewar (AppId=480), muestra lista de juegos. Permanece abierto mientras el helper corre.
+- **Helper** (`SteamManager.exe --game <appId>`): Inicializa Steam con el AppId específico del juego, muestra logros. Cierra independently.
 
 ```
 Launcher                          Helper
 +-----------+                     +-----------+
 | AppId=480 |                     | AppId=X  |
 | Lista de  | --click juego-->   | Logros X |
-| juegos    |                     | Unlock/  |
-+-----------+  shutdown + start   | Lock     |
+| juegos    |    (permanece)      | Unlock/  |
++-----------+  <--vuelve          | Lock     |
                                    +-----------+
 ```
 
@@ -149,17 +149,22 @@ Launcher                          Helper
 
 ## Alcance: Fase Actual vs Futuro
 
-### Fase Actual (v1.0) - Tier 1
+### Fase Actual (v1.0) - ✅ Completada
 Replicar y mejorar las capacidades core del SAM original:
 
-- Gestión de logros (lock/unlock con smart delays)
-- Editor de estadísticas
-- Explorador de biblioteca con carátulas
-- Búsqueda y filtros de juegos
-- Favorites (juegos anclados)
-- Desbloqueo inteligente con delays aleatorios (anti-detección)
-- Caché de imágenes local
-- UI moderna con WPFUI (Mica, esquinas redondeadas, grid virtualizado)
+- ✅ Gestión de logros (lock/unlock con UI que actualiza iconos)
+- ✅ Lock All / Unlock All con soporte multi-selección
+- ✅ Editor de estadísticas (expandible, con stats predefinidos para juegos populares)
+- ✅ Explorador de biblioteca con carátulas
+- ✅ Búsqueda de juegos por nombre
+- ✅ Filtros de logros (All, Unlocked, Locked, Hidden)
+- ✅ Favorites (juegos anclados con estrella, persistidos)
+- ✅ Orden por favoritos y recientes
+- ✅ Desbloqueo inteligente con delays aleatorios (SmartUnlockService)
+- ✅ Caché de imágenes local
+- ✅ UI moderna con WPFUI (Dark theme, Fluent design)
+- ✅ Multi-proceso (launcher + helper independientes)
+- ✅ Caché de imágenes local
 
 ### Futuro (v2.0+) - Tier 2, 3 y 4
 > Documentado aquí para desarrollo futuro. NO implementar en v1.0.

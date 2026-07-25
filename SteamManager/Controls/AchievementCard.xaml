@@ -8,18 +8,24 @@
     <Border x:Name="CardBorder"
             CornerRadius="6"
             Background="#252525"
-            BorderBrush="#3A3A3A"
+            BorderBrush="{Binding IsSelected, Converter={StaticResource SelectedBorderConverter}}"
             BorderThickness="1"
             Padding="12"
             MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="32"/>
                 <ColumnDefinition Width="48"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
+            <CheckBox Grid.Column="0"
+                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                      VerticalAlignment="Center"
+                      Cursor="Hand"/>
+
+            <Border Grid.Column="1"
                     Width="40" Height="40"
                     CornerRadius="4"
                     Background="#1A1A1A"
@@ -29,7 +35,7 @@
                        Width="32" Height="32"/>
             </Border>
 
-            <StackPanel Grid.Column="1"
+            <StackPanel Grid.Column="2"
                         VerticalAlignment="Center"
                         Margin="12,0,0,0">
                 <TextBlock Text="{Binding DisplayName}"
@@ -44,7 +50,7 @@
                            MaxWidth="400"/>
             </StackPanel>
 
-            <Border Grid.Column="2"
+            <Border Grid.Column="3"
                     Width="24" Height="24"
                     CornerRadius="12"
                     Background="{Binding IsUnlocked, Converter={StaticResource UnlockStatusToColorConverter}}"

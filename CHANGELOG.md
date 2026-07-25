@@ -5,18 +5,48 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0] - 2026-07-25
+## [1.0.0] - 2026-07-25
 
-### Fixed
+### Added
 
-- **Multi-process architecture now working**: Helper window now appears and displays correct achievements for each game. Previous attempts failed because `MainWindow` constructor was overwriting the passed DataContext.
+- **Multi-selection for achievements**: Checkbox on each achievement card to select/deselect. Select All and Deselect buttons added.
+- **Lock All / Unlock All with selection**: Lock/Unlock buttons now operate on selected achievements if any are selected, otherwise on all achievements.
+- **Stats Editor**: Expandable panel to view and edit game stats. Includes predefined stats for popular games (TF2, CS2, Dota 2, Rust, etc.) and custom stat name entry.
+- **Achievement filters**: Filter buttons (All, Unlocked, Locked, Hidden) with visual indicator for active filter.
+- **Favorites**: Star button on game cards to mark games as favorites. Favorites persist across sessions and appear first in the game list.
+- **Recent games ordering**: Games are ordered by: favorites first, then recently opened (up to 10), then alphabetically. Recent list persists across sessions.
+- **Achievement icon refresh**: Icons update automatically when toggling between locked/unlocked states.
 
 ### Changed
 
 - **Single exe, multi-process**: `SteamManager.exe` behaves differently based on command-line arguments:
   - No args: **Launcher mode** — initializes Steam with Spacewar AppId (480), shows game list
   - `--game <appId>`: **Helper mode** — initializes Steam with specific game AppId, shows achievements
-- **`GamePickerViewModel.SelectGameCommand`**: Now launches helper process and calls `Application.Current.Shutdown()` on the launcher
+- **Launcher stays open**: When helper opens, launcher window stays visible. When helper closes, launcher refreshes and continues.
+- **Steam initialization order**: Steam now initializes completely before loading games list, ensuring proper game ordering on startup.
+
+### Known Issues
+
+None.
+
+---
+
+## [0.3.0] - 2026-07-25
+
+### Fixed
+
+- **Multi-process architecture now working**: Helper window now appears and displays correct achievements for each game. Previous attempts failed because `MainWindow` constructor was overwriting the passed DataContext.
+- **Achievement icons**: Icons now load from Steam CDN when local handle is unavailable. Added `IconUrl` and `IconLockedUrl` properties to `AchievementInfo` for CDN-based icon loading.
+- **Achievement icon refresh**: Icons update correctly when toggling between locked/unlocked states.
+- **Back button**: Closes helper without affecting launcher. Launcher stays open while helper runs.
+- **Navigation**: Multi-instance issue resolved. Only one launcher process runs; helper opens independently.
+
+### Changed
+
+- **Single exe, multi-process**: `SteamManager.exe` behaves differently based on command-line arguments:
+  - No args: **Launcher mode** — initializes Steam with Spacewar AppId (480), shows game list
+  - `--game <appId>`: **Helper mode** — initializes Steam with specific game AppId, shows achievements
+- **`GamePickerViewModel.SelectGameCommand`**: Now launches helper process and awaits its exit. Launcher stays open.
 - **`MainViewModel` navigation**: `NavigateToGame()` callback pattern removed in favor of multi-process
 - **`MainWindow.xaml.cs`**: Constructor only sets DataContext from Services if DataContext is null (allows override)
 
@@ -24,8 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Issue | Status |
 |-------|--------|
-| Achievement icons not loading | Pending fix |
-| Back button doesn't work in helper | Pending fix |
 | Loading status stays forever | Pending fix |
 
 ### Technical Notes

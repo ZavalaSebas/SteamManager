@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ public partial class App : Application
     public static IServiceProvider Services { get; private set; } = null!;
     public static SteamContext? SteamContext { get; private set; }
     private static DispatcherTimer? _callbackTimer;
+    private static Mutex? _launcherMutex;
+    private const string LauncherMutexName = "SteamManager_Launcher_Mutex";
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -28,12 +31,26 @@ public partial class App : Application
         }
         else
         {
-            StartLauncherMode();
+            _ = StartLauncherMode();
         }
     }
 
-    private void StartLauncherMode()
+    private async Task StartLauncherMode()
     {
+        _launcherMutex = new Mutex(true, LauncherMutexName, out bool createdNew);
+        if (!createdNew)
+        {
+            var existingWindow = Current.MainWindow;
+            if (existingWindow != null)
+            {
+                existingWindow.WindowState = WindowState.Normal;
+                existingWindow.Show();
+                existingWindow.Activate();
+            }
+            Shutdown();
+            return;
+        }
+
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
@@ -43,10 +60,28 @@ public partial class App : Application
 
         var mainViewModel = Services.GetRequiredService<MainViewModel>();
         var mainWindow = new MainWindow { DataContext = mainViewModel };
+        mainWindow.Closing += MainWindow_Closing;
+        MainWindow = mainWindow;
         mainWindow.Show();
 
-        _ = InitializeSteamAsync(mainViewModel);
-        _ = mainViewModel.LoadGamesCommand.ExecuteAsync(null);
+        await InitializeSteamAsync(mainViewModel);
+        await mainViewModel.LoadGamesCommand.ExecuteAsync(null);
+    }
+
+    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    {
+        _launcherMutex?.ReleaseMutex();
+        _launcherMutex?.Dispose();
+    }
+
+    public static void RestoreLauncher()
+    {
+        if (Current.MainWindow != null)
+        {
+            Current.MainWindow.WindowState = WindowState.Normal;
+            Current.MainWindow.Show();
+            Current.MainWindow.Activate();
+        }
     }
 
     private void StartGameHelperMode(uint appId)
@@ -86,7 +121,8 @@ public partial class App : Application
         var mainVm = new MainViewModel(
             SteamContext,
             Services.GetRequiredService<IGameLibraryService>(),
-            imageCacheService)
+            imageCacheService,
+            Services.GetRequiredService<IConfigService>())
         {
             CurrentViewModel = gameManagerVm,
             StatusMessage = $"Loading {game.Name}..."

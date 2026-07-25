@@ -12,6 +12,7 @@ public class SteamContext : IDisposable
     public SteamAchievements Achievements { get; private set; }
     public SteamStats Stats { get; private set; }
     public SteamApps Apps { get; private set; }
+    public SteamIcons Icons { get; private set; }
 
     public bool IsInitialized => _client.IsInitialized;
     public uint AppId => _client.CurrentAppId;
@@ -23,6 +24,7 @@ public class SteamContext : IDisposable
         Achievements = new SteamAchievements(_client);
         Stats = new SteamStats(_client);
         Apps = new SteamApps(_client);
+        Icons = new SteamIcons(_client);
     }
 
     /// <summary>
@@ -44,6 +46,7 @@ public class SteamContext : IDisposable
         Achievements = new SteamAchievements(_client);
         Stats = new SteamStats(_client);
         Apps = new SteamApps(_client);
+        Icons = new SteamIcons(_client);
         return _client.Init(newAppId);
     }
 

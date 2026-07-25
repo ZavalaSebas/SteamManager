@@ -31,6 +31,16 @@ public interface IConfigService
     uint? LastSelectedGameId { get; set; }
 
     /// <summary>
+    /// Gets the list of recently opened game AppIds (most recent first).
+    /// </summary>
+    List<uint> RecentlyOpenedGameIds { get; }
+
+    /// <summary>
+    /// Marks a game as recently opened (moves to front of recents).
+    /// </summary>
+    void MarkRecentlyOpened(uint appId);
+
+    /// <summary>
     /// Gets the minimum unlock delay in seconds.
     /// </summary>
     int MinUnlockDelaySeconds { get; set; }

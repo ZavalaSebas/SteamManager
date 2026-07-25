@@ -64,6 +64,7 @@
                     <DataTemplate>
                         <controls:GameCard DataContext="{Binding}"
                                           GameSelected="GameCard_GameSelected"
+                                          FavoriteToggle="GameCard_FavoriteToggle"
                                           Cursor="Hand"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

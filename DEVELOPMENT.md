@@ -946,7 +946,7 @@ If critical bug found after release:
 | `SteamManager.Tests/` | xUnit test project (no tests written yet) |
 | `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, `workflow_dispatch` only) |
 | `PLAN.md` | Full project plan with phases and features |
-| `CHANGELOG.md` | Version history (v0.1.0 → v0.3.0 with multi-process architecture) |
+| `CHANGELOG.md` | Version history (v0.1.0 → v1.0.0 with full feature set) |
 
 ## Known Limitations
 

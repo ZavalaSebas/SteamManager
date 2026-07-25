@@ -7,6 +7,7 @@ public class AppConfig
 {
     public List<uint> FavoriteGameIds { get; set; } = [];
     public uint? LastSelectedGameId { get; set; }
+    public List<uint> RecentlyOpenedGameIds { get; set; } = [];
     public int MinUnlockDelaySeconds { get; set; } = 15;
     public int MaxUnlockDelaySeconds { get; set; } = 45;
     public string Theme { get; set; } = "Dark";
@@ -132,6 +133,33 @@ public class ConfigService : IConfigService
         lock (_lock)
         {
             return _config.FavoriteGameIds.Contains(appId);
+        }
+    }
+
+    public List<uint> RecentlyOpenedGameIds
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return [.. _config.RecentlyOpenedGameIds];
+            }
+        }
+    }
+
+    public void MarkRecentlyOpened(uint appId)
+    {
+        lock (_lock)
+        {
+            _config.RecentlyOpenedGameIds.Remove(appId);
+            _config.RecentlyOpenedGameIds.Insert(0, appId);
+
+            if (_config.RecentlyOpenedGameIds.Count > 10)
+            {
+                _config.RecentlyOpenedGameIds = _config.RecentlyOpenedGameIds.Take(10).ToList();
+            }
+
+            _config.LastSelectedGameId = appId;
         }
     }
 

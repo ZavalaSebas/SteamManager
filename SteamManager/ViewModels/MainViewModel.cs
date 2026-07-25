@@ -12,6 +12,7 @@ public partial class MainViewModel : ObservableObject
     private readonly SteamContext _steamContext;
     private readonly IGameLibraryService _gameLibraryService;
     private readonly IImageCacheService _imageCacheService;
+    private readonly IConfigService _configService;
     private GamePickerViewModel? _gamePicker;
     private GameManagerViewModel? _gameManager;
 
@@ -27,17 +28,19 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(
         SteamContext steamContext,
         IGameLibraryService gameLibraryService,
-        IImageCacheService imageCacheService)
+        IImageCacheService imageCacheService,
+        IConfigService configService)
     {
         _steamContext = steamContext;
         _gameLibraryService = gameLibraryService;
         _imageCacheService = imageCacheService;
+        _configService = configService;
     }
 
     [RelayCommand]
     private async Task LoadGamesAsync()
     {
-        _gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService)
+        _gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService, _configService)
         {
             OnGameSelected = NavigateToGame
         };
@@ -59,7 +62,6 @@ public partial class MainViewModel : ObservableObject
     private void NavigateToGame(GameInfo game)
     {
         _gameManager = new GameManagerViewModel(_steamContext, _imageCacheService);
-        _gameManager.RequestBack += () => BackToGamesCommand.Execute(null);
         _gameManager.SelectGameCommand.Execute(game);
         CurrentViewModel = _gameManager;
         StatusMessage = $"Loading {game.Name}...";

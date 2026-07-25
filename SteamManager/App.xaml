@@ -16,6 +16,10 @@
 
             <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <converters:FilterToBackgroundConverter x:Key="FilterToBackgroundConverter"/>
+            <converters:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColorConverter"/>
+            <converters:SelectedBorderConverter x:Key="SelectedBorderConverter"/>
+            <converters:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter"/>
             <controls:UnlockStatusToColorConverter x:Key="UnlockStatusToColorConverter"/>
 
             <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">

@@ -106,6 +106,8 @@ public class SteamAchievements
             string displayName = GetAchievementDisplayAttribute(apiName, "name");
             string description = GetAchievementDisplayAttribute(apiName, "desc");
             string hidden = GetAchievementDisplayAttribute(apiName, "hidden");
+            string iconUrl = GetAchievementDisplayAttribute(apiName, "icon");
+            string iconLockedUrl = GetAchievementDisplayAttribute(apiName, "icon_gray");
             int iconHandle = GetAchievementIcon(apiName);
 
             achievements.Add(new AchievementInfo
@@ -116,7 +118,9 @@ public class SteamAchievements
                 IsUnlocked = isUnlocked,
                 UnlockTime = unlockTime,
                 IconHandle = iconHandle,
-                IsHidden = hidden == "1"
+                IsHidden = hidden == "1",
+                IconUrl = iconUrl,
+                IconLockedUrl = iconLockedUrl
             });
         }
 

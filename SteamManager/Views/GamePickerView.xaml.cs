@@ -30,4 +30,15 @@ public partial class GamePickerView : UserControl
             }
         }
     }
+
+    private void GameCard_FavoriteToggle(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.DataContext is GameInfo game)
+        {
+            if (DataContext is ViewModels.GamePickerViewModel vm)
+            {
+                vm.ToggleFavoriteCommand.Execute(game);
+            }
+        }
+    }
 }
