@@ -5,8 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:SteamManager.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800">
-    <Grid Margin="16">
+             d:DesignHeight="600" d:DesignWidth="900"
+             Background="#1A1A1A">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -16,23 +17,43 @@
 
         <TextBlock Grid.Row="0"
                    Text="My Games"
-                   FontSize="24"
-                   FontWeight="Bold"
+                   FontSize="28"
+                   FontWeight="Light"
+                   Foreground="White"
                    Margin="0,0,0,16"/>
 
         <Border Grid.Row="1"
                 Margin="0,0,0,16"
-                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="4">
-            <TextBox x:Name="SearchBox"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     TextChanged="SearchBox_TextChanged"/>
+                Background="#252525"
+                CornerRadius="6"
+                BorderBrush="#3A3A3A"
+                BorderThickness="1">
+            <Grid Margin="12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE721;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="14"
+                           Foreground="#666666"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <TextBox x:Name="SearchBox"
+                         Grid.Column="1"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         Foreground="White"
+                         FontSize="14"
+                         VerticalAlignment="Center"
+                         TextChanged="SearchBox_TextChanged"
+                         CaretBrush="White"/>
+            </Grid>
         </Border>
 
         <ScrollViewer Grid.Row="2"
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding Games}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -41,16 +62,26 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <controls:GameCard DataContext="{Binding}"/>
+                        <controls:GameCard DataContext="{Binding}"
+                                          MouseLeftButtonUp="GameCard_MouseLeftButtonUp"
+                                          Cursor="Hand"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
-        <TextBlock Grid.Row="3"
-                   Text="{Binding StatusMessage}"
-                   FontSize="12"
-                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                   Margin="0,8,0,0"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}"
+                       FontSize="12"
+                       Foreground="#666666"/>
+            <TextBlock Text=" | "
+                       FontSize="12"
+                       Foreground="#444444"
+                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <ProgressBar IsIndeterminate="True"
+                         Width="100"
+                         Height="8"
+                         Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </StackPanel>
     </Grid>
 </UserControl>

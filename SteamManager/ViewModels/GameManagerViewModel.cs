@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamManager.Models;
+using SteamManager.Services;
 using SteamManager.Steam;
 
 namespace SteamManager.ViewModels;
@@ -12,6 +13,7 @@ namespace SteamManager.ViewModels;
 public partial class GameManagerViewModel : ObservableObject
 {
     private readonly SteamContext _steamContext;
+    private readonly IImageCacheService? _imageCacheService;
 
     [ObservableProperty]
     private GameInfo? _selectedGame;
@@ -31,9 +33,13 @@ public partial class GameManagerViewModel : ObservableObject
     [ObservableProperty]
     private int _totalCount;
 
-    public GameManagerViewModel(SteamContext steamContext)
+    public event Action? RequestBack;
+
+    public GameManagerViewModel(SteamContext steamContext, GameInfo game, IImageCacheService? imageCacheService = null)
     {
         _steamContext = steamContext;
+        _imageCacheService = imageCacheService;
+        SelectedGame = game;
     }
 
     [RelayCommand]
@@ -49,9 +55,12 @@ public partial class GameManagerViewModel : ObservableObject
             await Task.Run(() =>
             {
                 var achievements = _steamContext.Achievements.GetAllAchievements();
-                Achievements = new ObservableCollection<AchievementInfo>(achievements);
-                TotalCount = achievements.Count;
-                UnlockedCount = achievements.Count(a => a.IsUnlocked);
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Achievements = new ObservableCollection<AchievementInfo>(achievements);
+                    TotalCount = achievements.Count;
+                    UnlockedCount = achievements.Count(a => a.IsUnlocked);
+                });
             });
 
             StatusMessage = $"{UnlockedCount}/{TotalCount} achievements unlocked";
@@ -67,7 +76,7 @@ public partial class GameManagerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ToggleAchievementAsync(AchievementInfo achievement)
+    private void ToggleAchievement(AchievementInfo achievement)
     {
         try
         {
@@ -86,6 +95,7 @@ public partial class GameManagerViewModel : ObservableObject
                 achievement.IsUnlocked = !achievement.IsUnlocked;
                 UnlockedCount = Achievements.Count(a => a.IsUnlocked);
                 StatusMessage = $"{UnlockedCount}/{TotalCount} achievements unlocked";
+                _steamContext.Stats.StoreStats();
             }
         }
         catch (Exception ex)
@@ -95,16 +105,22 @@ public partial class GameManagerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task StoreStatsAsync()
+    private void StoreStats()
     {
         try
         {
-            await Task.Run(() => _steamContext.Stats.StoreStats());
+            _steamContext.Stats.StoreStats();
             StatusMessage = "Stats stored successfully";
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error storing stats: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    private void Back()
+    {
+        RequestBack?.Invoke();
     }
 }

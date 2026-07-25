@@ -30,6 +30,8 @@ public partial class GamePickerViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
+    public event Action<GameInfo>? GameSelected;
+
     public GamePickerViewModel(
         SteamContext steamContext,
         IGameLibraryService gameLibraryService,
@@ -98,5 +100,14 @@ public partial class GamePickerViewModel : ObservableObject
     partial void OnSearchTextChanged(string value)
     {
         SearchGames();
+    }
+
+    [RelayCommand]
+    private void SelectGame(GameInfo? game)
+    {
+        if (game != null)
+        {
+            GameSelected?.Invoke(game);
+        }
     }
 }

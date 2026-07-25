@@ -14,6 +14,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
             <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">
                 <views:GamePickerView />

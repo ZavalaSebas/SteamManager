@@ -14,6 +14,7 @@ public partial class MainViewModel : ObservableObject
     private readonly SteamContext _steamContext;
     private readonly IGameLibraryService _gameLibraryService;
     private readonly IImageCacheService _imageCacheService;
+    private GamePickerViewModel? _gamePicker;
 
     [ObservableProperty]
     private ObservableObject? _currentViewModel;
@@ -43,14 +44,32 @@ public partial class MainViewModel : ObservableObject
     {
         if (_steamContext.IsInitialized)
         {
-            var gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService);
-            CurrentViewModel = gamePicker;
-            await gamePicker.LoadGamesCommand.ExecuteAsync(null);
-            StatusMessage = gamePicker.StatusMessage;
+            _gamePicker = new GamePickerViewModel(_steamContext, _gameLibraryService, _imageCacheService);
+            _gamePicker.GameSelected += OnGameSelected;
+            CurrentViewModel = _gamePicker;
+            await _gamePicker.LoadGamesCommand.ExecuteAsync(null);
+            StatusMessage = _gamePicker.StatusMessage;
         }
         else
         {
             StatusMessage = "Steam not connected. Some features may be unavailable.";
+        }
+    }
+
+    private void OnGameSelected(GameInfo game)
+    {
+        var managerVm = new GameManagerViewModel(_steamContext, game, _imageCacheService);
+        CurrentViewModel = managerVm;
+        StatusMessage = $"Viewing: {game.Name}";
+    }
+
+    [RelayCommand]
+    private void BackToGames()
+    {
+        if (_gamePicker != null)
+        {
+            CurrentViewModel = _gamePicker;
+            StatusMessage = _gamePicker.StatusMessage;
         }
     }
 }

@@ -4,33 +4,61 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Width="200" Height="280">
-    <Border CornerRadius="8"
-            Background="{DynamicResource ApplicationBackgroundBrush}"
-            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-            BorderThickness="1">
-        <Grid>
-            <Image Source="{Binding CoverImage}"
-                   Stretch="UniformToFill"
-                   VerticalAlignment="Top"
-                   Height="150"/>
+             Width="220">
+    <UserControl.Resources>
+        <Style x:Key="HoverBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#FF6B9BD1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
 
-            <StackPanel VerticalAlignment="Bottom"
-                        Background="#CC000000"
-                        Margin="0">
+    <Border Style="{StaticResource HoverBorder}"
+            CornerRadius="6"
+            Background="#1A1A1A"
+            Margin="4">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.3" Color="Black"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Image Grid.Row="0"
+                   Source="{Binding CoverImage}"
+                   Stretch="UniformToFill"
+                   Height="100"/>
+
+            <Border Grid.Row="0"
+                    Height="100"
+                    VerticalAlignment="Bottom">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#00000000" Offset="0"/>
+                        <GradientStop Color="#80000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <StackPanel Grid.Row="1" Margin="8,6">
                 <TextBlock Text="{Binding Name}"
-                           FontSize="13"
+                           FontSize="12"
                            FontWeight="SemiBold"
                            TextWrapping="Wrap"
-                           TextAlignment="Center"
-                           HorizontalAlignment="Center"
-                           Foreground="White"
-                           Margin="8,8,8,4"/>
-                <TextBlock Text="{Binding PlaytimeMinutes, StringFormat='{}{0} min played'}"
-                           FontSize="10"
-                           Foreground="#AAFFFFFF"
-                           HorizontalAlignment="Center"
-                           Margin="8,0,8,8"/>
+                           MaxHeight="36"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="White"/>
+                <TextBlock Foreground="#888888" FontSize="10" Margin="0,4,0,0">
+                    <Run Text="{Binding PlaytimeMinutes, Mode=OneWay}"/>
+                    <Run Text=" min"/>
+                </TextBlock>
             </StackPanel>
         </Grid>
     </Border>

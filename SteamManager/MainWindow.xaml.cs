@@ -1,10 +1,10 @@
-﻿using System.Windows;
+﻿using Wpf.Ui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using SteamManager.ViewModels;
 
 namespace SteamManager;
 
-public partial class MainWindow : Window
+public partial class MainWindow : FluentWindow
 {
     public MainWindow()
     {
