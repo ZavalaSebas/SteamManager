@@ -20,10 +20,18 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        StartApplication();
+
+        if (e.Args.Length >= 2 && e.Args[0] == "--game" && uint.TryParse(e.Args[1], out uint appId))
+        {
+            StartGameHelperMode(appId);
+        }
+        else
+        {
+            StartLauncherMode();
+        }
     }
 
-    private void StartApplication()
+    private void StartLauncherMode()
     {
         var services = new ServiceCollection();
         ConfigureServices(services);
@@ -38,6 +46,55 @@ public partial class App : Application
 
         _ = InitializeSteamAsync(mainViewModel);
         _ = mainViewModel.LoadGamesCommand.ExecuteAsync(null);
+    }
+
+    private void StartGameHelperMode(uint appId)
+    {
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        Services = services.BuildServiceProvider();
+
+        var imageCacheService = Services.GetRequiredService<IImageCacheService>();
+        UrlToCachedImageConverter.SetCacheService(imageCacheService);
+
+        SteamContext = Services.GetRequiredService<SteamContext>();
+
+        CoInitializeEx(0, COINIT_APARTMENTTHREADED);
+        try
+        {
+            bool initialized = SteamContext.Initialize(appId);
+            if (!initialized)
+            {
+                MessageBox.Show("Failed to initialize Steam for this game.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1);
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Steam error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(1);
+            return;
+        }
+
+        var gameManagerVm = new GameManagerViewModel(SteamContext, imageCacheService);
+        var game = new GameInfo { AppId = appId };
+        gameManagerVm.SelectGameCommand.Execute(game);
+
+        var mainVm = new MainViewModel(
+            SteamContext,
+            Services.GetRequiredService<IGameLibraryService>(),
+            imageCacheService)
+        {
+            CurrentViewModel = gameManagerVm,
+            StatusMessage = $"Loading {game.Name}..."
+        };
+
+        var mainWindow = new MainWindow { DataContext = mainVm };
+        mainWindow.Show();
+
+        StartCallbackTimer();
+        gameManagerVm.LoadAchievementsCommand.Execute(null);
     }
 
     private static void ConfigureServices(IServiceCollection services)

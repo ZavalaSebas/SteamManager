@@ -102,6 +102,17 @@ public partial class GamePickerViewModel : ObservableObject
     private void SelectGame(GameInfo? game)
     {
         if (game == null) return;
-        OnGameSelected?.Invoke(game);
+
+        string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName
+            ?? System.IO.Path.Combine(System.AppContext.BaseDirectory, "SteamManager.exe");
+
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = exePath,
+            Arguments = $"--game {game.AppId}",
+            UseShellExecute = true
+        });
+
+        System.Windows.Application.Current.Shutdown();
     }
 }
