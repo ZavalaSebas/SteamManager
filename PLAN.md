@@ -5,7 +5,7 @@
 | Aspecto | Decisión |
 |---------|----------|
 | Nombre | **SteamNexus** |
-| Runtime | .NET 9 |
+| Runtime | .NET 10 |
 | UI | WPF + WPFUI |
 | Steam API | `steam_api64.dll` via P/Invoke directo (NO steamclient.dll) |
 | Patrón | MVVM con CommunityToolkit.Mvvm |

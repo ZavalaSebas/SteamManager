@@ -5,7 +5,7 @@
 ### Your Steam library, your rules.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![.NET 9](https://img.shields.io/badge/.NET-9-purple.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![.NET 10](https://img.shields.io/badge/.NET-10-purple.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-0078d4.svg)](https://www.microsoft.com/windows)
 [![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20WPFUI-9b59b6.svg)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
 [![Version](https://img.shields.io/badge/Version-0.1.0-2ecc71.svg)](https://github.com/ZavalaSebas/SteamNexus/releases)
@@ -20,13 +20,13 @@ Manage your Steam achievements and statistics with a modern, clean interface.
 
 ## What is SteamNexus?
 
-A modern Windows desktop application for managing Steam game achievements and statistics. Built with **C# / .NET 9** and the official [Steamworks SDK](https://partner.steamgames.com/doc/sdk/api) (`steam_api64.dll`), it provides a clean, fast interface for viewing, unlocking, and locking achievements across your entire game library.
+A modern Windows desktop application for managing Steam game achievements and statistics. Built with **C# / .NET 10** and the official [Steamworks SDK](https://partner.steamgames.com/doc/sdk/api) (`steam_api64.dll`), it provides a clean, fast interface for viewing, unlocking, and locking achievements across your entire game library.
 
 SteamNexus replaces the aging [Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager) with a modern codebase — UI virtualization for large libraries, smart unlock with anti-detection delays, image caching, and a single portable executable.
 
 No memory injection. No process hooking. No modified files. Just the official Steamworks API doing what it was designed to do.
 
-> Born from the idea behind Steam Achievement Manager by Gibbed, rebuilt from scratch in .NET 9 with a native WPF interface and the official Steamworks SDK.
+> Born from the idea behind Steam Achievement Manager by Gibbed, rebuilt from scratch in .NET 10 with a native WPF interface and the official Steamworks SDK.
 
 ---
 
@@ -74,7 +74,7 @@ dotnet publish src/SteamNexus/SteamNexus.csproj -c Release -r win-x64 --self-con
 
 - **Windows 10 or 11** (x64)
 - **[Steam client](https://store.steampowered.com/about/)** running and logged in
-- **.NET 9 Runtime** (or self-contained publish)
+- **.NET 10 Runtime** (or self-contained publish)
 
 ---
 
@@ -131,7 +131,7 @@ No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
 | Component | Technology |
 |-----------|------------|
 | Language | C# 12 |
-| Runtime | .NET 9 |
+| Runtime | .NET 10 |
 | UI | WPF + WPFUI |
 | MVVM | CommunityToolkit.Mvvm |
 | Testing | xUnit |

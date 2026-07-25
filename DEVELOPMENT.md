@@ -7,7 +7,7 @@ This document serves as a guide to this specific project AND as a reference for 
 SteamNexus is a modern rewrite of [Gibbed's Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager), originally built in 2008 with .NET Framework and Windows Forms. The original uses reverse-engineered access to Steam's internal `steamclient.dll`, has two separate executables, a broken image loading system, and a UI that hasn't aged well.
 
 SteamNexus replaces it with:
-- **.NET 9 + WPF + WPFUI** — modern, GPU-accelerated UI with virtualization
+- **.NET 10 + WPF + WPFUI** — modern, GPU-accelerated UI with virtualization
 - **Official Steamworks SDK** (`steam_api64.dll`) — stable, documented, no reverse engineering
 - **Single executable** — portable, no installation, no dependencies
 - **MVVM architecture** — clean separation of concerns with CommunityToolkit.Mvvm
@@ -43,7 +43,7 @@ SteamNexus replaces it with:
 | MVVM | CommunityToolkit.Mvvm | Source generators, minimal boilerplate |
 | Image format | PNG/JPG | Native WPF support, no extra libraries |
 | Persistence | JSON in `%LocalAppData%` | Simple, no database needed |
-| Target | .NET 9 | LTS, stable, good WPF support |
+| Target | .NET 10 | Latest, stable, good WPF support |
 
 ### What we rejected
 
