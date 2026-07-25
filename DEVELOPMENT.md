@@ -260,8 +260,6 @@ Benefits: human-readable, merge-friendly, no VS-generated garbage.
 
 Run with: `dotnet test SteamManager.slnx -c Release`
 
-> **Note**: Tests require the main project to be built with x86 architecture first. Due to `<RuntimeIdentifier>win-x86</RuntimeIdentifier>` in the main project, the test runner (AnyCPU/64-bit) cannot load the 32-bit SteamManager.dll directly. Build the solution first with `dotnet build SteamManager.slnx -c Release` to ensure SteamManager.dll is available in the test output directory.
-
 ### Planned test structure
 
 Tests will follow the pattern validated in OrbSpoofer (21 xUnit tests). Categories and specific tests will be defined as we implement each feature:
