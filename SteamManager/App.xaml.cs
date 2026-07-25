@@ -3,6 +3,7 @@ using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SteamManager.Converters;
+using SteamManager.Models;
 using SteamManager.Services;
 using SteamManager.Steam;
 using SteamManager.ViewModels;
@@ -19,8 +20,22 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        if (e.Args.Length >= 2 && e.Args[0] == "--game")
+        {
+            if (uint.TryParse(e.Args[1], out uint appId))
+            {
+                StartGameHelperMode(appId);
+                return;
+            }
+        }
+
+        StartLauncherMode();
+    }
+
+    private void StartLauncherMode()
+    {
         var services = new ServiceCollection();
-        ConfigureServices(services);
+        ConfigureLauncherServices(services);
         Services = services.BuildServiceProvider();
 
         var imageCacheService = Services.GetRequiredService<IImageCacheService>();
@@ -30,12 +45,31 @@ public partial class App : Application
         var mainWindow = new MainWindow { DataContext = mainViewModel };
         mainWindow.Show();
 
-        await InitializeSteamAsync(mainViewModel);
-
-        await mainViewModel.LoadGamesCommand.ExecuteAsync(null);
+        _ = InitializeSteamAsync(mainViewModel);
+        _ = mainViewModel.LoadGamesCommand.ExecuteAsync(null);
     }
 
-    private static void ConfigureServices(IServiceCollection services)
+    private void StartGameHelperMode(uint appId)
+    {
+        var services = new ServiceCollection();
+        ConfigureGameHelperServices(services, appId);
+        Services = services.BuildServiceProvider();
+
+        var imageCacheService = Services.GetRequiredService<IImageCacheService>();
+        UrlToCachedImageConverter.SetCacheService(imageCacheService);
+
+        var gameManagerVm = Services.GetRequiredService<GameManagerViewModel>();
+
+        var game = new GameInfo { AppId = appId };
+        gameManagerVm.SelectGameCommand.Execute(game);
+
+        var mainWindow = new MainWindow { DataContext = gameManagerVm };
+        mainWindow.Show();
+
+        InitializeGameHelperSteam(gameManagerVm, appId);
+    }
+
+    private static void ConfigureLauncherServices(IServiceCollection services)
     {
         services.AddLogging(builder =>
         {
@@ -55,6 +89,23 @@ public partial class App : Application
         services.AddTransient<GameManagerViewModel>();
     }
 
+    private static void ConfigureGameHelperServices(IServiceCollection services, uint appId)
+    {
+        services.AddLogging(builder =>
+        {
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Information);
+        });
+
+        services.AddSingleton<SteamClient>();
+        services.AddSingleton<SteamContext>();
+        services.AddSingleton<IImageCacheService, ImageCacheService>();
+        services.AddSingleton<ISmartUnlockService, SmartUnlockService>();
+        services.AddSingleton<IConfigService, ConfigService>();
+
+        services.AddTransient<GameManagerViewModel>();
+    }
+
     private static async Task InitializeSteamAsync(MainViewModel mainViewModel)
     {
         try
@@ -67,8 +118,7 @@ public partial class App : Application
             {
                 try
                 {
-                    uint appId = Config.SpacewarAppId;
-                    return SteamContext.Initialize(appId);
+                    return SteamContext.Initialize(Config.SpacewarAppId);
                 }
                 catch
                 {
@@ -96,6 +146,24 @@ public partial class App : Application
         }
     }
 
+    private static void InitializeGameHelperSteam(GameManagerViewModel gameManagerVm, uint appId)
+    {
+        SteamContext = Services.GetRequiredService<SteamContext>();
+
+        bool initialized = Task.Run(() => SteamContext.Initialize(appId)).Result;
+
+        if (initialized)
+        {
+            gameManagerVm.StatusMessage = $"Loaded {gameManagerVm.SelectedGame?.Name ?? appId.ToString()} achievements";
+            gameManagerVm.LoadAchievementsCommand.Execute(null);
+            StartCallbackTimer();
+        }
+        else
+        {
+            gameManagerVm.StatusMessage = "Failed to connect to Steam.";
+        }
+    }
+
     private static void StartCallbackTimer()
     {
         _callbackTimer = new DispatcherTimer
@@ -111,7 +179,6 @@ public partial class App : Application
             }
             catch
             {
-                // Silently ignore callback errors
             }
         };
 

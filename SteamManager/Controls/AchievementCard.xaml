@@ -4,29 +4,29 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Height="60">
-    <Border CornerRadius="8"
-            Background="{DynamicResource ApplicationBackgroundBrush}"
-            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+             Cursor="Hand">
+    <Border x:Name="CardBorder"
+            CornerRadius="6"
+            Background="#252525"
+            BorderBrush="#3A3A3A"
             BorderThickness="1"
             Padding="12"
-            Margin="0,4">
+            MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="48"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
-                    Width="36" Height="36"
+                    Width="40" Height="40"
                     CornerRadius="4"
-                    Background="{DynamicResource ControlStrongFillColorDefaultBrush}"
+                    Background="#1A1A1A"
                     VerticalAlignment="Center">
-                <TextBlock Text="🏆"
-                           FontSize="20"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
+                <Image Source="{Binding Icon}"
+                       Stretch="Uniform"
+                       Width="32" Height="32"/>
             </Border>
 
             <StackPanel Grid.Column="1"
@@ -35,18 +35,28 @@
                 <TextBlock Text="{Binding DisplayName}"
                            FontSize="13"
                            FontWeight="SemiBold"
+                           Foreground="White"
                            TextTrimming="CharacterEllipsis"/>
                 <TextBlock Text="{Binding Description}"
                            FontSize="11"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                           TextTrimming="CharacterEllipsis"/>
+                           Foreground="#888888"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="400"/>
             </StackPanel>
 
-            <CheckBox Grid.Column="2"
-                      IsChecked="{Binding IsUnlocked}"
-                      IsEnabled="False"
-                      VerticalAlignment="Center"
-                      Margin="8,0,0,0"/>
+            <Border Grid.Column="2"
+                    Width="24" Height="24"
+                    CornerRadius="12"
+                    Background="{Binding IsUnlocked, Converter={StaticResource UnlockStatusToColorConverter}}"
+                    VerticalAlignment="Center"
+                    Margin="8,0,0,0">
+                <TextBlock Text="&#xE73E;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="12"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

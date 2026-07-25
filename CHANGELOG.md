@@ -11,12 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Game enumeration approach**: Switched from Steam Web API (`GetOwnedGames`) to SAM's `games.xml` + `IsSubscribedApp()` approach. The Web API approach failed because `api.steampowered.com` requires an API key for `GetOwnedGames`, and the Steam Community XML (`/profiles/{id}/games/?xml=1`) requires authenticated session cookies.
 - **Game cover URLs**: Changed CDN hostname from `steamcdn.fra1.cdn.digitaloceantl.com` to `steamcdn-a.akamaihd.net` (the correct Steam CDN).
+- **GameCard**: Removed playtime display — SAM approach doesn't provide playtime data. Requires Steam Web API key for `GetOwnedGames` with playtime.
 
 ### Fixed
 
 - **"0 games loaded" after XML parse error**: `XDocument.Parse()` threw `XmlException: An error occurred while parsing EntityName` on games with `&` in their name (e.g., "Age of Empires II & Conquerors"). Replaced with manual string parsing and `XmlReader` with `DtdProcessing.Ignore`.
 - **Steam Community XML returns "Sign In" page**: The endpoint requires Steam session cookies which `HttpClient` doesn't have. Additionally, private profiles return HTML instead of XML regardless of authentication state.
 - **Game covers not loading**: Wrong CDN hostname prevented images from downloading. Fixed URL pattern.
+- **UI theme**: MainWindow changed from `Window` to `FluentWindow` (WPF-UI) with dark background (#1A1A1A).
 
 ### Added
 
@@ -27,11 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`GameInfo.CoverImage`**: `ObservableProperty` for async image loading with UI binding support.
 - **`GamePickerViewModel.LoadCoversAsync()`**: Background loading of game covers after library loads.
 - **`UrlToCachedImageConverter.cs`**: WPF value converter for URL-to-cached-image conversion.
+- **`BoolToVisibilityConverter.cs`**: WPF converter for loading state visibility.
 - **`ISteamUser012.cs`**: Interface wrapper to get user's SteamID via `GetSteamId()`.
 - **`ISteamApps001.cs`**: Interface wrapper for `GetAppData(appId, key)`.
 - **`SteamContext.SteamId`**: Public property returning the logged-in user's SteamID64.
 - **`SteamApps.GetAppData()`**: New method exposed via `SteamApps` wrapper.
 - **`SteamWebApiKey` constant**: Placeholder for future API key support (currently unused).
+- **Navigation**: Game selection navigates to `GameManagerViewModel`; `BackToGamesCommand` returns to picker.
 
 ### Known Issues Resolved
 
@@ -40,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | "0 games loaded" after XML parse error | `XDocument.Parse()` fails on `&` entities in game names | Manual string parsing + `XmlReader` with `DtdProcessing.Ignore` |
 | "0 games loaded" after "Sign In" HTML | Steam Community XML requires session cookies + private profile returns HTML | Switched to SAM approach: `games.xml` + `IsSubscribedApp()` |
 | Game covers not showing | Wrong CDN hostname (`steamcdn.fra1.cdn.digitaloceantl.com` doesn't resolve) | Changed to `steamcdn-a.akamaihd.net` |
+| Window background white despite dark theme | `Window` doesn't apply WPF-UI theme; needed `FluentWindow` | Changed `MainWindow` base class to `FluentWindow` |
 
 ---
 

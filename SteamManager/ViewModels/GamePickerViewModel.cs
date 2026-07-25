@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamManager.Models;
@@ -7,10 +8,6 @@ using SteamManager.Steam;
 
 namespace SteamManager.ViewModels;
 
-/// <summary>
-/// ViewModel for the game picker view.
-/// Displays a virtualized grid of the user's Steam games.
-/// </summary>
 public partial class GamePickerViewModel : ObservableObject
 {
     private readonly SteamContext _steamContext;
@@ -29,8 +26,6 @@ public partial class GamePickerViewModel : ObservableObject
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
-
-    public event Action<GameInfo>? GameSelected;
 
     public GamePickerViewModel(
         SteamContext steamContext,
@@ -105,9 +100,26 @@ public partial class GamePickerViewModel : ObservableObject
     [RelayCommand]
     private void SelectGame(GameInfo? game)
     {
-        if (game != null)
+        if (game == null) return;
+
+        string exePath = Process.GetCurrentProcess().MainModule?.FileName;
+        if (string.IsNullOrEmpty(exePath))
         {
-            GameSelected?.Invoke(game);
+            exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "SteamManager.exe");
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = $"--game {game.AppId}",
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            StatusMessage = $"Failed to launch game manager for {game.Name}";
         }
     }
 }

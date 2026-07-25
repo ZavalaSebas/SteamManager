@@ -55,10 +55,6 @@
                            MaxHeight="36"
                            TextTrimming="CharacterEllipsis"
                            Foreground="White"/>
-                <TextBlock Foreground="#888888" FontSize="10" Margin="0,4,0,0">
-                    <Run Text="{Binding PlaytimeMinutes, Mode=OneWay}"/>
-                    <Run Text=" min"/>
-                </TextBlock>
             </StackPanel>
         </Grid>
     </Border>

@@ -961,6 +961,7 @@ If critical bug found after release:
 | Uses internal Steam API | `steamclient.dll` is not officially documented | Same approach as original SAM, proven stable |
 | **32-bit (x86) platform only** | Steam ships only a 32-bit `steamclient.dll`; Windows cannot load a 32-bit DLL into a 64-bit process | Project targets `win-x86` (`<RuntimeIdentifier>win-x86</RuntimeIdentifier>`); publish native exe with `dotnet publish -r win-x86` |
 | **vtable layouts byte-aligned to SAM** | `steamclient.dll` is a C++ object with a per-version vtable; padding/extra entries from one SDK version break ours | Vtable structs in `ISteam*.cs` are copied 1-to-1 from gibbed/SAM and must NOT be reordered or padded. See `SAM.API/Interfaces/` |
+| **No playtime, no achievement details from library** | SAM approach (`games.xml` + `IsSubscribedApp`) only tells if user owns a game — no per-user data (playtime, achievements, stats) | Steam Web API `GetOwnedGames` returns playtime but requires API key. Alternative: parse `steamcommunity.com/profiles/{id}/games/?xml=1` with session cookies (requires login flow). See `SteamWebApiKey` constant in `Config.cs` for future implementation. |
 
 ## Known Issues & Resolutions
 

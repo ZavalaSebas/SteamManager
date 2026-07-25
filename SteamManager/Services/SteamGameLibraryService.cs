@@ -11,51 +11,49 @@ public class SteamGameLibraryService : IGameLibraryService
     private readonly SteamContext _steamContext;
     private readonly HttpClient _httpClient;
     private const string GamesListUrl = "https://gib.me/sam/games.xml";
+    private static readonly string LogFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "steammanager_launcher.txt");
 
     public SteamGameLibraryService(SteamContext steamContext)
     {
         _steamContext = steamContext;
-        _httpClient = new HttpClient();
+        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
         _httpClient.DefaultRequestHeaders.Add("User-Agent", Config.UserAgent);
     }
 
     public async Task<List<GameInfo>> GetOwnedGamesAsync()
     {
-        if (!_steamContext.IsInitialized)
-            return [];
-
         var games = new List<GameInfo>();
 
-        List<uint> appIds;
         try
         {
-            appIds = await DownloadGameListAsync();
-        }
-        catch
-        {
-            var single = TryGetSingleGame();
-            if (single != null)
-                games.Add(single);
-            return games;
-        }
+            Log("Downloading game list...");
+            List<uint> appIds = await DownloadGameListAsync();
+            Log($"Downloaded {appIds.Count} app IDs, checking ownership (IsInitialized={_steamContext.IsInitialized})...");
 
-        foreach (var appId in appIds)
-        {
-            if (_steamContext.Apps.IsSubscribedApp(appId))
+            foreach (var appId in appIds)
             {
-                string name = _steamContext.Apps.GetAppData(appId, "name") ?? $"App {appId}";
-
-                games.Add(new GameInfo
+                if (_steamContext.IsInitialized && _steamContext.Apps.IsSubscribedApp(appId))
                 {
-                    AppId = appId,
-                    Name = name,
-                    PlaytimeMinutes = 0,
-                    CoverUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
-                    HeaderImageUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
-                    LogoUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/logo.png",
-                    ImgIconUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/capsule_32x32.jpg"
-                });
+                    string name = _steamContext.Apps.GetAppData(appId, "name") ?? $"Game {appId}";
+
+                    games.Add(new GameInfo
+                    {
+                        AppId = appId,
+                        Name = name,
+                        PlaytimeMinutes = 0,
+                        CoverUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
+                        HeaderImageUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
+                        LogoUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/logo.png",
+                        ImgIconUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/capsule_32x32.jpg"
+                    });
+                }
             }
+
+            Log($"User owns {games.Count} games");
+        }
+        catch (Exception ex)
+        {
+            Log($"Error: {ex.Message}");
         }
 
         return games;
@@ -66,6 +64,7 @@ public class SteamGameLibraryService : IGameLibraryService
         var appIds = new List<uint>();
 
         string xml = await _httpClient.GetStringAsync(GamesListUrl);
+        Log("Got XML response");
 
         using var stringReader = new StringReader(xml);
         var settings = new XmlReaderSettings
@@ -90,18 +89,12 @@ public class SteamGameLibraryService : IGameLibraryService
         return appIds;
     }
 
-    private GameInfo? TryGetSingleGame()
+    private static void Log(string msg)
     {
-        if (_steamContext.Apps.IsSubscribedApp(Config.SpacewarAppId))
+        try
         {
-            string name = _steamContext.Apps.GetAppData(Config.SpacewarAppId, "name") ?? "Spacewar (Test)";
-            return new GameInfo
-            {
-                AppId = Config.SpacewarAppId,
-                Name = name,
-                PlaytimeMinutes = 0
-            };
+            System.IO.File.AppendAllText(LogFile, $"[{DateTime.Now:HH:mm:ss}] {msg}{Environment.NewLine}");
         }
-        return null;
+        catch { }
     }
 }

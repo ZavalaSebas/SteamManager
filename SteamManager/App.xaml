@@ -5,7 +5,8 @@
              xmlns:local="clr-namespace:SteamManager"
              xmlns:views="clr-namespace:SteamManager.Views"
              xmlns:viewModels="clr-namespace:SteamManager.ViewModels"
-             xmlns:converters="clr-namespace:SteamManager.Converters">
+             xmlns:converters="clr-namespace:SteamManager.Converters"
+             xmlns:controls="clr-namespace:SteamManager.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -15,6 +16,7 @@
 
             <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <controls:UnlockStatusToColorConverter x:Key="UnlockStatusToColorConverter"/>
 
             <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">
                 <views:GamePickerView />

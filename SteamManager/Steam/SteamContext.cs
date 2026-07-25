@@ -6,12 +6,12 @@ namespace SteamManager.Steam;
 /// </summary>
 public class SteamContext : IDisposable
 {
-    private readonly SteamClient _client;
+    private SteamClient _client;
 
     public SteamClient Client => _client;
-    public SteamAchievements Achievements { get; }
-    public SteamStats Stats { get; }
-    public SteamApps Apps { get; }
+    public SteamAchievements Achievements { get; private set; }
+    public SteamStats Stats { get; private set; }
+    public SteamApps Apps { get; private set; }
 
     public bool IsInitialized => _client.IsInitialized;
     public uint AppId => _client.CurrentAppId;
@@ -31,6 +31,20 @@ public class SteamContext : IDisposable
     public bool Initialize(uint appId)
     {
         return _client.Init(appId);
+    }
+
+    /// <summary>
+    /// Changes the current AppID and reinitializes the Steam session.
+    /// This disconnects from the current game and connects to the new one.
+    /// </summary>
+    public bool ChangeAppId(uint newAppId)
+    {
+        _client.Dispose();
+        _client = new SteamClient();
+        Achievements = new SteamAchievements(_client);
+        Stats = new SteamStats(_client);
+        Apps = new SteamApps(_client);
+        return _client.Init(newAppId);
     }
 
     /// <summary>

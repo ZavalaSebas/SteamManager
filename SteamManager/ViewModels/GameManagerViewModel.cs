@@ -7,9 +7,6 @@ using SteamManager.Steam;
 
 namespace SteamManager.ViewModels;
 
-/// <summary>
-/// ViewModel for managing achievements and stats of a single game.
-/// </summary>
 public partial class GameManagerViewModel : ObservableObject
 {
     private readonly SteamContext _steamContext;
@@ -35,11 +32,10 @@ public partial class GameManagerViewModel : ObservableObject
 
     public event Action? RequestBack;
 
-    public GameManagerViewModel(SteamContext steamContext, GameInfo game, IImageCacheService? imageCacheService = null)
+    public GameManagerViewModel(SteamContext steamContext, IImageCacheService? imageCacheService = null)
     {
         _steamContext = steamContext;
         _imageCacheService = imageCacheService;
-        SelectedGame = game;
     }
 
     [RelayCommand]
@@ -47,14 +43,35 @@ public partial class GameManagerViewModel : ObservableObject
     {
         if (SelectedGame == null) return;
 
+        string logFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "steammanager_gamemanager.txt");
+        void Log(string msg) => System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss}] {msg}{Environment.NewLine}");
+
         IsLoading = true;
-        StatusMessage = "Loading achievements...";
+        StatusMessage = $"Loading {SelectedGame.Name}...";
 
         try
         {
             await Task.Run(() =>
             {
+                Log($"Changing AppId to {SelectedGame.AppId}...");
+                bool initResult = _steamContext.ChangeAppId(SelectedGame.AppId);
+                Log($"ChangeAppId result: {initResult}, IsInitialized: {_steamContext.IsInitialized}");
+
+                if (!_steamContext.IsInitialized)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        StatusMessage = "Failed to initialize Steam for this game";
+                        Achievements = new ObservableCollection<AchievementInfo>();
+                        TotalCount = 0;
+                        UnlockedCount = 0;
+                    });
+                    return;
+                }
+
                 var achievements = _steamContext.Achievements.GetAllAchievements();
+                Log($"Got {achievements.Count} achievements");
+
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     Achievements = new ObservableCollection<AchievementInfo>(achievements);
@@ -67,12 +84,20 @@ public partial class GameManagerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            Log($"Exception: {ex}");
             StatusMessage = $"Error: {ex.Message}";
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    [RelayCommand]
+    public void SelectGame(GameInfo? game)
+    {
+        if (game == null) return;
+        SelectedGame = game;
     }
 
     [RelayCommand]

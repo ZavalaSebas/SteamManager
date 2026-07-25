@@ -5,8 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:SteamManager.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800">
-    <Grid Margin="16">
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#1A1A1A">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -15,22 +16,43 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="← "
-                       FontSize="16"
-                       VerticalAlignment="Center"/>
+            <Button Content="&#xE72B;"
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="16"
+                    Command="{Binding BackCommand}"
+                    Background="Transparent"
+                    Foreground="#888888"
+                    BorderThickness="0"
+                    Padding="8,4"
+                    VerticalAlignment="Center"
+                    Cursor="Hand"/>
             <TextBlock Text="{Binding SelectedGame.Name}"
                        FontSize="24"
-                       FontWeight="Bold"/>
+                       FontWeight="Light"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="{Binding StatusMessage}"
+            <TextBlock Foreground="#666666" FontSize="13" VerticalAlignment="Center">
+                <Run Text="{Binding UnlockedCount, Mode=OneWay}"/>
+                <Run Text="/"/>
+                <Run Text="{Binding TotalCount, Mode=OneWay}"/>
+                <Run Text=" achievements unlocked"/>
+            </TextBlock>
+            <TextBlock Text=" | "
+                       Foreground="#444444"
                        FontSize="13"
-                       VerticalAlignment="Center"/>
+                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <ProgressBar IsIndeterminate="True"
+                         Width="100"
+                         Height="8"
+                         Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
         <ScrollViewer Grid.Row="2"
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding Achievements}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -39,7 +61,9 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <controls:AchievementCard DataContext="{Binding}"/>
+                        <controls:AchievementCard DataContext="{Binding}"
+                                                  ToggleCommand="{Binding DataContext.ToggleAchievementCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                  Margin="0,0,0,4"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -49,9 +73,17 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0,16,0,0">
+            <TextBlock Text="{Binding StatusMessage}"
+                       FontSize="12"
+                       Foreground="#666666"
+                       VerticalAlignment="Center"
+                       Margin="0,0,16,0"/>
             <Button Content="Store Stats"
                     Command="{Binding StoreStatsCommand}"
-                    Margin="0,0,8,0"/>
+                    Background="#3A3A3A"
+                    Foreground="White"
+                    Padding="16,8"
+                    BorderThickness="0"/>
         </StackPanel>
     </Grid>
 </UserControl>
