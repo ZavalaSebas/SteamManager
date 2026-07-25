@@ -1,9 +1,23 @@
 ﻿<Application x:Class="SteamManager.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:local="clr-namespace:SteamManager"
-             StartupUri="MainWindow.xaml">
+             xmlns:views="clr-namespace:SteamManager.Views"
+             xmlns:viewModels="clr-namespace:SteamManager.ViewModels">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">
+                <views:GamePickerView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:GameManagerViewModel}">
+                <views:GameManagerView />
+            </DataTemplate>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

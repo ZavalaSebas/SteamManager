@@ -19,8 +19,7 @@ public class SteamAchievements
     /// </summary>
     public uint GetAchievementCount()
     {
-        return SteamNative.SteamAPI_ISteamUserStats_GetNumAchievements(
-            _client.GetUserStatsPointer());
+        return _client.UserStats.GetNumAchievements();
     }
 
     /// <summary>
@@ -28,11 +27,7 @@ public class SteamAchievements
     /// </summary>
     public string GetAchievementName(uint index)
     {
-        IntPtr namePtr = SteamNative.SteamAPI_ISteamUserStats_GetAchievementName(
-            _client.GetUserStatsPointer(), index);
-        return namePtr != IntPtr.Zero
-            ? System.Runtime.InteropServices.Marshal.PtrToStringAnsi(namePtr) ?? string.Empty
-            : string.Empty;
+        return _client.UserStats.GetAchievementName(index);
     }
 
     /// <summary>
@@ -40,8 +35,7 @@ public class SteamAchievements
     /// </summary>
     public bool GetAchievement(string name, out bool isUnlocked)
     {
-        return SteamNative.SteamAPI_ISteamUserStats_GetAchievement(
-            _client.GetUserStatsPointer(), name, out isUnlocked);
+        return _client.UserStats.GetAchievement(name, out isUnlocked);
     }
 
     /// <summary>
@@ -49,8 +43,7 @@ public class SteamAchievements
     /// </summary>
     public bool SetAchievement(string name)
     {
-        return SteamNative.SteamAPI_ISteamUserStats_SetAchievement(
-            _client.GetUserStatsPointer(), name);
+        return _client.UserStats.SetAchievement(name);
     }
 
     /// <summary>
@@ -58,8 +51,7 @@ public class SteamAchievements
     /// </summary>
     public bool ClearAchievement(string name)
     {
-        return SteamNative.SteamAPI_ISteamUserStats_ClearAchievement(
-            _client.GetUserStatsPointer(), name);
+        return _client.UserStats.ClearAchievement(name);
     }
 
     /// <summary>
@@ -67,8 +59,7 @@ public class SteamAchievements
     /// </summary>
     public bool GetAchievementAndUnlockTime(string name, out bool isUnlocked, out uint unlockTime)
     {
-        return SteamNative.SteamAPI_ISteamUserStats_GetAchievementAndUnlockTime(
-            _client.GetUserStatsPointer(), name, out isUnlocked, out unlockTime);
+        return _client.UserStats.GetAchievementAndUnlockTime(name, out isUnlocked, out unlockTime);
     }
 
     /// <summary>
@@ -76,11 +67,7 @@ public class SteamAchievements
     /// </summary>
     public string GetAchievementDisplayAttribute(string name, string key)
     {
-        IntPtr valuePtr = SteamNative.SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute(
-            _client.GetUserStatsPointer(), name, key);
-        return valuePtr != IntPtr.Zero
-            ? System.Runtime.InteropServices.Marshal.PtrToStringAnsi(valuePtr) ?? string.Empty
-            : string.Empty;
+        return _client.UserStats.GetAchievementDisplayAttribute(name, key);
     }
 
     /// <summary>
@@ -89,8 +76,7 @@ public class SteamAchievements
     /// </summary>
     public int GetAchievementIcon(string name)
     {
-        return SteamNative.SteamAPI_ISteamUserStats_GetAchievementIcon(
-            _client.GetUserStatsPointer(), name);
+        return _client.UserStats.GetAchievementIcon(name);
     }
 
     /// <summary>
@@ -98,8 +84,7 @@ public class SteamAchievements
     /// </summary>
     public bool IndicateAchievementProgress(string name, uint currentProgress, uint maxProgress)
     {
-        return SteamNative.SteamAPI_ISteamUserStats_IndicateAchievementProgress(
-            _client.GetUserStatsPointer(), name, currentProgress, maxProgress);
+        return _client.UserStats.IndicateAchievementProgress(name, currentProgress, maxProgress);
     }
 
     /// <summary>

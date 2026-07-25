@@ -1,7 +1,10 @@
 ﻿using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SteamManager.Services;
 using SteamManager.Steam;
+using SteamManager.ViewModels;
 
 namespace SteamManager;
 
@@ -9,8 +12,9 @@ public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
     public static SteamContext? SteamContext { get; private set; }
+    private static DispatcherTimer? _callbackTimer;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -18,7 +22,13 @@ public partial class App : Application
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
 
-        InitializeSteam();
+        var mainViewModel = Services.GetRequiredService<MainViewModel>();
+        var mainWindow = new MainWindow { DataContext = mainViewModel };
+        mainWindow.Show();
+
+        await InitializeSteamAsync(mainViewModel);
+
+        await mainViewModel.LoadGamesCommand.ExecuteAsync(null);
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -31,21 +41,79 @@ public partial class App : Application
 
         services.AddSingleton<SteamClient>();
         services.AddSingleton<SteamContext>();
+        services.AddSingleton<IGameLibraryService, SteamGameLibraryService>();
+
+        services.AddTransient<MainViewModel>();
+        services.AddTransient<GamePickerViewModel>();
+        services.AddTransient<GameManagerViewModel>();
     }
 
-    private static void InitializeSteam()
+    private static async Task InitializeSteamAsync(MainViewModel mainViewModel)
     {
-        SteamContext = Services.GetRequiredService<SteamContext>();
-
-        uint appId = Config.SpacewarAppId;
-        if (SteamContext.Initialize(appId))
+        try
         {
-            SteamContext.RequestStats();
+            mainViewModel.StatusMessage = "Connecting to Steam...";
+
+            SteamContext = Services.GetRequiredService<SteamContext>();
+
+            bool initialized = await Task.Run(() =>
+            {
+                try
+                {
+                    uint appId = Config.SpacewarAppId;
+                    return SteamContext.Initialize(appId);
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+
+            if (initialized)
+            {
+                mainViewModel.StatusMessage = "Connected. Loading games...";
+                StartCallbackTimer();
+            }
+            else
+            {
+                mainViewModel.StatusMessage = "Failed to connect to Steam. Running in offline mode.";
+            }
         }
+        catch (DllNotFoundException)
+        {
+            mainViewModel.StatusMessage = "steamclient.dll not found. Running in offline mode.";
+        }
+        catch (Exception ex)
+        {
+            mainViewModel.StatusMessage = $"Steam init error: {ex.Message}";
+        }
+    }
+
+    private static void StartCallbackTimer()
+    {
+        _callbackTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(Config.CallbackTimerMs)
+        };
+
+        _callbackTimer.Tick += (_, _) =>
+        {
+            try
+            {
+                SteamContext?.RunCallbacks();
+            }
+            catch
+            {
+                // Silently ignore callback errors
+            }
+        };
+
+        _callbackTimer.Start();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _callbackTimer?.Stop();
         SteamContext?.Dispose();
         base.OnExit(e);
     }

@@ -19,7 +19,6 @@ public class SteamApps
     /// </summary>
     public bool IsSubscribedApp(uint appId)
     {
-        return SteamNative.SteamAPI_ISteamApps_IsSubscribedApp(
-            _client.GetAppsPointer(), appId);
+        return _client.Apps.IsSubscribedApp(appId);
     }
 }

@@ -3,6 +3,18 @@ using System.Runtime.InteropServices;
 namespace SteamManager.Steam;
 
 /// <summary>
+/// Callback message envelope from Steam_BGetCallback.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct CallbackMessage
+{
+    public int User;
+    public int Id;
+    public IntPtr ParamPointer;
+    public int ParamSize;
+}
+
+/// <summary>
 /// Callback parameter structs matching the Steam API memory layout.
 /// </summary>
 public static class SteamCallbackStructs

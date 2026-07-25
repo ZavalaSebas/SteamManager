@@ -16,10 +16,9 @@ public class SteamIcons
     /// <summary>
     /// Gets the size of an image by its handle.
     /// </summary>
-    public bool GetImageSize(int imageHandle, out uint width, out uint height)
+    public bool GetImageSize(int imageHandle, out int width, out int height)
     {
-        return SteamNative.SteamAPI_ISteamUtils_GetImageSize(
-            _client.GetUtilsPointer(), imageHandle, out width, out height);
+        return _client.Utils.GetImageSize(imageHandle, out width, out height);
     }
 
     /// <summary>
@@ -30,14 +29,13 @@ public class SteamIcons
         if (imageHandle == 0)
             return null;
 
-        if (!GetImageSize(imageHandle, out uint width, out uint height))
+        if (!GetImageSize(imageHandle, out int width, out int height))
             return null;
 
-        int bufferSize = (int)(width * height * 4);
+        int bufferSize = width * height * 4;
         byte[] buffer = new byte[bufferSize];
 
-        if (!SteamNative.SteamAPI_ISteamUtils_GetImageRGBA(
-            _client.GetUtilsPointer(), imageHandle, buffer, bufferSize))
+        if (!_client.Utils.GetImageRGBA(imageHandle, buffer, bufferSize))
             return null;
 
         return buffer;

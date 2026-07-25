@@ -9,7 +9,9 @@ namespace SteamManager;
 public static class Config
 {
     public const string AppName = "SteamManager";
-    public const string SteamDll = "steam_api64.dll";
+    public const string SteamDll = "steamclient.dll";
+    public const string SteamRegistryKey = @"HKEY_LOCAL_MACHINE\Software\Valve\Steam";
+    public const string SteamInstallPathValue = "InstallPath";
     public const uint SpacewarAppId = 480;
     public const int CallbackTimerMs = 100;
     public const int RequestTimeoutSeconds = 10;

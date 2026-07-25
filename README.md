@@ -20,7 +20,7 @@ Manage your Steam achievements and statistics with a modern, clean interface.
 
 ## What is SteamManager?
 
-A modern Windows desktop application for managing Steam game achievements and statistics. Built with **C# / .NET 10** and the official [Steamworks SDK](https://partner.steamgames.com/doc/sdk/api) (`steam_api64.dll`), it provides a clean, fast interface for viewing, unlocking, and locking achievements across your entire game library.
+A modern Windows desktop application for managing Steam game achievements and statistics. Built with **C# / .NET 10** and the same `steamclient.dll` approach used by the original SAM, it provides a clean, fast interface for viewing, unlocking, and locking achievements across your entire game library.
 
 SteamManager replaces the aging [Steam Achievement Manager (SAM)](https://github.com/gibbed/SteamAchievementManager) with a modern codebase — UI virtualization for large libraries, smart unlock with anti-detection delays, image caching, and a single portable executable.
 
@@ -42,7 +42,7 @@ No memory injection. No process hooking. No modified files. Just the official St
 
 ## How It Works
 
-The way Steam manages achievements is through its official API. SteamManager connects to `steam_api64.dll`, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the official API endpoints.
+The way Steam manages achievements is through its internal client library. SteamManager loads `steamclient.dll` from your Steam installation, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the same internal API that the original SAM uses.
 
 1. Launch **SteamManager** (Steam must be running and logged in)
 2. Your game library loads with covers and playtime
@@ -65,16 +65,16 @@ Grab the latest `SteamManager.exe` from [GitHub Releases](https://github.com/Zav
 ```bash
 git clone https://github.com/ZavalaSebas/SteamManager.git
 cd SteamManager
-dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true
 ```
 
 ---
 
 ## Requirements
 
-- **Windows 10 or 11** (x64)
+- **Windows 10 or 11** (x86 — 32-bit, required because Steam ships a 32-bit `steamclient.dll`)
 - **[Steam client](https://store.steampowered.com/about/)** running and logged in
-- **.NET 10 Runtime** (or self-contained publish)
+- **.NET 10 Runtime** (or self-contained publish — note: publish with `-r win-x86`)
 
 ---
 
@@ -98,7 +98,7 @@ dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x64 --self-con
 
 No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
 
-- **P/Invoke** — Direct calls to `steam_api64.dll`, no wrapper libraries
+- **Native Interop** — Loads `steamclient.dll` from Steam installation, calls via vtable
 - **MVVM** — CommunityToolkit.Mvvm source generators, no code-behind
 - **Async** — UI stays fluid while Steam API calls run in background threads
 - **Virtualized** — `VirtualizingStackPanel` renders only visible items
@@ -117,8 +117,10 @@ No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
 │  SteamClient  ·  SteamAchievements              │
 │  SteamStats   ·  SteamApps  ·  SteamIcons       │
 ├─────────────────────────────────────────────────┤
-│           P/Invoke (steam_api64.dll)            │
-│  SteamNative.cs -- all DllImport declarations   │
+│           Native Interop Layer                  │
+│  NativeWrapper.cs — vtable extraction           │
+│  SteamLoader.cs — DLL loading from registry     │
+│  steamclient.dll (from Steam installation)      │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -136,7 +138,7 @@ No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
 | MVVM | CommunityToolkit.Mvvm |
 | Testing | xUnit |
 | CI/CD | GitHub Actions |
-| Steam API | `steam_api64.dll` via P/Invoke |
+| Steam API | `steamclient.dll` via vtable/COM-style interop |
 
 ### Build & Test
 
@@ -147,8 +149,8 @@ dotnet build SteamManager.slnx -c Release
 # Test
 dotnet test SteamManager.slnx -c Release
 
-# Publish (single exe)
-dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+# Publish (single exe — 32-bit, required for steamclient.dll compatibility)
+dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true
 ```
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for the full project guide, architecture, and workflow rules.

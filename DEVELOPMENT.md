@@ -8,7 +8,7 @@ SteamManager is a modern rewrite of [Gibbed's Steam Achievement Manager (SAM)](h
 
 SteamManager replaces it with:
 - **.NET 10 + WPF + WPFUI** — modern, GPU-accelerated UI with virtualization
-- **Official Steamworks SDK** (`steam_api64.dll`) — stable, documented, no reverse engineering
+- **`steamclient.dll`** — the same internal Steam library used by the original SAM, loaded from the user's Steam installation via Windows Registry
 - **Single executable** — portable, no installation, no dependencies
 - **MVVM architecture** — clean separation of concerns with CommunityToolkit.Mvvm
 - **Smart unlock** — anti-detection delays to protect user accounts
@@ -29,8 +29,10 @@ SteamManager replaces it with:
 │  SteamClient  ·  SteamAchievements              │
 │  SteamStats   ·  SteamApps  ·  SteamIcons       │
 ├─────────────────────────────────────────────────┤
-│           P/Invoke (steam_api64.dll)            │
-│  SteamNative.cs -- all DllImport declarations   │
+│           Native Interop Layer                  │
+│  NativeWrapper.cs — vtable extraction           │
+│  SteamLoader.cs — DLL loading from registry     │
+│  steamclient.dll (from Steam installation)      │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -38,7 +40,7 @@ SteamManager replaces it with:
 
 | Decision | Choice | Why |
 |----------|--------|-----|
-| Steam API | `steam_api64.dll` (official SDK) | Stable, documented, no reverse engineering |
+| Steam API | `steamclient.dll` (internal Steam library) | Same approach as original SAM, fully portable, no external DLLs needed |
 | UI Framework | WPF + WPFUI | Modern look, single exe, GPU-accelerated |
 | MVVM | CommunityToolkit.Mvvm | Source generators, minimal boilerplate |
 | Image format | PNG/JPG | Native WPF support, no extra libraries |
@@ -49,7 +51,7 @@ SteamManager replaces it with:
 
 | Rejected | Why |
 |----------|-----|
-| `steamclient.dll` (internal) | Fragile, breaks with Steam updates, reverse-engineered |
+| `steam_api64.dll` (Steamworks SDK) | Not included with Steam, requires external DLL, distribution issues, licensing concerns |
 | WinUI 3 | Packaging complexity, MSIX requirement breaks portability |
 | Avalonia | Cross-platform unnecessary (Steam API is Windows-only) |
 | MVVM frameworks (Prism, etc.) | Overkill, CommunityToolkit is enough |
@@ -65,7 +67,8 @@ SteamManager/
 │   ├── App.xaml / App.xaml.cs         # Application entry, theme setup
 │   ├── Config.cs                      # Centralized constants (URLs, paths, timeouts)
 │   ├── Steam/                         # Steam API integration layer
-│   │   ├── SteamNative.cs            # All P/Invoke declarations
+│   │   ├── SteamLoader.cs            # DLL loading from registry
+│   │   ├── NativeWrapper.cs          # Vtable extraction and native calls
 │   │   ├── SteamClient.cs            # Init, Shutdown, RunCallbacks
 │   │   ├── SteamAchievements.cs      # Achievement read/write
 │   │   ├── SteamStats.cs             # Stats read/write
@@ -93,28 +96,50 @@ SteamManager/
 
 ### How it works
 
-SteamManager uses P/Invoke to call functions from `steam_api64.dll` directly. No wrapper libraries, no NuGet packages for Steam — just raw interop.
+SteamManager uses `steamclient.dll` — the internal Steam client library that comes with every Steam installation. This is the same approach used by the original SAM. The DLL is loaded dynamically at runtime from the user's Steam installation directory (found via Windows Registry).
+
+No wrapper libraries, no NuGet packages for Steam — just raw interop via vtable/COM-style calls.
 
 ### Initialization sequence
 
 ```
 1. Environment.SetEnvironmentVariable("SteamAppId", appId.ToString())
-2. SteamAPI_RestartAppIfNecessary(appId) → if true, exit
-3. SteamAPI_Init() → if false, error
-4. SteamUserStats.RequestCurrentStats()
-5. Wait for UserStatsReceived_t callback
-6. Ready to read achievements and stats
+2. Read Steam install path from registry: HKLM\Software\Valve\Steam\InstallPath
+3. SetDllDirectory(steamPath + ";" + steamPath + "\bin")
+4. LoadLibraryEx(steamPath + "\steamclient.dll")
+5. Resolve 3 exports: CreateInterface, Steam_BGetCallback, Steam_FreeLastCallback
+6. CreateInterface("SteamClient018") → root client object
+7. CreateSteamPipe() → IPC pipe to Steam
+8. ConnectToGlobalUser(pipe) → connect to logged-in user
+9. GetISteamUserStats013(user, pipe) → stats interface
+10. RequestUserStats() → request stats from server
+11. Wait for UserStatsReceived_t callback
+12. Ready to read achievements and stats
 ```
 
-### P/Invoke declarations (`SteamNative.cs`)
+### Native interop layer (`SteamLoader.cs` + `NativeWrapper.cs`)
 
-All DllImport declarations for `steam_api64.dll` go here. Key functions:
+**SteamLoader.cs** handles:
+- Reading Steam install path from Windows Registry
+- Loading `steamclient.dll` via `LoadLibraryEx`
+- Resolving 3 exported functions via `GetProcAddress`
+- Setting DLL search directories
 
-- **Lifecycle**: `SteamAPI_Init`, `SteamAPI_Shutdown`, `SteamAPI_RunCallbacks`
-- **Stats**: `GetStat`, `SetStat`, `StoreStats`, `ResetAllStats`
-- **Achievements**: `GetAchievement`, `SetAchievement`, `ClearAchievement`, `GetAchievementDisplayAttribute`, `GetAchievementAndUnlockTime`, `GetNumAchievements`, `GetAchievementName`, `GetAchievementIcon`
-- **Utils**: `GetImageSize`, `GetImageRGBA` (for decoding achievement icons)
-- **Apps**: `IsSubscribedApp` (game ownership)
+**NativeWrapper.cs** handles:
+- Extracting vtable from COM-style C++ objects
+- Converting vtable function pointers to callable .NET delegates
+- String marshaling (UTF-8 managed ↔ native)
+
+### Interface objects
+
+Each Steam interface is represented as a struct of `IntPtr` fields (vtable slots):
+
+| Interface | Version | Purpose |
+|-----------|---------|---------|
+| `ISteamClient018` | 018 | Root client, pipe/user management |
+| `ISteamUserStats013` | 013 | Achievement and stat operations |
+| `ISteamApps008` | 008 | Game ownership checks |
+| `ISteamUtils005` | 005 | Image decoding for icons |
 
 ### Callbacks
 
@@ -125,14 +150,7 @@ All DllImport declarations for `steam_api64.dll` go here. Key functions:
 | `UserAchievementStored_t` | 1103 | Individual achievement saved |
 | `UserAchievementIconFetched_t` | 1109 | Achievement icon image ready |
 
-### Achievement icon decoding
-
-1. `GetAchievementIcon(name)` returns an image handle (int)
-2. Handle 0 means not ready yet, wait for `UserAchievementIconFetched_t`
-3. Use `GetImageSize(handle)` to get width/height
-4. Use `GetImageRGBA(handle, buffer, size)` to get pixel data
-5. Convert to `WriteableBitmap` for WPF binding
-6. Cache to disk as PNG in `%LocalAppData%\SteamManager\cache\images\`
+Callbacks are dispatched via `Steam_BGetCallback` polling. The callback timer fires on the UI thread, matching `CallbackMessage.Id` against registered `ICallback` implementations.
 
 ## Version Management
 
@@ -548,7 +566,7 @@ public interface ISteamAchievements
     Task<List<AchievementInfo>> GetAllAsync();
 }
 
-// Real implementation uses P/Invoke
+// Real implementation uses vtable calls via NativeWrapper
 public class SteamAchievements : ISteamAchievements { }
 
 // Test implementation returns predefined data
@@ -727,7 +745,7 @@ chmod +x .git/hooks/pre-commit
 
 ### ADR-001: Use `steam_api64.dll` instead of `steamclient.dll`
 
-**Status:** Accepted
+**Status:** Deprecated — superseded by [ADR-004](#adr-004-use-steamclientdll-instead-of-steam_api64dll)
 
 **Context:**
 The original SAM uses `steamclient.dll` which is reverse-engineered and breaks with Steam updates.
@@ -740,6 +758,8 @@ Use `steam_api64.dll` from the official Steamworks SDK.
 - ✅ No reverse engineering required
 - ❌ Only one AppID per process (cannot idle multiple games simultaneously)
 - ❌ Some advanced features unavailable (e.g., internal Steam state)
+
+**Reason for deprecation:** `steam_api64.dll` is not included with Steam installation. It's distributed with individual games as part of the Steamworks SDK. This creates distribution problems — the app crashes if the DLL is not present, and we cannot legally bundle it.
 
 ### ADR-002: WPF + WPFUI instead of WinUI 3 or Avalonia
 
@@ -795,6 +815,53 @@ When making a significant decision, create a new file `docs/adr/004-decision-tit
 - ❌ [Negative outcomes]
 ```
 
+### ADR-004: Use `steamclient.dll` instead of `steam_api64.dll`
+
+**Status:** Accepted — supersedes [ADR-001](#adr-001-use-steam_api64dll-instead-of-steamclientdll)
+
+**Context:**
+During Phase 1 development, we discovered that `steam_api64.dll` (Steamworks SDK) is NOT included with the Steam installation. It's distributed with individual games as part of the Steamworks SDK, and each game ships its own copy in its installation directory. This creates several critical problems:
+
+1. **Runtime failure**: The app crashes with `DllNotFoundException` if `steam_api64.dll` is not in the application directory or system PATH
+2. **Distribution problem**: We cannot legally bundle `steam_api64.dll` (Valve's license restricts redistribution)
+3. **User friction**: Users would need to manually find and copy the DLL from some game installation
+4. **Inconsistency with original SAM**: The original project uses `steamclient.dll` which IS always available
+
+**Decision:**
+Switch to `steamclient.dll` — the internal Steam client library that ships with every Steam installation. This is the exact same approach used by the original SAM project (proven by 15+ years of use).
+
+**Technical approach:**
+1. Find Steam install path via Windows Registry (`HKLM\Software\Valve\Steam\InstallPath`)
+2. Load `steamclient.dll` via `LoadLibraryEx` with `LOAD_WITH_ALTERED_SEARCH_PATH`
+3. Resolve 3 exported functions: `CreateInterface`, `Steam_BGetCallback`, `Steam_FreeLastCallback`
+4. Create interface objects via `CreateInterface("SteamClient018")`
+5. Call methods via vtable/COM-style `CallingConvention.ThisCall`
+
+**Consequences:**
+- ✅ Fully portable — no external DLLs needed
+- ✅ No distribution/licensing issues
+- ✅ Same proven approach as the original SAM
+- ✅ Zero configuration — finds Steam automatically
+- ✅ Release size stays small (~55KB vs ~60MB with bundled DLL)
+- ❌ Uses internal Steam API (could break with Steam updates)
+- ❌ More complex interop code (vtable extraction vs simple P/Invoke)
+- ❌ Requires Windows Registry access (standard for Windows apps)
+
+**Files affected:**
+- `SteamNative.cs` → deleted (P/Invoke for steam_api64.dll, obsolete)
+- `SteamCallbackIds.cs` → deleted (absorbed into `SteamCallbacks.cs`)
+- `SteamLoader.cs` → new — loads steamclient.dll from registry
+- `NativeMethods.cs` → new — `LoadLibraryExW`, `GetProcAddress`, `SetDllDirectoryW` P/Invoke
+- `NativeStrings.cs` → new — UTF-8 marshaling utilities
+- `NativeWrapper.cs` → new — generic vtable extraction base class
+- `ISteamClient018.cs` → new — vtable struct + wrapper class
+- `ISteamUserStats013.cs` → new — vtable struct + wrapper class
+- `ISteamApps008.cs` → new — vtable struct + wrapper class
+- `ISteamUtils005.cs` → new — vtable struct + wrapper class
+- `SteamCallbacks.cs` → new — callback message envelopes + `EResult` enum
+- `SteamClient.cs` → updated — initialization sequence now gets `ISteamUtils` first for AppId verification
+- `SteamCallbackHandler.cs` → updated — uses `Steam_BGetCallback` polling instead of `SteamAPI_RunCallbacks`
+
 ## Release Checklist
 
 > **Follow this checklist before every release.**
@@ -841,31 +908,51 @@ If critical bug found after release:
 
 | File | Purpose |
 |------|---------|
-| `SteamManager/SteamManager.csproj` | Version, target framework, NuGet packages |
-| `SteamManager/Config.cs` | Centralized constants (URLs, paths, timeouts) |
-| `SteamManager/Steam/SteamNative.cs` | All P/Invoke declarations for steam_api64.dll |
-| `SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init, Shutdown, RunCallbacks) |
-| `SteamManager/Steam/SteamAchievements.cs` | Achievement read/write operations |
-| `SteamManager/Steam/SteamStats.cs` | Stats read/write operations |
-| `SteamManager/Services/SmartUnlockService.cs` | Anti-detection delay logic |
-| `SteamManager/Services/ImageCacheService.cs` | Local image caching |
-| `SteamManager/Services/ConfigService.cs` | Settings persistence |
-| `SteamManager/Services/Updater.cs` | Update check, download, swap (v2.0) |
-| `SteamManager/Services/NetworkHelper.cs` | HTTP client with User-Agent (v2.0) |
-| `.github/workflows/release.yml` | CI/CD pipeline |
-| `docs/index.html` | GitHub Pages landing page (v2.0) |
+| `SteamManager/SteamManager.csproj` | Version, target framework, NuGet packages, `RuntimeIdentifier=win-x86` |
+| `SteamManager/Config.cs` | Centralized constants (SteamDll, registry keys, timeouts, AppIds) |
+| `SteamManager/Steam/SteamLoader.cs` | Loads steamclient.dll from registry, resolves `CreateInterface`/`GetCallback`/`FreeLastCallback` |
+| `SteamManager/Steam/NativeMethods.cs` | `LoadLibraryExW`, `GetProcAddress` (ANSI), `SetDllDirectoryW` P/Invoke |
+| `SteamManager/Steam/NativeStrings.cs` | UTF-8 marshaling utilities (`StringToStringHandle`, `PointerToString`) |
+| `SteamManager/Steam/NativeWrapper.cs` | Generic vtable extraction base class; `GetFunction<T>()` + `Call<>()` |
+| `SteamManager/Steam/ISteamClient018.cs` | vtable struct + `SteamClient018` wrapper (vtable indices 0–39) |
+| `SteamManager/Steam/ISteamUserStats013.cs` | vtable struct + `SteamUserStats013` wrapper (achievements/stats) |
+| `SteamManager/Steam/ISteamApps008.cs` | vtable struct + `SteamApps008` wrapper (game ownership) |
+| `SteamManager/Steam/ISteamUtils005.cs` | vtable struct + `SteamUtils005` wrapper (AppId, image RGBA) |
+| `SteamManager/Steam/SteamClient.cs` | Steam API lifecycle (Init → GetPipe → ConnectUser → get interfaces) |
+| `SteamManager/Steam/SteamContext.cs` | Groups SteamClient + Achievements/Stats/Apps; runs callbacks on timer |
+| `SteamManager/Steam/SteamAchievements.cs` | Achievement read/write via `SteamUserStats013` wrapper |
+| `SteamManager/Steam/SteamStats.cs` | Stats read/write via `SteamUserStats013` wrapper |
+| `SteamManager/Steam/SteamApps.cs` | App subscription check via `SteamApps008` wrapper |
+| `SteamManager/Steam/SteamIcons.cs` | RGBA image decoding via `SteamUtils005.GetImageSize/GetImageRGBA` |
+| `SteamManager/Steam/SteamCallbacks.cs` | `CallbackMessage` struct + `UserStatsReceived_t` etc. + `EResult` enum |
+| `SteamManager/Steam/SteamCallbackHandler.cs` | Polls `Steam_BGetCallback` and dispatches to registered handlers |
+| `SteamManager/Models/` | `GameInfo`, `AchievementInfo`, `StatInfo` data models |
+| `SteamManager/ViewModels/` | `MainViewModel`, `GamePickerViewModel`, `GameManagerViewModel` |
+| `SteamManager/Views/` | `GamePickerView`, `GameManagerView` (UserControls, auto-mapped via DataTemplate) |
+| `SteamManager/Controls/` | `GameCard`, `AchievementCard` (reusable WPF UserControls) |
+| `SteamManager/Services/IGameLibraryService.cs` | Interface for game enumeration |
+| `SteamManager/Services/SteamGameLibraryService.cs` | Placeholder — returns hardcoded Spacewar (Phase 3 will implement real enumeration) |
+| `SteamManager/App.xaml` | WPF-UI theme (`Dark`) + DataTemplates for ViewModel→View mapping |
+| `SteamManager/App.xaml.cs` | DI setup, async Steam init, callback DispatcherTimer |
+| `SteamManager/MainWindow.xaml/.cs` | Shell window — `ContentControl` bound to `MainViewModel.CurrentViewModel` |
+| `SteamManager.Tests/` | xUnit test project (no tests written yet) |
+| `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, `workflow_dispatch` only) |
 | `PLAN.md` | Full project plan with phases and features |
+| `CHANGELOG.md` | Version history (v0.1.0 → v0.2.0 with full ADR-004 migration notes |
 
 ## Known Limitations
 
 | Limitation | Reason | Workaround |
 |------------|--------|------------|
-| Single AppID per process | `steam_api64.dll` limitation | Future: multi-process idling |
+| Single AppID per process | `steamclient.dll` limitation (same as original SAM) | Future: multi-process idling |
 | No cross-platform | Steam API is Windows-only | None (by design) |
 | No WebP support | WPF doesn't decode WebP natively | Use PNG/JPG from Steam CDN |
 | Achievement icons async | Steam API returns handle 0 initially, fetches in background | Wait for `UserAchievementIconFetched_t` callback |
 | No auto-update | Not implemented in v1.0 | Manual download from GitHub Releases |
 | No GitHub Pages | Not implemented in v1.0 | README serves as documentation |
+| Uses internal Steam API | `steamclient.dll` is not officially documented | Same approach as original SAM, proven stable |
+| **32-bit (x86) platform only** | Steam ships only a 32-bit `steamclient.dll`; Windows cannot load a 32-bit DLL into a 64-bit process | Project targets `win-x86` (`<RuntimeIdentifier>win-x86</RuntimeIdentifier>`); publish native exe with `dotnet publish -r win-x86` |
+| **vtable layouts byte-aligned to SAM** | `steamclient.dll` is a C++ object with a per-version vtable; padding/extra entries from one SDK version break ours | Vtable structs in `ISteam*.cs` are copied 1-to-1 from gibbed/SAM and must NOT be reordered or padded. See `SAM.API/Interfaces/` |
 
 ## Known Issues & Resolutions
 
@@ -873,7 +960,18 @@ If critical bug found after release:
 
 | Issue | Root Cause | Resolution |
 |-------|------------|------------|
-| *No issues documented yet* | — | — |
+| `DllNotFoundException: steam_api64.dll` | `steam_api64.dll` is not included with Steam installation — it's distributed with individual games | Switched to `steamclient.dll` approach (see ADR-004) |
+| `steam_api64.dll` not found in Steam directory | Steam doesn't ship this DLL — it's a Steamworks SDK DLL for game developers | Same resolution as above |
+| App hangs on "Connecting to Steam" | `InitializeSteam()` ran synchronously on the UI thread before `mainWindow.Show()` | Moved Steam init to `Task.Run` and only dispatch state updates back to UI thread (see `App.xaml.cs:InitializeSteamAsync`) |
+| Blank/dark screen, WPFUI resources missing | `App.xaml` had no `<ui:ThemesDictionary>` / `<ui:ControlsDictionary>` | Added `xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"` + merged WPF-UI theme dictionaries |
+| ContentControl shows nothing (no game picker) | No `DataTemplate` mapping `GamePickerViewModel` → `GamePickerView`; WPF didn't know how to render the VM | Added `DataTemplate` entries for both view models in `App.xaml:Application.Resources` |
+| `EntryPointNotFoundException: 'SetDllDirectory'` | `LibraryImport` does NOT auto-append `W`; entry point is `SetDllDirectoryW` (UTF-16) | Explicit `EntryPoint = "SetDllDirectoryW"` + `StringMarshalling.Utf16` on `NativeMethods.SetDllDirectory` |
+| `LoadLibraryEx` returns 0 / `Win32 Error 0` | Steam's `steamclient.dll` is **32-bit** and the project was `<RuntimeIdentifier>win-x64</RuntimeIdentifier>` | Changed main + test projects to `win-x86` / `<PlatformTarget>x86</PlatformTarget>` |
+| `GetISteamUserStats` returns IntPtr.Zero | `ISteamClient018` vtable layout was guessed (GetISteamUserStats at index 19); real index in SAM is **13** | Rewrote `ISteamClient018` struct 1-to-1 from `gibbed/SteamAchievementManager/SAM.API/Interfaces/ISteamClient018.cs` — `GetISteamUserStats` is at index 13 |
+| Native interface version strings garbled | `string` parameter marshals as **UTF-16**; Steam expects **UTF-8** | Pass version strings as `IntPtr` via `NativeStrings.StringToStringHandle` (which produces UTF-8 bytes). Used in `SteamClient018.GetISteamUserStats/GetISteamApps/GetISteamUtils` |
+| `IsSubscribedApp` not found in vtable | Field was named `BIsSubscribedApp`; SAM names it `IsSubscribedApp` at the same index | Renamed field to `IsSubscribedApp` in `ISteamApps008` |
+| `MainViewModel.StatusMessage` stuck on "Connecting to Steam" | `InitializeSteam()` swallowed exceptions to `Debug.WriteLine`; status never went back to the VM | `App.xaml.cs:InitializeSteamAsync` now sets `mainViewModel.StatusMessage` on success/failure and calls `LoadGamesCommand` to refresh |
+| No Steam callbacks fire | `SteamClient.RunCallbacks()` was never called | Added a `DispatcherTimer` (`Config.CallbackTimerMs` = 100 ms) in `App.xaml.cs:StartCallbackTimer` that ticks `SteamContext.RunCallbacks()` |
 
 ---
 

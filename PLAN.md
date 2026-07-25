@@ -1,5 +1,68 @@
 # SteamManager - Plan de Proyecto
 
+## Estado Actual de Implementación
+
+> Última actualización: 2026-07-25
+
+### Fase 1 (Core Steam API) — ✅ Completada
+- `SteamLoader.cs` ✅ — carga de `steamclient.dll` desde registro
+- `NativeWrapper.cs` ✅ — extracción de vtable y llamadas nativas
+- `SteamClient.cs` ✅ — Init/Shutdown/RunCallbacks
+- `SteamAchievements.cs` ✅ — lectura/escritura de logros
+- `SteamStats.cs` ✅ — lectura/escritura de estadísticas
+- `SteamApps.cs` ✅ — verificación de suscripción
+- `SteamIcons.cs` ✅ — decodificación RGBA de iconos
+- `SteamCallbackHandler.cs` ✅ — sistema de callbacks
+- `SteamContext.cs` ✅ — modelo de sesión
+
+**Archivos adicionales de interop** (no estaban en el plan original, copiados de gibbed/SAM):
+- `NativeMethods.cs` — P/Invoke para kernel32
+- `NativeStrings.cs` — marshaling UTF-8 para cadenas nativas
+- `ISteamClient018.cs` — layout de vtable + wrapper
+- `ISteamUserStats013.cs` — layout de vtable + wrapper
+- `ISteamApps008.cs` — layout de vtable + wrapper
+- `ISteamUtils005.cs` — layout de vtable + wrapper
+- `SteamCallbacks.cs` — structs de callbacks + CallbackMessage
+
+### Fase 2 (UI WPF + WPFUI) — ✅ Completada
+- `App.xaml` ✅ — tema WPFUI Dark + DataTemplates
+- `MainWindow.xaml/.cs` ✅ — shell con navegación
+- `MainViewModel.cs` ✅ — shell ViewModel
+- `GamePickerViewModel.cs` + `GamePickerView.xaml` ✅
+- `GameManagerViewModel.cs` + `GameManagerView.xaml` ✅
+- `GameCard.xaml` ✅
+- `AchievementCard.xaml` ✅
+
+### Fase 3 (Servicios de Negocio) — ⏳ En espera
+- `SteamGameLibraryService.cs` existe como **placeholder** — devuelve "Spacewar (Test)" hardcodeado
+- `SmartUnlockService`, `ImageCacheService`, `ConfigService` — no implementados
+
+### Plataforma: win-x86 (32-bit)
+-steamclient.dll de Steam es de 32 bits — el proyecto usa `<RuntimeIdentifier>win-x86</RuntimeIdentifier>`
+
+---
+
+## Problema Encontrado y Cambio de Arquitectura
+
+### Problema Original
+El proyecto usaba `steam_api64.dll` (Steamworks SDK) via P/Invoke directo. Este DLL:
+- **No viene con Steam** — se distribuye con cada juego individual
+- **No está en el directorio de Steam** — el usuario no tiene acceso directo a él
+- **Problemas de distribución** — no se puede redistribuir legalmente (licencia Valve)
+- **Dependencia externa** — la app crashea si el DLL no está presente
+
+### Solución Adoptada
+Cambiar a `steamclient.dll` (la biblioteca interna de Steam), igual que el proyecto original SAM:
+- **Siempre disponible** — viene con la instalación de Steam
+- **No necesita distribución** — el usuario ya lo tiene
+- **Portabilidad completa** — la app es un exe autocontenido
+- **Mismo approach que el original** — probado por años de uso
+
+### Documentación del Cambio
+Ver [ADR-004](DEVELOPMENT.md#adr-004-use-steamclientdll-instead-of-steam_api64dll) para el análisis completo.
+
+---
+
 ## Decisión Técnica Final
 
 | Aspecto | Decisión |
@@ -7,7 +70,7 @@
 | Nombre | **SteamManager** |
 | Runtime | .NET 10 |
 | UI | WPF + WPFUI |
-| Steam API | `steam_api64.dll` via P/Invoke directo (NO steamclient.dll) |
+| Steam API | `steamclient.dll` (biblioteca interna de Steam) via vtable/COM-style |
 | Patrón | MVVM con CommunityToolkit.Mvvm |
 | Empaquetado | `PublishSingleFile` + `SelfContained` = 1 exe portable |
 | Caché | `%LocalAppData%\SteamManager\` |
@@ -34,7 +97,7 @@ Replicar y mejorar las capacidades core del SAM original:
 **Tier 2 - Multi-Idling:**
 - Multi-idling por rotación automática (un juego a la vez, rota cada N minutos)
 - O multi-proceso (lanzar instancias separadas por juego)
-- Requiere investigación de viabilidad con `steam_api64.dll`
+- Requiere investigación de viabilidad con `steamclient.dll`
 
 **Tier 3 - Funcionalidades sociales y datos:**
 - Porcentaje global de obtención por logro
@@ -62,14 +125,15 @@ SteamManager/
 │   ├── App.xaml / App.xaml.cs
 │   │
 │   ├── Steam/                          # Capa de integración con Steam
-│   │   ├── SteamNative.cs              # P/Invoke declarations (steam_api64.dll)
-│   │   ├── SteamClient.cs              # Wrapper: Init, Shutdown, RunCallbacks
-│   │   ├── SteamAchievements.cs        # Lectura/escritura de logros
-│   │   ├── SteamStats.cs               # Lectura/escritura de estadísticas
-│   │   ├── SteamApps.cs                # Lista de juegos, ownership, playtime
-│   │   ├── SteamIcons.cs               # Descarga y caché de iconos/logos
-│   │   ├── SteamCallbackHandler.cs     # Sistema de callbacks
-│   │   └── SteamContext.cs             # Modelo de sesión activa para un AppID
+│   │   ├── SteamLoader.cs             # Carga de steamclient.dll via registry
+│   │   ├── NativeWrapper.cs           # Extracción de vtable y llamadas nativas
+│   │   ├── SteamClient.cs             # Init, Shutdown, RunCallbacks
+│   │   ├── SteamAchievements.cs       # Lectura/escritura de logros
+│   │   ├── SteamStats.cs              # Lectura/escritura de estadísticas
+│   │   ├── SteamApps.cs               # Lista de juegos, ownership, playtime
+│   │   ├── SteamIcons.cs              # Descarga y caché de iconos/logos
+│   │   ├── SteamCallbackHandler.cs    # Sistema de callbacks
+│   │   └── SteamContext.cs            # Modelo de sesión activa para un AppID
 │   │
 │   ├── Models/                         # Modelos de datos
 │   │   ├── GameInfo.cs                 # AppId, Name, Playtime, CoverUrl, IsFavorite
@@ -138,7 +202,8 @@ SteamManager/
 
 | Archivo | Responsabilidad |
 |---------|----------------|
-| `SteamNative.cs` | Todas las declaraciones DllImport de `steam_api64.dll` |
+| `SteamLoader.cs` | Carga `steamclient.dll` desde el directorio de Steam via registro de Windows |
+| `NativeWrapper.cs` | Extracción de vtable y llamadas a funciones nativas via `CallingConvention.ThisCall` |
 | `SteamClient.cs` | `Init(appId)`, `Shutdown()`, `RunCallbacks()` |
 | `SteamAchievements.cs` | `GetAchievementCount()`, `GetAchievementName(i)`, `GetAchievement(name)`, `SetAchievement(name)`, `ClearAchievement(name)`, `GetAchievementDisplayAttribute(name, key)`, `GetAchievementAndUnlockTime(name)` |
 | `SteamStats.cs` | `GetStat(name, out int)`, `GetStat(name, out float)`, `SetStat(name, value)`, `StoreStats()`, `ResetAllStats(achievementsToo)` |
@@ -150,42 +215,53 @@ SteamManager/
 | `AchievementInfo.cs` | Modelo de logro |
 | `StatInfo.cs` | Modelo de stat |
 
-**P/Invoke declarations (steam_api64.dll):**
+**Carga de steamclient.dll:**
 
 ```csharp
-// Lifecycle
-SteamAPI_Init() → bool
-SteamAPI_Shutdown() → void
-SteamAPI_RunCallbacks() → void
-SteamAPI_RestartAppIfNecessary(uint appId) → bool
+// 1. Leer ruta de Steam desde registro
+string steamPath = Registry.GetValue(
+    @"HKEY_LOCAL_MACHINE\Software\Valve\Steam", "InstallPath") as string;
 
-// UserStats
-SteamAPI_ISteamUserStats_RequestCurrentStats(IntPtr) → bool
-SteamAPI_ISteamUserStats_GetStat(IntPtr, string, ref int) → bool
-SteamAPI_ISteamUserStats_GetStat(IntPtr, string, ref float) → bool
-SteamAPI_ISteamUserStats_SetStat(IntPtr, string, int) → bool
-SteamAPI_ISteamUserStats_SetStat(IntPtr, string, float) → bool
-SteamAPI_ISteamUserStats_StoreStats(IntPtr) → bool
-SteamAPI_ISteamUserStats_ResetAllStats(IntPtr, bool) → bool
+// 2. Agregar directorio de DLLs al search path
+SetDllDirectory(steamPath + ";" + Path.Combine(steamPath, "bin"));
 
-// Achievements
-SteamAPI_ISteamUserStats_GetNumAchievements(IntPtr) → uint
-SteamAPI_ISteamUserStats_GetAchievementName(IntPtr, uint) → IntPtr (string)
-SteamAPI_ISteamUserStats_GetAchievement(IntPtr, string, out bool) → bool
-SteamAPI_ISteamUserStats_SetAchievement(IntPtr, string) → bool
-SteamAPI_ISteamUserStats_ClearAchievement(IntPtr, string) → bool
-SteamAPI_ISteamUserStats_GetAchievementAndUnlockTime(IntPtr, string, out bool, out uint) → bool
-SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute(IntPtr, string, string) → IntPtr (string)
-SteamAPI_ISteamUserStats_GetAchievementIcon(IntPtr, string) → int (handle)
-SteamAPI_ISteamUserStats_IndicateAchievementProgress(IntPtr, string, uint cur, uint max) → bool
+// 3. Cargar steamclient.dll
+IntPtr module = LoadLibraryEx(
+    Path.Combine(steamPath, "steamclient.dll"),
+    IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
 
-// Utils (iconos)
-SteamAPI_ISteamUtils_GetImageSize(IntPtr, int, out uint, out uint) → bool
-SteamAPI_ISteamUtils_GetImageRGBA(IntPtr, int, byte[], int) → bool
-
-// Apps (biblioteca)
-SteamAPI_ISteamApps_IsSubscribedApp(IntPtr, uint) → bool
+// 4. Resolver 3 funciones exportadas
+CreateInterface = GetProcAddress(module, "CreateInterface");
+Steam_BGetCallback = GetProcAddress(module, "Steam_BGetCallback");
+Steam_FreeLastCallback = GetProcAddress(module, "Steam_FreeLastCallback");
 ```
+
+**Creación de interfaces (vtable-based):**
+
+```csharp
+// Crear objeto raíz SteamClient018
+IntPtr clientObj = CreateInterface("SteamClient018", IntPtr.Zero);
+
+// Obtener pipe y usuario
+int pipe = SteamClient.CreateSteamPipe();
+int user = SteamClient.ConnectToGlobalUser(pipe);
+
+// Obtener interfaces específicas
+IntPtr userStats = SteamClient.GetISteamUserStats013(user, pipe);
+IntPtr apps = SteamClient.GetISteamApps008(user, pipe);
+
+// Cada interfaz tiene una vtable con punteros a funciones
+// Las llamadas usan CallingConvention.ThisCall
+```
+
+**Funciones por interfaz:**
+
+| Interfaz | Funciones | Versión |
+|----------|-----------|---------|
+| `ISteamClient018` | CreateSteamPipe, ConnectToGlobalUser, GetISteamUserStats, GetISteamApps | 018 |
+| `ISteamUserStats013` | GetStat, SetStat, GetAchievement, SetAchievement, ClearAchievement, StoreStats, ResetAllStats, GetNumAchievements, GetAchievementName, GetAchievementIcon, GetAchievementDisplayAttribute, GetAchievementAndUnlockTime, RequestUserStats | 013 |
+| `ISteamApps008` | IsSubscribedApp | 008 |
+| `ISteamUtils005` | GetImageSize, GetImageRGBA | 005 |
 
 **Callbacks a manejar:**
 
@@ -200,11 +276,16 @@ SteamAPI_ISteamApps_IsSubscribedApp(IntPtr, uint) → bool
 
 ```
 1. Environment.SetEnvironmentVariable("SteamAppId", appId.ToString())
-2. SteamAPI_RestartAppIfNecessary(appId) → si true, salir
-3. SteamAPI_Init() → si false, error
-4. SteamUserStats.RequestCurrentStats()
-5. Esperar callback UserStatsReceived_t
-6. Ya se puede leer logros y stats
+2. Leer ruta de Steam desde registro (HKLM\Software\Valve\Steam\InstallPath)
+3. SetDllDirectory(steamPath + ";" + steamPath + "\bin")
+4. LoadLibraryEx(steamPath + "\steamclient.dll")
+5. CreateInterface("SteamClient018") → cliente raíz
+6. CreateSteamPipe() → crear pipe IPC
+7. ConnectToGlobalUser(pipe) → conectar al usuario
+8. GetISteamUserStats013(user, pipe) → interfaz de stats
+9. RequestUserStats() → solicitar stats del servidor
+10. Esperar callback UserStatsReceived_t
+11. Ya se puede leer logros y stats
 ```
 
 ---
@@ -347,7 +428,7 @@ Contenido:
 | Tarea | Detalle |
 |-------|---------|
 | Tests unitarios | `SteamNativeTests`, `SmartUnlockTests`, `IdlerTests` |
-| Publish | `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` |
+| Publish | `dotnet publish -r win-x86 --self-contained -p:PublishSingleFile=true` |
 | Icono | Icono custom de app (.ico) |
 | README | Instrucciones de uso |
 | Licencia | GPL v3 |
@@ -371,8 +452,10 @@ Contenido:
 │  SteamClient  SteamAchievements  SteamStats     │
 │  SteamApps    SteamIcons  SteamCallbackHandler  │
 ├─────────────────────────────────────────────────┤
-│           P/Invoke (steam_api64.dll)            │
-│  SteamNative.cs — todas las DllImport           │
+│           Native Interop Layer                  │
+│  NativeWrapper.cs — vtable extraction           │
+│  SteamLoader.cs — DLL loading from registry     │
+│  steamclient.dll (from Steam installation)      │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -382,14 +465,15 @@ Contenido:
 
 ### Sprint 1 - Core Steam (sin UI)
 1. Crear solution y proyecto `SteamManager`
-2. `SteamNative.cs` — todos los P/Invoke
-3. `SteamClient.cs` — Init/Shutdown/RunCallbacks
-4. `SteamAchievements.cs` — lectura de logros
-5. `SteamStats.cs` — lectura de stats
-6. `SteamApps.cs` — lista de juegos
-7. `SteamCallbackHandler.cs` — sistema de callbacks
-8. `SteamContext.cs` — modelo de sesión
-9. **Test**: Conectar con Steam, leer logros de Spacewar (AppID 480) por consola
+2. `SteamLoader.cs` — carga de `steamclient.dll` desde registro
+3. `NativeWrapper.cs` — extracción de vtable y llamadas nativas
+4. `SteamClient.cs` — Init/Shutdown/RunCallbacks
+5. `SteamAchievements.cs` — lectura de logros
+6. `SteamStats.cs` — lectura de stats
+7. `SteamApps.cs` — lista de juegos
+8. `SteamCallbackHandler.cs` — sistema de callbacks
+9. `SteamContext.cs` — modelo de sesión
+10. **Test**: Conectar con Steam, leer logros de Spacewar (AppID 480) por consola
 
 ### Sprint 2 - UI Básica
 10. Crear estructura WPF (App.xaml, MainWindow)

@@ -4,7 +4,7 @@ namespace SteamManager.Steam;
 
 /// <summary>
 /// Handles dispatching Steam API callbacks to registered handlers.
-/// Uses a polling-based approach with SteamAPI_RunCallbacks().
+/// Uses Steam_BGetCallback polling approach.
 /// </summary>
 public class SteamCallbackHandler
 {
@@ -22,16 +22,28 @@ public class SteamCallbackHandler
     }
 
     /// <summary>
-    /// Dispatches pending callbacks. Called after SteamAPI_RunCallbacks().
-    /// Note: With steam_api64.dll, SteamAPI_RunCallbacks() already dispatches callbacks
-    /// via registered callback functions. This handler provides a managed dispatch layer
-    /// for callbacks that need to be processed in our code.
+    /// Dispatches pending callbacks using Steam_BGetCallback.
+    /// Called after SteamAPI_RunCallbacks() in the original SAM.
     /// </summary>
     public void DispatchPending()
     {
-        // With steam_api64.dll, the callback dispatch is handled internally.
-        // We'll use a different pattern: register callbacks via SteamAPI_RegisterCallback.
-        // For now, this is a placeholder for the managed callback system.
+        CallbackMessage message;
+        int call;
+
+        while (SteamLoader.GetCallback(0, out message, out call))
+        {
+            int callbackId = message.Id;
+
+            if (_handlers.TryGetValue(callbackId, out var handlers))
+            {
+                foreach (var handler in handlers)
+                {
+                    handler(message.ParamPointer);
+                }
+            }
+
+            SteamLoader.FreeLastCallback(0);
+        }
     }
 
     /// <summary>
