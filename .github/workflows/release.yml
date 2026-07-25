@@ -1,12 +1,10 @@
 name: build & release
 
-# TODO: Re-enable push/PR triggers when ready for production
-# on:
-#   push:
-#     branches: [main]
-#   pull_request:
-#     branches: [main]
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
