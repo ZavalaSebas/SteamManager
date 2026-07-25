@@ -1,10 +1,12 @@
 name: build & release
 
+# TODO: Re-enable push/PR triggers when ready for production
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,7 +28,6 @@ jobs:
           dotnet-version: 10.x
 
       - id: check
-        if: github.event_name == 'push'
         shell: pwsh
         run: |
           $old = git show HEAD~1:SteamManager/SteamManager.csproj 2>$null
@@ -44,7 +45,7 @@ jobs:
       - run: dotnet test SteamManager.slnx -c Release --no-build
 
   release:
-    if: github.event_name == 'push' && needs.build.outputs.version_changed == 'true'
+    if: needs.build.outputs.version_changed == 'true'
     needs: build
     runs-on: windows-latest
     steps:

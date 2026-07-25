@@ -1,6 +1,6 @@
 ## .NET
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
 *.user
 *.suo
 *.cache
@@ -33,13 +33,10 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
 [Ll]og/
 [Ll]ogs/
 
 ## NuGet
-*.nupkg
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 *.nuget.props
@@ -50,25 +47,11 @@ publish/
 
 ## User-specific
 *.rsuser
-*.suo
-*.user
 *.userosscache
 *.sln.docstates
-
-## VS Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
 
 ## Local History
 .localhistory/
 
 ## BeatPulse healthance liveness check
 health/
-
-## JetBrains Rider
-.idea/
-*.sln.iml
