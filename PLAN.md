@@ -2,7 +2,7 @@
 
 ## Estado Actual de Implementación
 
-> Última actualización: 2026-07-25
+> Última actualización: 2026-07-25 (v0.3.0)
 
 ### Fase 1 (Core Steam API) — ✅ Completada
 - `SteamLoader.cs` ✅ — carga de `steamclient.dll` desde registro
@@ -109,9 +109,27 @@ PARA CADA appId EN games.xml:
 | `ISteamApps001` wrapper (`GetAppData()`) | ✅ Implementado |
 | `SteamContext.SteamId` | ✅ Implementado |
 | Fallback si `games.xml` falla | ✅ Spacewar (480) |
-| `ImageCacheService` | ⏳ Pendiente |
-| `SmartUnlockService` | ⏳ Pendiente |
-| `ConfigService` | ⏳ Pendiente |
+| `ImageCacheService` | ✅ Implementado |
+| `SmartUnlockService` | ✅ Implementado |
+| `ConfigService` | ✅ Implementado |
+
+### Arquitectura Multi-Proceso
+
+**Problema**: `steamclient.dll` es un singleton por proceso. No se puede cambiar el AppId en el mismo proceso.
+
+**Solución implementada** (v0.3.0):
+- **Launcher** (`SteamManager.exe` sin args): Inicializa Steam con Spacewar (AppId=480), muestra lista de juegos
+- **Helper** (`SteamManager.exe --game <appId>`): Inicializa Steam con el AppId específico del juego, muestra logros
+
+```
+Launcher                          Helper
++-----------+                     +-----------+
+| AppId=480 |                     | AppId=X  |
+| Lista de  | --click juego-->   | Logros X |
+| juegos    |                     | Unlock/  |
++-----------+  shutdown + start   | Lock     |
+                                   +-----------+
+```
 
 ---
 

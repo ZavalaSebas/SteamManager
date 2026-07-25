@@ -5,6 +5,37 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-07-25
+
+### Fixed
+
+- **Multi-process architecture now working**: Helper window now appears and displays correct achievements for each game. Previous attempts failed because `MainWindow` constructor was overwriting the passed DataContext.
+
+### Changed
+
+- **Single exe, multi-process**: `SteamManager.exe` behaves differently based on command-line arguments:
+  - No args: **Launcher mode** — initializes Steam with Spacewar AppId (480), shows game list
+  - `--game <appId>`: **Helper mode** — initializes Steam with specific game AppId, shows achievements
+- **`GamePickerViewModel.SelectGameCommand`**: Now launches helper process and calls `Application.Current.Shutdown()` on the launcher
+- **`MainViewModel` navigation**: `NavigateToGame()` callback pattern removed in favor of multi-process
+- **`MainWindow.xaml.cs`**: Constructor only sets DataContext from Services if DataContext is null (allows override)
+
+### Known Issues
+
+| Issue | Status |
+|-------|--------|
+| Achievement icons not loading | Pending fix |
+| Back button doesn't work in helper | Pending fix |
+| Loading status stays forever | Pending fix |
+
+### Technical Notes
+
+**Why multi-process works**: `steamclient.dll` is a process-level singleton. When Steam client is running with AppId=X, initializing with AppId=Y in the same process either fails or returns wrong data (usually Spacewar achievements). By launching a new process with `--game <appId>`, each game gets its own isolated Steam context.
+
+**Launcher shutdown timing**: Calling `Application.Current.Shutdown()` immediately after `Process.Start()` ensures the launcher window closes before the helper window appears, giving a seamless experience.
+
+---
+
 ## [0.2.2] - 2026-07-25
 
 ### Changed

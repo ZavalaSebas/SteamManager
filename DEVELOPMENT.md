@@ -946,7 +946,7 @@ If critical bug found after release:
 | `SteamManager.Tests/` | xUnit test project (no tests written yet) |
 | `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, `workflow_dispatch` only) |
 | `PLAN.md` | Full project plan with phases and features |
-| `CHANGELOG.md` | Version history (v0.1.0 → v0.2.1 with game enumeration fix) |
+| `CHANGELOG.md` | Version history (v0.1.0 → v0.3.0 with multi-process architecture) |
 
 ## Known Limitations
 
@@ -985,6 +985,10 @@ If critical bug found after release:
 | **"0 games loaded" after "Sign In" HTML** | `api.steampowered.com/IPlayerService/GetOwnedGames` requires **API key** (returns 404); `steamcommunity.com/profiles/{id}/games/?xml=1` requires session cookies + returns HTML for private profiles | Switched to SAM approach: download `games.xml` from `https://gib.me/sam/games.xml`, iterate all known appIds, call `IsSubscribedApp()` per-game via `steamclient.dll` |
 | **Same 5 achievements (Spacewar) for all games** | `steamclient.dll` is a **process-level singleton**. When Steam client is running with AppId=X, initializing with AppId=Y in the same process either fails or returns Spacewar achievements. `ChangeAppId()` re-created interfaces but they all pointed to the same global Steam state. | Multi-process architecture: launcher (`SteamManager.exe`) shows game list without Steam init. Helper (`SteamManager.exe --game <appId>`) initializes Steam with the specific game AppId in its own process. Each process has an isolated `steamclient.dll` state. |
 | **Launcher freezes showing 40902 games** | When Steam was not initialized in the launcher, `GetOwnedGamesAsync()` returned all games from `games.xml` without filtering by ownership. | Launcher now initializes Steam with Spacewar AppId (480) first, then filters by ownership via `IsSubscribedApp()`. Shows 189 owned games instead of all 40902. |
+| **Helper window doesn't appear** | `MainWindow` constructor was overwriting DataContext passed from `App.StartGameHelperMode` with a new instance from Services | Added null check in `MainWindow` constructor: only set DataContext from Services if DataContext is null |
+| **Achievement icons not loading** | Not yet implemented - `AchievementInfo` has `IconHandle` but no icon download/display | Pending fix |
+| **Back button doesn't work in helper** | Helper mode doesn't have navigation back to launcher - it's a separate process | Pending fix - could relaunch launcher or use in-process navigation for picker |
+| **Loading status stays forever in helper** | Steam init happens on main thread but loading is async; status never updates after initial message | Pending fix - need to proper async flow in helper mode |
 
 ---
 
