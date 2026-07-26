@@ -24,3 +24,23 @@ public class FilterToBackgroundConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+public class FilterToForegroundConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is AchievementFilterType currentFilter && parameter is string filterName)
+        {
+            if (Enum.TryParse<AchievementFilterType>(filterName, out var filter) && currentFilter == filter)
+            {
+                return new SolidColorBrush(Colors.White);
+            }
+        }
+        return new SolidColorBrush(Color.FromRgb(0xB0, 0xB0, 0xB0));
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

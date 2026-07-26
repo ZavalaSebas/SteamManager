@@ -35,6 +35,9 @@ public partial class GameManagerViewModel : ObservableObject
     private bool _isLoading;
 
     [ObservableProperty]
+    private bool _isStatsEditorExpanded;
+
+    [ObservableProperty]
     private string _statusMessage = string.Empty;
 
     [ObservableProperty]

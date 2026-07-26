@@ -28,7 +28,8 @@
         <!-- Custom Title Bar -->
         <Grid Grid.Row="0"
               Height="48"
-              Background="#1A1A1A">
+              Background="#1A1A1A"
+              MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>

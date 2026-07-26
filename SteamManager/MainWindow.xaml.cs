@@ -14,4 +14,19 @@ public partial class MainWindow : FluentWindow
             DataContext = App.Services.GetRequiredService<MainViewModel>();
         }
     }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            if (base.WindowState == System.Windows.WindowState.Maximized)
+                base.WindowState = System.Windows.WindowState.Normal;
+            else
+                base.WindowState = System.Windows.WindowState.Maximized;
+        }
+        else
+        {
+            DragMove();
+        }
+    }
 }

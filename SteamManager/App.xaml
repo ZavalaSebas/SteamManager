@@ -18,6 +18,8 @@
             <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <converters:FilterToBackgroundConverter x:Key="FilterToBackgroundConverter"/>
+            <converters:FilterToForegroundConverter x:Key="FilterToForegroundConverter"/>
+            <converters:ProgressToArcConverter x:Key="ProgressToArcConverter"/>
             <converters:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColorConverter"/>
             <converters:SelectedBorderConverter x:Key="SelectedBorderConverter"/>
             <converters:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter"/>
