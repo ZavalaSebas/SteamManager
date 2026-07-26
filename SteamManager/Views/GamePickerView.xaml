@@ -108,71 +108,31 @@
         <!-- Loading Skeleton -->
         <ScrollViewer Grid.Row="1"
                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
-                      VerticalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
                       Margin="32,8,32,0">
-            <WrapPanel>
-                    <!-- Skeleton Card 1 -->
-                    <Border Width="180" Margin="4" CornerRadius="10" Background="#1E1E1E">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="Black" Opacity="0.3"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Border Height="105" Background="#252525" CornerRadius="10,10,0,0"/>
-                            <Border Height="10" Width="120" Background="#2A2A2A" Margin="10,10,10,8" CornerRadius="2"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Skeleton Card 2 -->
-                    <Border Width="180" Margin="4" CornerRadius="10" Background="#1E1E1E">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="Black" Opacity="0.3"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Border Height="105" Background="#252525" CornerRadius="10,10,0,0"/>
-                            <Border Height="10" Width="120" Background="#2A2A2A" Margin="10,10,10,8" CornerRadius="2"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Skeleton Card 3 -->
-                    <Border Width="180" Margin="4" CornerRadius="10" Background="#1E1E1E">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="Black" Opacity="0.3"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Border Height="105" Background="#252525" CornerRadius="10,10,0,0"/>
-                            <Border Height="10" Width="120" Background="#2A2A2A" Margin="10,10,10,8" CornerRadius="2"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Skeleton Card 4 -->
-                    <Border Width="180" Margin="4" CornerRadius="10" Background="#1E1E1E">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="Black" Opacity="0.3"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Border Height="105" Background="#252525" CornerRadius="10,10,0,0"/>
-                            <Border Height="10" Width="120" Background="#2A2A2A" Margin="10,10,10,8" CornerRadius="2"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Skeleton Card 5 -->
-                    <Border Width="180" Margin="4" CornerRadius="10" Background="#1E1E1E">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="Black" Opacity="0.3"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Border Height="105" Background="#252525" CornerRadius="10,10,0,0"/>
-                            <Border Height="10" Width="120" Background="#2A2A2A" Margin="10,10,10,8" CornerRadius="2"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Skeleton Card 6 -->
-                    <Border Width="180" Margin="4" CornerRadius="10" Background="#1E1E1E">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="Black" Opacity="0.3"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Border Height="105" Background="#252525" CornerRadius="10,10,0,0"/>
-                            <Border Height="10" Width="120" Background="#2A2A2A" Margin="10,10,10,8" CornerRadius="2"/>
-                        </StackPanel>
-                    </Border>
-                </WrapPanel>
-            </ScrollViewer>
+            <ItemsControl>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <!-- Row 1 -->
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <!-- Row 2 -->
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+                <controls:SkeletonCard/>
+            </ItemsControl>
+        </ScrollViewer>
 
         <!-- Games Grid -->
         <ScrollViewer Grid.Row="1"
