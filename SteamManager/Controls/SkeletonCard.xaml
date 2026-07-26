@@ -11,24 +11,34 @@
         <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
             <DoubleAnimation Storyboard.TargetName="MainBorder"
                            Storyboard.TargetProperty="Opacity"
-                           From="0.6" To="1" Duration="0:0:0.8"
-                           AutoReverse="True"/>
+                           From="0.5" To="0.85" Duration="0:0:1"
+                           AutoReverse="True">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
         </Storyboard>
     </UserControl.Resources>
 
     <Grid>
         <Border x:Name="MainBorder"
                 CornerRadius="10"
-                Background="#1E1E1E"
                 Margin="2"
-                Opacity="0.8">
+                Opacity="0.7">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#252525" Offset="0"/>
+                    <GradientStop Color="#1E1E1E" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
             <Border.Effect>
-                <DropShadowEffect BlurRadius="25"
-                                 ShadowDepth="0"
+                <DropShadowEffect BlurRadius="20"
+                                 ShadowDepth="2"
                                  Direction="270"
                                  Color="Black"
-                                 Opacity="0.3"/>
+                                 Opacity="0.25"/>
             </Border.Effect>
+
             <Border.Triggers>
                 <EventTrigger RoutedEvent="Loaded">
                     <BeginStoryboard Storyboard="{StaticResource Pulse}"/>
@@ -41,12 +51,17 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Cover Image Placeholder -->
+                <!-- Cover Image Placeholder with gradient -->
                 <Border Grid.Row="0"
                         CornerRadius="10,10,0,0"
                         ClipToBounds="True"
                         Height="105">
-                    <Border Background="#252525"/>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#2A2A2A" Offset="0"/>
+                            <GradientStop Color="#222222" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
                 </Border>
 
                 <!-- Text Placeholder -->
@@ -55,7 +70,13 @@
                             Width="130"
                             HorizontalAlignment="Left"
                             CornerRadius="2"
-                            Background="#2A2A2A"/>
+                            Background="#2E2E2E"/>
+                    <Border Height="10"
+                            Width="90"
+                            HorizontalAlignment="Left"
+                            CornerRadius="2"
+                            Background="#282828"
+                            Margin="0,6,0,0"/>
                 </StackPanel>
             </Grid>
         </Border>

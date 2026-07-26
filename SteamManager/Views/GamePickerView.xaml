@@ -13,49 +13,99 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Hero Header -->
+        <!-- Hero Header with presence -->
         <Border Grid.Row="0"
-                Background="#1A1A1A"
-                Padding="36,32,36,20">
+                Padding="40,32,40,24">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#1E1E1E" Offset="0"/>
+                    <GradientStop Color="#232323" Offset="0.15"/>
+                    <GradientStop Color="#1A1A1A" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="30"
+                               ShadowDepth="4"
+                               Direction="270"
+                               Color="Black"
+                               Opacity="0.4"/>
+            </Border.Effect>
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Main Title - Bold & Colorful -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Game"
-                               FontSize="42"
-                               FontWeight="Bold"
-                               Foreground="#FFFFFF"
-                               FontFamily="Segoe UI"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Text=" Library"
-                               FontSize="42"
-                               FontWeight="Light"
-                               Foreground="#66C0F4"
-                               FontFamily="Segoe UI"
-                               VerticalAlignment="Center"/>
+                <!-- Main Title with accent -->
+                <StackPanel Grid.Row="0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Accent bar -->
+                        <Border Width="4"
+                                Height="36"
+                                CornerRadius="2"
+                                Margin="0,0,14,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#66C0F4" Offset="0"/>
+                                    <GradientStop Color="#417A9B" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <TextBlock Text="Game"
+                                   FontSize="40"
+                                   FontWeight="Bold"
+                                   Foreground="#FFFFFF"
+                                   FontFamily="Segoe UI"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text=" Library"
+                                   FontSize="40"
+                                   FontWeight="Light"
+                                   Foreground="#66C0F4"
+                                   FontFamily="Segoe UI"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- Steam icon -->
+                        <TextBlock Text="&#xE7BC;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="24"
+                                   Foreground="#3A3A3A"
+                                   VerticalAlignment="Center"
+                                   Margin="18,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- Tagline -->
+                    <TextBlock Text="Manage your achievements"
+                               FontSize="13"
+                               Foreground="#5A5A5A"
+                               FontStyle="Italic"
+                               Margin="18,6,0,0"/>
                 </StackPanel>
 
                 <!-- Search & Count -->
-                <Grid Grid.Row="1" Margin="0,18,0,0">
+                <Grid Grid.Row="1" Margin="0,20,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Search Bar - Full Width -->
+                    <!-- Search Bar -->
                     <Border Grid.Column="0"
                             Background="#252525"
                             CornerRadius="8"
                             BorderBrush="#3A3A3A"
                             BorderThickness="1">
-                        <Grid Margin="16,12">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                                           ShadowDepth="2"
+                                           Direction="270"
+                                           Color="Black"
+                                           Opacity="0.3"/>
+                        </Border.Effect>
+                        <Grid Margin="14,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -64,10 +114,10 @@
                             <TextBlock Grid.Column="0"
                                        Text="&#xE721;"
                                        FontFamily="Segoe MDL2 Assets"
-                                       FontSize="16"
-                                       Foreground="#5A5A5A"
+                                       FontSize="14"
+                                       Foreground="#4A4A4A"
                                        VerticalAlignment="Center"
-                                       Margin="0,0,12,0"/>
+                                       Margin="0,0,10,0"/>
 
                             <TextBox x:Name="SearchBox"
                                      Grid.Column="1"
@@ -81,89 +131,96 @@
                         </Grid>
                     </Border>
 
-                    <!-- Game Count -->
+                    <!-- Game Count Badge -->
                     <Border Grid.Column="1"
                             Background="#252525"
                             CornerRadius="6"
-                            Padding="16,10"
+                            Padding="14,8"
                             VerticalAlignment="Center"
-                            Margin="16,0,0,0">
+                            Margin="12,0,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8"
+                                           ShadowDepth="2"
+                                           Direction="270"
+                                           Color="Black"
+                                           Opacity="0.25"/>
+                        </Border.Effect>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding Games.Count}"
-                                       FontSize="16"
+                                       FontSize="14"
                                        FontWeight="SemiBold"
                                        Foreground="#66C0F4"
                                        VerticalAlignment="Center"/>
                             <TextBlock Text=" games"
-                                       FontSize="14"
+                                       FontSize="13"
                                        Foreground="#6B6B6B"
                                        VerticalAlignment="Center"
-                                       Margin="6,0,0,0"/>
+                                       Margin="4,0,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
             </Grid>
         </Border>
 
-        <!-- Loading Skeleton -->
-        <ScrollViewer Grid.Row="1"
-                      Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
-                      Margin="32,8,32,0">
-            <ItemsControl>
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <!-- Row 1 -->
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <!-- Row 2 -->
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-                <controls:SkeletonCard/>
-            </ItemsControl>
-        </ScrollViewer>
+        <!-- Games Area with Background -->
+        <Grid Grid.Row="1"
+              Margin="0,8,0,0">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#181818" Offset="0"/>
+                    <GradientStop Color="#1A1A1A" Offset="0.3"/>
+                    <GradientStop Color="#1A1A1A" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
 
-        <!-- Games Grid -->
-        <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
-                      Margin="32,8,32,0"
-                      Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-            <ItemsControl ItemsSource="{Binding Games}"
-                          VirtualizingStackPanel.IsVirtualizing="True"
-                          VirtualizingStackPanel.VirtualizationMode="Recycling">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <controls:GameCard DataContext="{Binding}"
-                                          GameSelected="GameCard_GameSelected"
-                                          FavoriteToggle="GameCard_FavoriteToggle"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+            <!-- Loading Skeleton -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Margin="32,0,32,0"
+                          Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ItemsControl>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                    <controls:SkeletonCard/>
+                </ItemsControl>
+            </ScrollViewer>
 
-        <!-- Empty row - status is shown in MainWindow footer -->
-        <Border Grid.Row="2"
-                Background="#1A1A1A"
-                BorderBrush="#252525"
-                BorderThickness="0,1,0,0"
-                Padding="36,12"
-                Visibility="Collapsed"/>
+            <!-- Games Grid -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Margin="32,0,32,0"
+                          Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                <ItemsControl ItemsSource="{Binding Games}"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:GameCard DataContext="{Binding}"
+                                              GameSelected="GameCard_GameSelected"
+                                              FavoriteToggle="GameCard_FavoriteToggle"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>

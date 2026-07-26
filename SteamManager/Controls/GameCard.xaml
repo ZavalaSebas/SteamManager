@@ -62,8 +62,24 @@
 
         <Border x:Name="CardBorder"
                 CornerRadius="10"
-                Background="#1E1E1E"
                 Margin="2">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="BorderBrush" Value="#40FFD700"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#262626" Offset="0"/>
+                        <GradientStop Color="#1C1C1C" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
                 <Border.Effect>
                     <DropShadowEffect x:Name="GlowEffect"
                                      BlurRadius="25"
@@ -105,12 +121,21 @@
 
                             <!-- Favorite Glow Effect -->
                             <Border x:Name="FavoriteGlow"
-                                    CornerRadius="0"
-                                    Opacity="0">
+                                    CornerRadius="0">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Opacity" Value="0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                <Setter Property="Opacity" Value="0.4"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#40FFD700" Offset="0"/>
-                                        <GradientStop Color="#00FFD700" Offset="0.5"/>
+                                        <GradientStop Color="#60FFD700" Offset="0"/>
+                                        <GradientStop Color="#00FFD700" Offset="0.4"/>
                                         <GradientStop Color="#00FFD700" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
