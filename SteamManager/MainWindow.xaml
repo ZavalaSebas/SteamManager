@@ -53,14 +53,8 @@
                            VerticalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Status -->
-            <Border Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <TextBlock Text="{Binding StatusMessage}"
-                           FontSize="12"
-                           Foreground="#6B6B6B"/>
-            </Border>
+            <!-- Spacer -->
+            <Border Grid.Column="1"/>
 
             <!-- Window Controls -->
             <ui:TitleBar Grid.Column="2"

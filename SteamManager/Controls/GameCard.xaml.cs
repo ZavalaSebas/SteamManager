@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using SteamManager.Models;
 
 namespace SteamManager.Controls;
 
@@ -34,17 +35,17 @@ public partial class GameCard : UserControl
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (e.NewValue is Models.GameInfo game)
+        if (e.NewValue is GameInfo game)
         {
-            UpdateFavoriteOverlay(game.IsFavorite);
+            UpdateFavoriteState(game.IsFavorite);
         }
     }
 
-    private void UpdateFavoriteOverlay(bool isFavorite)
+    private void UpdateFavoriteState(bool isFavorite)
     {
-        if (FavoriteOverlay != null)
+        if (FavoriteGlow != null)
         {
-            FavoriteOverlay.Opacity = isFavorite ? 0.8 : 0;
+            FavoriteGlow.Opacity = isFavorite ? 0.6 : 0;
         }
     }
 
@@ -52,7 +53,7 @@ public partial class GameCard : UserControl
     {
         if (e.OriginalSource is FrameworkElement element)
         {
-            if (element.Name == "FavoriteButton" || element.Parent is System.Windows.Controls.Button)
+            if (element.Name == "FavoriteButton" || element.Parent is Button)
                 return;
         }
         RaiseEvent(new RoutedEventArgs(GameSelectedEvent, this));

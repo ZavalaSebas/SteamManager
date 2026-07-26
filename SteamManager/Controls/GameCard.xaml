@@ -4,30 +4,54 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Width="200"
+             Width="180"
              Cursor="Hand">
     <UserControl.Resources>
         <Storyboard x:Key="HoverEnter">
             <DoubleAnimation Storyboard.TargetName="CardScale"
                            Storyboard.TargetProperty="ScaleX"
-                           To="1.03" Duration="0:0:0.15"/>
+                           To="1.04" Duration="0:0:0.18">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="CardScale"
                            Storyboard.TargetProperty="ScaleY"
-                           To="1.03" Duration="0:0:0.15"/>
+                           To="1.04" Duration="0:0:0.18">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="GlowEffect"
                            Storyboard.TargetProperty="Opacity"
-                           To="0.4" Duration="0:0:0.15"/>
+                           To="0.5" Duration="0:0:0.18">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
         </Storyboard>
         <Storyboard x:Key="HoverLeave">
             <DoubleAnimation Storyboard.TargetName="CardScale"
                            Storyboard.TargetProperty="ScaleX"
-                           To="1" Duration="0:0:0.15"/>
+                           To="1" Duration="0:0:0.15">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseIn"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="CardScale"
                            Storyboard.TargetProperty="ScaleY"
-                           To="1" Duration="0:0:0.15"/>
+                           To="1" Duration="0:0:0.15">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseIn"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="GlowEffect"
                            Storyboard.TargetProperty="Opacity"
-                           To="0" Duration="0:0:0.15"/>
+                           To="0" Duration="0:0:0.15">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseIn"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
         </Storyboard>
     </UserControl.Resources>
 
@@ -37,158 +61,128 @@
         </Grid.RenderTransform>
 
         <Border x:Name="CardBorder"
-                CornerRadius="8"
+                CornerRadius="10"
                 Background="#1E1E1E"
-                Margin="4">
-            <Border.Effect>
-                <DropShadowEffect x:Name="GlowEffect"
-                                 BlurRadius="20"
-                                 ShadowDepth="0"
-                                 Direction="270"
-                                 Color="#66C0F4"
-                                 Opacity="0"/>
-            </Border.Effect>
+                Margin="2">
+                <Border.Effect>
+                    <DropShadowEffect x:Name="GlowEffect"
+                                     BlurRadius="25"
+                                     ShadowDepth="0"
+                                     Direction="270"
+                                     Color="#66C0F4"
+                                     Opacity="0"/>
+                </Border.Effect>
 
-            <Border.Triggers>
-                <EventTrigger RoutedEvent="MouseEnter">
-                    <BeginStoryboard Storyboard="{StaticResource HoverEnter}"/>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="MouseLeave">
-                    <BeginStoryboard Storyboard="{StaticResource HoverLeave}"/>
-                </EventTrigger>
-            </Border.Triggers>
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard Storyboard="{StaticResource HoverEnter}"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard Storyboard="{StaticResource HoverLeave}"/>
+                    </EventTrigger>
+                </Border.Triggers>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Cover Image Container -->
-                <Border Grid.Row="0"
-                        Height="110"
-                        CornerRadius="8,8,0,0"
-                        ClipToBounds="True">
-                    <Grid>
-                        <!-- Placeholder Gradient -->
-                        <Border CornerRadius="0"
-                                Background="#2A2A2A"/>
+                    <!-- Cover Image Container -->
+                    <Border Grid.Row="0"
+                            CornerRadius="10,10,0,0"
+                            ClipToBounds="True"
+                            Height="105">
+                        <Grid>
+                            <!-- Placeholder -->
+                            <Border CornerRadius="0"
+                                    Background="#252525"/>
 
-                        <!-- Cover Image -->
-                        <Image Source="{Binding CoverImage}"
-                               Stretch="UniformToFill"
-                               Height="110"/>
+                            <!-- Cover Image -->
+                            <Image Source="{Binding CoverImage}"
+                                   Stretch="UniformToFill"
+                                   Height="105"/>
 
-                        <!-- Favorite Glass Overlay -->
-                        <Border x:Name="FavoriteOverlay"
-                                CornerRadius="0"
-                                Opacity="0">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="#30FFD700" Offset="0"/>
-                                    <GradientStop Color="#00FFD700" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                        </Border>
+                            <!-- Favorite Glow Effect -->
+                            <Border x:Name="FavoriteGlow"
+                                    CornerRadius="0"
+                                    Opacity="0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#40FFD700" Offset="0"/>
+                                        <GradientStop Color="#00FFD700" Offset="0.5"/>
+                                        <GradientStop Color="#00FFD700" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
 
-                        <!-- Gradient Overlay at Bottom -->
-                        <Border Height="50"
-                                VerticalAlignment="Bottom">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="#00000000" Offset="0"/>
-                                    <GradientStop Color="#CC000000" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                        </Border>
+                            <!-- Gradient Bottom Fade -->
+                            <Border Height="40"
+                                    VerticalAlignment="Bottom">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00000000" Offset="0"/>
+                                        <GradientStop Color="#CC000000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
 
-                        <!-- Favorite Star Button -->
-                        <Button x:Name="FavoriteButton"
-                                Click="OnFavoriteClick"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Padding="6"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Margin="4"
-                                Cursor="Hand">
-                            <TextBlock Text="&#xE734;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       FontSize="18">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#60FFFFFF"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
-                                                <Setter Property="Foreground" Value="#FFD700"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Button>
-
-                        <!-- Achievement Progress Badge -->
-                        <Border HorizontalAlignment="Left"
-                                VerticalAlignment="Bottom"
-                                Margin="8,0,0,6"
-                                Background="#CC000000"
-                                CornerRadius="4"
-                                Padding="6,3">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets"
-                                           Text="&#xE7BE;"
-                                           FontSize="10"
-                                           Foreground="#66C0F4"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding AchievementProgressText}"
-                                           FontSize="10"
-                                           Foreground="#FFFFFF"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <!-- Achievement Progress Bar -->
-                <Border Grid.Row="1"
-                        Height="3"
-                        Background="#3A3A3A"
-                        CornerRadius="0">
-                    <Border x:Name="ProgressFill"
-                            HorizontalAlignment="Left"
-                            Width="{Binding AchievementProgress, Converter={StaticResource ProgressToWidthConverter}}"
-                            Background="{StaticResource SteamBlueGradient}"
-                            CornerRadius="0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#2ECC71" Offset="0"/>
-                                            <GradientStop Color="#27AE60" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Border.Style>
+                            <!-- Favorite Star - PROMINENT -->
+                            <Button x:Name="FavoriteButton"
+                                    Click="OnFavoriteClick"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Margin="6"
+                                    Padding="6"
+                                    Cursor="Hand">
+                                <Border Background="#99000000"
+                                        CornerRadius="20"
+                                        Padding="6">
+                                    <TextBlock Text="&#xE734;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               FontSize="16"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#60FFFFFF"/>
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.5"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                        <Setter Property="Foreground" Value="#FFD700"/>
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect BlurRadius="12" ShadowDepth="0" Color="#FFD700" Opacity="0.8"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </Button>
+                        </Grid>
                     </Border>
-                </Border>
 
-                <!-- Game Info -->
-                <StackPanel Grid.Row="2" Margin="10,8">
-                    <TextBlock Text="{Binding Name}"
-                               FontSize="12"
-                               FontWeight="SemiBold"
-                               TextWrapping="Wrap"
-                               MaxHeight="36"
-                               TextTrimming="CharacterEllipsis"
-                               Foreground="#FFFFFF"
-                               LineHeight="16"/>
-                </StackPanel>
-            </Grid>
-        </Border>
+                    <!-- Game Info -->
+                    <StackPanel Grid.Row="1" Margin="10,10,10,12">
+                        <TextBlock Text="{Binding Name}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   MaxHeight="34"
+                                   TextTrimming="CharacterEllipsis"
+                                   Foreground="#FFFFFF"
+                                   LineHeight="16"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
     </Grid>
 </UserControl>

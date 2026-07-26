@@ -31,6 +31,7 @@
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
     <SolidColorBrush x:Key="SteamBlueBrush" Color="{StaticResource SteamBlueAccent}"/>
     <SolidColorBrush x:Key="SteamBlueDarkBrush" Color="{StaticResource SteamBlueDark}"/>
+    <SolidColorBrush x:Key="SteamBlueBrightBrush" Color="{StaticResource SteamBlueBright}"/>
     <SolidColorBrush x:Key="UnlockGreenBrush" Color="{StaticResource UnlockGreen}"/>
     <SolidColorBrush x:Key="LockRedBrush" Color="{StaticResource LockRed}"/>
     <SolidColorBrush x:Key="FavoriteGoldBrush" Color="{StaticResource FavoriteGold}"/>
