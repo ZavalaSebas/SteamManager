@@ -159,7 +159,7 @@
                                                     CornerRadius="6"
                                                     Padding="{TemplateBinding Padding}">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="&#xE785;"
+                                                    <TextBlock Text="&#xE72E;"
                                                               FontFamily="Segoe MDL2 Assets"
                                                               FontSize="14"
                                                               VerticalAlignment="Center"
@@ -200,7 +200,7 @@
                                                     CornerRadius="6"
                                                     Padding="{TemplateBinding Padding}">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="&#xE73E;"
+                                                    <TextBlock Text="&#xE785;"
                                                               FontFamily="Segoe MDL2 Assets"
                                                               FontSize="14"
                                                               VerticalAlignment="Center"
