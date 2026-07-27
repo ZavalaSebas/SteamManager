@@ -698,57 +698,41 @@
                             </Style>
                         </Button.Style>
                     </Button>
+
+                    <Button Content="Save Stats"
+                            Command="{Binding StoreStatsCommand}"
+                            Padding="20,10"
+                            Margin="16,0,0,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#66C0F4"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#8FCDFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </StackPanel>
                     </StackPanel>
                 </Border>
             </StackPanel>
-        </Border>
-
-        <!-- Footer -->
-        <Border Grid.Row="4"
-                Margin="0,16,0,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Text="{Binding StatusMessage}"
-                           FontSize="12"
-                           Foreground="#6B6B6B"
-                           VerticalAlignment="Center"/>
-
-                <Button Grid.Column="1"
-                        Content="Store Stats"
-                        Command="{Binding StoreStatsCommand}"
-                        Padding="20,10"
-                        Cursor="Hand">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Background" Value="#66C0F4"/>
-                            <Setter Property="Foreground" Value="#FFFFFF"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="border"
-                                                Background="{TemplateBinding Background}"
-                                                CornerRadius="4"
-                                                Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="#8FCDFF"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </Grid>
         </Border>
     </Grid>
 </UserControl>
