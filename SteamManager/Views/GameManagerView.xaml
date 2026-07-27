@@ -33,24 +33,64 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- Back Button -->
+                <Button Grid.Column="0"
+                        Command="{Binding BackCommand}"
+                        Cursor="Hand"
+                        VerticalAlignment="Center"
+                        ToolTip="Back to Game Library">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#2A2A2A"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="8"
+                                                Padding="10"
+                                                Cursor="Hand">
+                                            <TextBlock Text="&#xE72B;"
+                                                       FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="18"
+                                                       Foreground="#8A8A8A"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#3A3A3A"/>
+                                                <Setter Property="TextBlock.Foreground" Value="#FFFFFF"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <!-- Game Thumbnail -->
-                <Border Grid.Column="0"
+                <Border Grid.Column="1"
                         Width="64"
                         Height="64"
                         CornerRadius="8"
                         ClipToBounds="True"
                         Background="#252525"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Margin="12,0,0,0">
                     <Image Source="{Binding SelectedGame.CoverImage}"
                            Stretch="UniformToFill"/>
                 </Border>
 
                 <!-- Game Title & Stats -->
-                <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Margin="16,0,0,0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <Border Width="3"
                                 Height="28"
@@ -101,7 +141,7 @@
                 </StackPanel>
 
                 <!-- Action Buttons -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Command="{Binding LockAllCommand}"
                             Padding="14,8"
                             Cursor="Hand"
