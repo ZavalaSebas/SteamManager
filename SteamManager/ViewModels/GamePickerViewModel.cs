@@ -61,6 +61,7 @@ public partial class GamePickerViewModel : ObservableObject
     {
         IsLoading = true;
         StatusMessage = "Loading games...";
+        FileLogger.Initialize();
 
         try
         {
