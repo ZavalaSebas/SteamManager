@@ -5,6 +5,19 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Achievement card click not working**: `MouseLeftButtonUp` event was on the inner status indicator border (28×28px) instead of the outer `CardBorder` — only clicking the small circle worked, not the whole card. Fixed by moving the handler to `CardBorder` so the entire card is clickable.
+- **Progress circle and percentage text showing 0.0%**: `CompletionPercentage` property was never implemented in `GameManagerViewModel` — bindings in `GameManagerView.xaml` referenced a non-existent property. Added `PercentToArcMultiConverter` and `PercentToTextMultiConverter` (both using `CultureInfo.InvariantCulture` to avoid locale decimal separator issues) with `MultiBinding` to `UnlockedCount` and `TotalCount`.
+- **Cover image not loading in game manager header**: Helper process (`--game <appId>`) created `GameInfo` with only `AppId` and `Name`, missing `CoverUrl`. Launcher had it but helper didn't. Fixed by setting `CoverUrl` on `GameInfo` in helper mode using the same CDN pattern as `SteamGameLibraryService`. Banner now uses `UrlToCachedImageConverter` with `ImageLoaded` event to update the `BitmapImage` asynchronously.
+- **Locale bug in `Geometry.Parse`**: `ProgressToArcConverter` used string interpolation with floating-point numbers — on Spanish locale systems the decimal separator is comma (`,`) instead of period (`.`), causing `Geometry.Parse` to throw. Fixed by using `string.Format(CultureInfo.InvariantCulture, ...)` in both new converters.
+
+### Known Limitations
+
+- **Closing app during Smart Unlock cancels operation without rollback**: Hard-closing the app (X button, Alt+F4, or terminating the process) during a Smart Unlock operation prevents `StoreStats()` from executing — that method is called once in a `finally` block after the entire batch completes. A hard-close terminates the process before that call runs, so achievement changes are discarded and never persisted. Re-running Smart Unlock is safe since nothing was persisted.
+
 ## [1.1.0] - 2026-07-27
 
 ### Fixed
