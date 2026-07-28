@@ -115,7 +115,12 @@ public partial class App : Application
 
         var gameManagerVm = new GameManagerViewModel(SteamContext, imageCacheService);
         var gameName = SteamContext.Apps.GetAppData(appId, "name") ?? $"Game {appId}";
-        var game = new GameInfo { AppId = appId, Name = gameName };
+        var game = new GameInfo
+        {
+            AppId = appId,
+            Name = gameName,
+            CoverUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg"
+        };
         gameManagerVm.SelectGameCommand.Execute(game);
 
         var mainVm = new MainViewModel(

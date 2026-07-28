@@ -238,7 +238,6 @@ public partial class GameManagerViewModel : ObservableObject
                 StatusMessage = $"{UnlockedCount}/{TotalCount} achievements unlocked";
 
                 ApplyFilter();
-                _ = LoadGameCoverAsync();
                 _ = LoadIconsFromCdnAsync();
             }
         }
@@ -280,28 +279,6 @@ public partial class GameManagerViewModel : ObservableObject
         }
     }
 
-    private async Task LoadGameCoverAsync()
-    {
-        if (_imageCacheService == null || SelectedGame == null)
-            return;
-
-        if (SelectedGame.CoverImage != null)
-            return;
-
-        if (string.IsNullOrEmpty(SelectedGame.CoverUrl))
-            return;
-
-        try
-        {
-            var cover = await _imageCacheService.GetOrDownloadAsync(SelectedGame.CoverUrl);
-            if (cover != null)
-            {
-                SelectedGame.CoverImage = cover;
-            }
-        }
-        catch { }
-    }
-
     private async Task RefreshAchievementIconAsync(AchievementInfo achievement)
     {
         if (_imageCacheService == null || SelectedGame == null)
@@ -332,7 +309,6 @@ public partial class GameManagerViewModel : ObservableObject
         if (game == null) return;
         SelectedGame = game;
         AvailableStats = GameStats.GetStatsForGame(game.AppId);
-        _ = LoadGameCoverAsync();
         LoadAchievementsCommand.Execute(null);
     }
 

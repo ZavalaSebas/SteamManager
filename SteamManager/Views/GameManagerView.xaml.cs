@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using SteamManager.Converters;
 using SteamManager.Dialogs;
 using SteamManager.ViewModels;
 
@@ -14,11 +15,23 @@ public partial class GameManagerView : UserControl
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         SmartUnlockProgressOverlay.CancelRequested += OnProgressOverlayCancelRequested;
+        UrlToCachedImageConverter.ImageLoaded += OnCoverImageLoaded;
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         _viewModel = e.NewValue as GameManagerViewModel;
+    }
+
+    private void OnCoverImageLoaded(object? sender, ImageLoadedEventArgs e)
+    {
+        if (_viewModel?.SelectedGame == null)
+            return;
+
+        if (_viewModel.SelectedGame.CoverUrl == e.Url)
+        {
+            _viewModel.SelectedGame.CoverImage = e.Image;
+        }
     }
 
     private void OnProgressOverlayCancelRequested(object? sender, EventArgs e)
