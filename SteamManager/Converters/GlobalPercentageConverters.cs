@@ -32,7 +32,7 @@ public class GlobalPercentageToTextConverter : IValueConverter
         if (value is not float percent || percent < 0)
             return string.Empty;
 
-        return $"{percent:F1}%";
+        return $"Rarity: {percent:F1}%";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
