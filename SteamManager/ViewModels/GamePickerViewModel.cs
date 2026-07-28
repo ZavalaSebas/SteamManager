@@ -27,6 +27,21 @@ public partial class GamePickerViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
+    [ObservableProperty]
+    private bool _showGames = true;
+
+    [ObservableProperty]
+    private bool _showDemos = false;
+
+    [ObservableProperty]
+    private bool _showMods = false;
+
+    [ObservableProperty]
+    private bool _showJunk = false;
+
+    [ObservableProperty]
+    private string _addGameAppId = string.Empty;
+
     public Action<GameInfo>? OnGameSelected { get; set; }
 
     public GamePickerViewModel(
@@ -79,6 +94,66 @@ public partial class GamePickerViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private async Task RefreshGames()
+    {
+        await LoadGamesAsync();
+    }
+
+    [RelayCommand]
+    private void AddGame()
+    {
+        if (string.IsNullOrWhiteSpace(AddGameAppId))
+        {
+            StatusMessage = "Enter an App ID first";
+            return;
+        }
+
+        if (!uint.TryParse(AddGameAppId.Trim(), out uint appId))
+        {
+            StatusMessage = "Invalid App ID format";
+            return;
+        }
+
+        if (!_steamContext.IsInitialized)
+        {
+            StatusMessage = "Steam not initialized";
+            return;
+        }
+
+        if (!_steamContext.Apps.IsSubscribedApp(appId))
+        {
+            StatusMessage = $"App ID {appId} is not owned or not found";
+            return;
+        }
+
+        if (_allGames.Any(g => g.AppId == appId))
+        {
+            StatusMessage = $"App ID {appId} is already in the list";
+            return;
+        }
+
+        string name = _steamContext.Apps.GetAppData(appId, "name") ?? $"Game {appId}";
+        string gameType = _steamContext.Apps.GetAppData(appId, "type") ?? "game";
+
+        var game = new GameInfo
+        {
+            AppId = appId,
+            Name = name,
+            PlaytimeMinutes = 0,
+            GameType = gameType,
+            CoverUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
+            HeaderImageUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
+            LogoUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/logo.png",
+            ImgIconUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/capsule_32x32.jpg"
+        };
+
+        _allGames.Add(game);
+        SearchGames();
+        AddGameAppId = string.Empty;
+        StatusMessage = $"Added: {name}";
+    }
+
     private async Task LoadCoversAsync()
     {
         foreach (var game in _allGames)
@@ -99,22 +174,28 @@ public partial class GamePickerViewModel : ObservableObject
     {
         var recentIds = _configService.RecentlyOpenedGameIds;
 
-        IEnumerable<GameInfo> sorted;
-        if (string.IsNullOrWhiteSpace(SearchText))
+        IEnumerable<GameInfo> filtered = _allGames.Where(g =>
         {
-            sorted = _allGames
-                .OrderByDescending(g => g.IsFavorite)
-                .ThenBy(g => GetRecentIndex(g.AppId, recentIds))
-                .ThenBy(g => g.Name);
-        }
-        else
-        {
-            sorted = _allGames
-                .Where(g => g.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(g => g.IsFavorite)
-                .ThenBy(g => GetRecentIndex(g.AppId, recentIds))
-                .ThenBy(g => g.Name);
-        }
+            bool matchesType = g.GameType switch
+            {
+                "game" => ShowGames,
+                "demo" => ShowDemos,
+                "mod" => ShowMods,
+                "junk" => ShowJunk,
+                _ => ShowGames
+            };
+
+            bool matchesSearch = string.IsNullOrWhiteSpace(SearchText) ||
+                g.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+
+            return matchesType && matchesSearch;
+        });
+
+        var sorted = filtered
+            .OrderByDescending(g => g.IsFavorite)
+            .ThenBy(g => GetRecentIndex(g.AppId, recentIds))
+            .ThenBy(g => g.Name);
+
         Games = new ObservableCollection<GameInfo>(sorted.ToList());
     }
 
@@ -128,6 +209,11 @@ public partial class GamePickerViewModel : ObservableObject
     {
         SearchGames();
     }
+
+    partial void OnShowGamesChanged(bool value) => SearchGames();
+    partial void OnShowDemosChanged(bool value) => SearchGames();
+    partial void OnShowModsChanged(bool value) => SearchGames();
+    partial void OnShowJunkChanged(bool value) => SearchGames();
 
     [RelayCommand]
     private void ToggleFavorite(GameInfo? game)

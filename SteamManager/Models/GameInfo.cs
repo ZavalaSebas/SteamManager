@@ -12,6 +12,7 @@ public partial class GameInfo : ObservableObject
     public string? HeaderImageUrl { get; set; }
     public string? LogoUrl { get; set; }
     public string? ImgIconUrl { get; set; }
+    public string GameType { get; set; } = "game";
 
     [ObservableProperty]
     private bool _isFavorite;

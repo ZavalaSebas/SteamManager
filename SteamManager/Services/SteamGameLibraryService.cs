@@ -36,6 +36,7 @@ public class SteamGameLibraryService : IGameLibraryService
                     AppId = appId,
                     Name = name,
                     PlaytimeMinutes = 0,
+                    GameType = _steamContext.Apps.GetAppData(appId, "type") ?? "game",
                     CoverUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
                     HeaderImageUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/header.jpg",
                     LogoUrl = $"https://steamcdn-a.akamaihd.net/steam/apps/{appId}/logo.png",
