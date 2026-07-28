@@ -63,7 +63,7 @@ jobs:
       - name: Generate release body
         shell: pwsh
         run: |
-          $commit = git log -1 --pretty=%B
+          $commit = (git log -1 --pretty=%B) -join "`n"
           @"
           ## SteamManager v${{ needs.build.outputs.new_version }}
 
