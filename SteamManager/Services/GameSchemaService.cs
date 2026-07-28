@@ -126,7 +126,7 @@ public class GameSchemaService
         var typeNode = statNode["type"];
         if (typeNode.Valid == true && typeNode.Type == KeyValueType.String)
         {
-            if (Enum.TryParse((string)typeNode.Value, true, out UserStatType type))
+            if (typeNode.Value is string typeStr && Enum.TryParse(typeStr, true, out UserStatType type))
             {
                 return type;
             }

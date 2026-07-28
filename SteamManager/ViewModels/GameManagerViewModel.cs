@@ -28,6 +28,7 @@ public partial class GameManagerViewModel : ObservableObject
     private ObservableCollection<AchievementInfo> _allAchievements = new();
     private System.Threading.CancellationTokenSource? _smartUnlockCts;
     private readonly IMessageBoxService _messageBoxService;
+    private readonly ISmartUnlockService _smartUnlockService;
 
     [ObservableProperty]
     private GameInfo? _selectedGame;
@@ -140,12 +141,13 @@ public partial class GameManagerViewModel : ObservableObject
         Achievements = new ObservableCollection<AchievementInfo>(GetFilteredAchievements());
     }
 
-    public GameManagerViewModel(SteamContext steamContext, IImageCacheService? imageCacheService = null, ILogger<GameManagerViewModel>? logger = null, IMessageBoxService? messageBoxService = null)
+    public GameManagerViewModel(SteamContext steamContext, IImageCacheService? imageCacheService = null, ILogger<GameManagerViewModel>? logger = null, IMessageBoxService? messageBoxService = null, ISmartUnlockService? smartUnlockService = null)
     {
         _steamContext = steamContext;
         _imageCacheService = imageCacheService;
         _logger = logger;
         _messageBoxService = messageBoxService ?? new MessageBoxService();
+        _smartUnlockService = smartUnlockService ?? new SmartUnlockService(_steamContext.Achievements, _steamContext.Stats);
         string? steamPath = SteamLoader.GetSteamInstallPath();
         if (!string.IsNullOrEmpty(steamPath))
         {
@@ -722,10 +724,10 @@ public partial class GameManagerViewModel : ObservableObject
         IsSmartUnlockRunning = true;
         IsSmartUnlockUiBlocked = true;
         _smartUnlockCts = new System.Threading.CancellationTokenSource();
-        _smartUnlockAppliedCount = 0;
-        _smartUnlockProtectedCount = 0;
-        _smartUnlockFailedCount = 0;
-        _smartUnlockProgressPercent = 0;
+        SmartUnlockAppliedCount = 0;
+        SmartUnlockProtectedCount = 0;
+        SmartUnlockFailedCount = 0;
+        SmartUnlockProgressPercent = 0;
         SmartUnlockWasCancelled = false;
         SmartUnlockTotal = targetAchievements.Count;
         SmartUnlockStatusMessage = "Smart Unlock: 0/" + targetAchievements.Count + " achievements processed (0 protected, 0 failed)";
@@ -734,28 +736,26 @@ public partial class GameManagerViewModel : ObservableObject
             .Select(a => (a.ApiName, a.Permission))
             .ToList();
 
-        ISmartUnlockService? smartUnlockService = null;
         try
         {
-            smartUnlockService = new SmartUnlockService(_steamContext.Achievements, _steamContext.Stats);
             var progress = new Progress<SmartUnlockProgress>(p =>
             {
                 SmartUnlockStatusMessage = $"Smart Unlock: {p.Processed}/{p.Total} achievements processed ({p.Protected} protected, {p.Failed} failed)";
-                _smartUnlockProgressPercent = p.Total > 0 ? (int)((double)p.Processed / p.Total * 100) : 0;
+                SmartUnlockProgressPercent = p.Total > 0 ? (int)((double)p.Processed / p.Total * 100) : 0;
                 SmartUnlockProcessed = p.Processed;
                 SmartUnlockAppliedCount = p.Applied;
                 SmartUnlockProtectedCount = p.Protected;
                 SmartUnlockFailedCount = p.Failed;
             });
 
-            var result = await smartUnlockService.UnlockAchievementsAsync(
+            var result = await _smartUnlockService.UnlockAchievementsAsync(
                 achList,
                 TimeSpan.FromMilliseconds(minDelayMs),
                 TimeSpan.FromMilliseconds(maxDelayMs),
                 progress,
                 _smartUnlockCts.Token);
 
-            _smartUnlockProgressPercent = 100;
+            SmartUnlockProgressPercent = 100;
             SmartUnlockProcessed = result.Applied + result.Protected + result.Failed;
             SmartUnlockAppliedCount = result.Applied;
             SmartUnlockProtectedCount = result.Protected;

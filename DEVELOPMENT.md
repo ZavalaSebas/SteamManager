@@ -879,28 +879,27 @@ Port the KeyValue parser from Gibbed's SAM (zlib license, GPL-compatible) instea
 - ✅ Same approach as original SAM (which works correctly)
 - ⚠️ One known limitation: nested `Type.None` parent→child not handled (see Known Limitations)
 
-### ADR-006: SmartUnlockService — core implemented, UI integration deferred
+### ADR-006: SmartUnlockService — fully implemented (core + UI)
 
-**Status:** Accepted
+**Status:** Complete
 
 **Context:**
-`SmartUnlockService` was implemented during the protected achievements work. It provides anti-detection delays between unlock/lock operations and correctly validates permissions internally. However, it was never connected to any UI element.
+`SmartUnlockService` provides anti-detection delays between unlock/lock operations. The core logic was implemented during the protected achievements work. In v1.1.0, the full UI was connected.
 
 **Decision:**
-Leave `SmartUnlockService` as standalone core logic (tested, correct) and defer UI integration to a future release.
-
-**Reasons:**
-- UI integration requires: invocation button, achievement selection UI, progress display
-- Connecting untested code creates the exact inconsistency found in the README (feature claimed but not working)
-- Core validation is sound; only the invocation layer is missing
-- Code is safe to exist without being called — protection works correctly via `ToggleAchievement/LockAll/UnlockAll`
+Implement both the core service and its UI integration:
+- `SmartUnlockDialog`: configure delay range (seconds), shows overlay option
+- `ProgressOverlay`: real-time progress with cancel support
+- `SmartUnlockResultDialog`: applied/protected/failed counts, auto-dismiss on clean run
+- Dropdown toolbar button with "Unlock All" / "Smart Unlock..." options
+- Full orchestration via `GameManagerViewModel` with `CancellationToken` handling
 
 **Consequences:**
 - ✅ Core smart unlock logic is tested and correct
-- ✅ README/PLAN.md updated to reflect "pending UI integration"
-- ⚠️ SmartUnlockService appears in DI but has no caller — accepted trade-off
+- ✅ UI fully integrated and functional
+- ⚠️ Smoke test requires manual verification with Steam running (steamclient.dll not available in test environment) — documented in Known Limitations
 
-**See:** `SmartUnlockService.cs`, `ISmartUnlockService.cs`, `SmartUnlockResult`
+**See:** `SmartUnlockService.cs`, `ISmartUnlockService.cs`, `SmartUnlockResult`, `Dialogs/`
 
 ## Protected Achievement Validation
 
@@ -933,7 +932,7 @@ Loads `UserGameStatsSchema_{appId}.bin` from Steam's appcache via the ported Key
 
 - [ ] Update `<Version>` in `SteamManager/SteamManager.csproj`
 - [ ] Update `CHANGELOG.md` with new version and changes
-- [ ] Commit with message: `bump vX.Y.Z`
+- [ ] Commit with subject `bump vX.Y.Z — <short summary>` and body with `### Added / Fixed / Changed` sections (the commit body becomes the GitHub Release body)
 
 ### Commit & Push
 

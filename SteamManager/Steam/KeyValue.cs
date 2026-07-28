@@ -13,10 +13,10 @@ public class KeyValue
     private static readonly KeyValue _Invalid = new();
     public string Name = "<root>";
     public KeyValueType Type = KeyValueType.None;
-    public object Value;
+    public object? Value;
     public bool Valid;
 
-    public List<KeyValue> Children = null;
+    public List<KeyValue>? Children = null;
 
     public KeyValue this[string key]
     {
@@ -51,12 +51,12 @@ public class KeyValue
             return defaultValue;
         }
 
-        return this.Value.ToString();
+        return this.Value?.ToString() ?? defaultValue;
     }
 
     public int AsInteger(int defaultValue)
     {
-        if (this.Valid == false)
+        if (this.Valid == false || this.Value == null)
         {
             return defaultValue;
         }
@@ -92,7 +92,7 @@ public class KeyValue
 
     public float AsFloat(float defaultValue)
     {
-        if (this.Valid == false)
+        if (this.Valid == false || this.Value == null)
         {
             return defaultValue;
         }
@@ -128,7 +128,7 @@ public class KeyValue
 
     public bool AsBoolean(bool defaultValue)
     {
-        if (this.Valid == false)
+        if (this.Valid == false || this.Value == null)
         {
             return defaultValue;
         }
@@ -177,7 +177,7 @@ public class KeyValue
         return $"{this.Name} = {this.Value}";
     }
 
-    public static KeyValue LoadAsBinary(string path)
+    public static KeyValue? LoadAsBinary(string path)
     {
         if (File.Exists(path) == false)
         {
