@@ -179,6 +179,8 @@ internal class FakeSteamAchievements : ISteamAchievements
     public bool SetAchievement(string name, int permission) => true;
     public bool ClearAchievement(string name, int permission) => true;
     public IEnumerable<AchievementInfo> GetAllAchievements() => [];
+    public bool RequestGlobalAchievementPercentages() => true;
+    public float GetAchievementAchievedPercent(string name) => 0f;
 }
 
 internal class FakeSteamStats : ISteamStats

@@ -98,6 +98,26 @@ public class SteamAchievements : ISteamAchievements
     }
 
     /// <summary>
+    /// Requests global achievement percentage data from Steam servers.
+    /// After calling this, use GetAchievementAchievedPercent() to get each achievement's percentage.
+    /// </summary>
+    public bool RequestGlobalAchievementPercentages()
+    {
+        return _client.UserStats.RequestGlobalAchievementPercentages();
+    }
+
+    /// <summary>
+    /// Gets the global achievement percentage (rarity) for a specific achievement.
+    /// Must call RequestGlobalAchievementPercentages() first and wait for data to load.
+    /// Returns the percentage as a float (e.g., 8.5f means 8.5% of players have it).
+    /// </summary>
+    public float GetAchievementAchievedPercent(string name)
+    {
+        bool result = _client.UserStats.GetAchievementAchievedPercent(name, out float percent);
+        return result ? percent : 0f;
+    }
+
+    /// <summary>
     /// Gets all achievements for the current app.
     /// </summary>
     public IEnumerable<AchievementInfo> GetAllAchievements()

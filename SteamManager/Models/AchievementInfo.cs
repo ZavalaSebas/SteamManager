@@ -48,6 +48,20 @@ public class AchievementInfo : INotifyPropertyChanged
     public string? IconUrl { get; set; }
     public string? IconLockedUrl { get; set; }
 
+    private float _globalPercentage = -1f;
+    public float GlobalPercentage
+    {
+        get => _globalPercentage;
+        set
+        {
+            if (Math.Abs(_globalPercentage - value) > 0.001f)
+            {
+                _globalPercentage = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GlobalPercentage)));
+            }
+        }
+    }
+
     public bool IsProtected => PermissionVerified && (Permission & 3) != 0;
     public bool IsUnverified => !PermissionVerified;
 

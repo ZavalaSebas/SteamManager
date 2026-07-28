@@ -239,6 +239,7 @@ public partial class GameManagerViewModel : ObservableObject
 
                 ApplyFilter();
                 _ = LoadIconsFromCdnAsync();
+                _ = LoadGlobalAchievementPercentagesAsync();
             }
         }
         catch (Exception ex)
@@ -277,6 +278,25 @@ public partial class GameManagerViewModel : ObservableObject
             }
             catch { }
         }
+    }
+
+    private async Task LoadGlobalAchievementPercentagesAsync()
+    {
+        if (!_steamContext.IsInitialized)
+            return;
+
+        try
+        {
+            _steamContext.Achievements.RequestGlobalAchievementPercentages();
+            await Task.Delay(1000);
+
+            foreach (var ach in _allAchievements)
+            {
+                float percent = _steamContext.Achievements.GetAchievementAchievedPercent(ach.ApiName);
+                ach.GlobalPercentage = percent >= 0 ? percent : -1f;
+            }
+        }
+        catch { }
     }
 
     private async Task RefreshAchievementIconAsync(AchievementInfo achievement)

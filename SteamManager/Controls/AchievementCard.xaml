@@ -231,6 +231,13 @@
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="350"
                                    Margin="0,4,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                            <TextBlock Text="{Binding GlobalPercentage, Converter={StaticResource GlobalPercentageToTextConverter}}"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding GlobalPercentage, Converter={StaticResource GlobalPercentageToColorConverter}}"
+                                       Visibility="{Binding GlobalPercentage, Converter={StaticResource FloatToVisibilityConverter}}"/>
+                        </StackPanel>
                         <TextBlock Text="{Binding UnlockTimeText}"
                                    FontSize="10"
                                    Foreground="#5A5A5A"

@@ -29,7 +29,9 @@
             <converters:ProgressToWidthConverter x:Key="ProgressToWidthConverter"/>
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-            <controls:UnlockStatusToColorConverter x:Key="UnlockStatusToColorConverter"/>
+            <converters:GlobalPercentageToColorConverter x:Key="GlobalPercentageToColorConverter"/>
+            <converters:GlobalPercentageToTextConverter x:Key="GlobalPercentageToTextConverter"/>
+            <converters:FloatToVisibilityConverter x:Key="FloatToVisibilityConverter"/>
 
             <DataTemplate DataType="{x:Type viewModels:GamePickerViewModel}">
                 <views:GamePickerView />

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Achievement global rarity (rarity percentage)**: Each achievement card now shows the global percentage of players who have unlocked it. Data sourced from Steam's `ISteamUserStats013` API (`RequestGlobalAchievementPercentages` + `GetAchievementAchievedPercent`). Displayed with color coding: green (≥50%), yellow (10-50%), red (<10%). Closes the gap with the original SAM which had access to this API.
+
 ### Fixed
 
 - **Achievement card click not working**: `MouseLeftButtonUp` event was on the inner status indicator border (28×28px) instead of the outer `CardBorder` — only clicking the small circle worked, not the whole card. Fixed by moving the handler to `CardBorder` so the entire card is clickable.

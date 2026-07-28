@@ -45,7 +45,7 @@ No memory injection. No process hooking. No modified files. Just the official St
 The way Steam manages achievements is through its internal client library. SteamManager loads `steamclient.dll` from your Steam installation, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the same internal API that the original SAM uses.
 
 1. Launch **SteamManager** (Steam must be running and logged in)
-2. Your game library loads with covers and playtime
+2. Your game library loads with covers
 3. Select a game to manage its achievements and stats
 4. Toggle achievements, edit statistics, or use smart unlock
 5. Changes are committed to Steam's servers via the official API
@@ -80,7 +80,7 @@ dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-con
 
 ## Features
 
-- **Game Library** — Browse your entire Steam library with covers, playtime, and achievement progress
+- **Game Library** — Browse your entire Steam library with covers and achievement progress
 - **Achievement Manager** — Lock, unlock, or toggle individual achievements with one click
 - **Smart Unlock** — Delays between operations to reduce detection risk. Configure delay range and track progress in real time.
 - **Stats Editor** — View and modify game statistics with protection warnings

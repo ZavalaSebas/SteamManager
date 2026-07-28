@@ -119,6 +119,14 @@ public class SteamUserStats013 : NativeWrapper<ISteamUserStats013>
     private delegate bool NativeResetAllStats(IntPtr self,
         [MarshalAs(UnmanagedType.I1)] bool achievementsToo);
 
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private delegate bool NativeRequestGlobalAchievementPercentages(IntPtr self);
+
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private delegate bool NativeGetAchievementAchievedPercent(IntPtr self, IntPtr name, out float percent);
+
     public bool GetStat(string name, out float value)
     {
         using var nameHandle = NativeStrings.StringToStringHandle(name);
@@ -221,5 +229,18 @@ public class SteamUserStats013 : NativeWrapper<ISteamUserStats013>
     {
         var del = GetFunction<NativeResetAllStats>(Functions.ResetAllStats);
         return del(ObjectAddress, achievementsToo);
+    }
+
+    public bool RequestGlobalAchievementPercentages()
+    {
+        var del = GetFunction<NativeRequestGlobalAchievementPercentages>(Functions.RequestGlobalAchievementPercentages);
+        return del(ObjectAddress);
+    }
+
+    public bool GetAchievementAchievedPercent(string name, out float percent)
+    {
+        using var nameHandle = NativeStrings.StringToStringHandle(name);
+        var del = GetFunction<NativeGetAchievementAchievedPercent>(Functions.GetAchievementAchievedPercent);
+        return del(ObjectAddress, nameHandle.DangerousGetHandle(), out percent);
     }
 }

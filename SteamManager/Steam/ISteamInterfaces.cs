@@ -7,6 +7,8 @@ public interface ISteamAchievements
     bool SetAchievement(string name, int permission);
     bool ClearAchievement(string name, int permission);
     IEnumerable<AchievementInfo> GetAllAchievements();
+    bool RequestGlobalAchievementPercentages();
+    float GetAchievementAchievedPercent(string name);
 }
 
 public interface ISteamStats

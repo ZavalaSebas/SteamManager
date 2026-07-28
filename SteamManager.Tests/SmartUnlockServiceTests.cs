@@ -284,6 +284,8 @@ internal class MockSteamAchievements : ISteamAchievements
     }
 
     public IEnumerable<AchievementInfo> GetAllAchievements() => throw new NotImplementedException();
+    public bool RequestGlobalAchievementPercentages() => true;
+    public float GetAchievementAchievedPercent(string name) => 0f;
 }
 
 internal class MockSteamStats : ISteamStats
