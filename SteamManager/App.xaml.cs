@@ -155,7 +155,9 @@ public partial class App : Application
         services.AddSingleton<SteamContext>();
         services.AddSingleton<IGameLibraryService, SteamGameLibraryService>();
         services.AddSingleton<IImageCacheService, ImageCacheService>();
-        services.AddSingleton<ISmartUnlockService, SmartUnlockService>();
+        services.AddSingleton<ISmartUnlockService>(sp => new SmartUnlockService(
+            sp.GetRequiredService<SteamContext>().Achievements,
+            sp.GetRequiredService<SteamContext>().Stats));
         services.AddSingleton<IConfigService, ConfigService>();
 
         services.AddTransient<MainViewModel>();

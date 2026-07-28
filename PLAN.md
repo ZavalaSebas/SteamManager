@@ -2,7 +2,7 @@
 
 ## Estado Actual de Implementación
 
-> Última actualización: 2026-07-25 (v1.0.0)
+> Última actualización: 2026-07-27 (v1.1.0)
 
 ### Fase 1 (Core Steam API) — ✅ Completada
 - `SteamLoader.cs` ✅ — carga de `steamclient.dll` desde registro
@@ -35,7 +35,7 @@
 
 ### Fase 3 (Servicios de Negocio) — ✅ Completada
 - `SteamGameLibraryService.cs` ✅ — implementación real usando approach de SAM
-- `SmartUnlockService`, `ImageCacheService`, `ConfigService` — no implementados aún
+- `SmartUnlockService`, `ImageCacheService`, `ConfigService` ✅ — todos implementados
 
 ### Plataforma: win-x86 (32-bit)
 -steamclient.dll de Steam es de 32 bits — el proyecto usa `<RuntimeIdentifier>win-x86</RuntimeIdentifier>`
@@ -110,7 +110,7 @@ PARA CADA appId EN games.xml:
 | `SteamContext.SteamId` | ✅ Implementado |
 | Fallback si `games.xml` falla | ✅ Spacewar (480) |
 | `ImageCacheService` | ✅ Implementado |
-| `SmartUnlockService` | ✅ Implementado |
+| `SmartUnlockService` | ✅ Implementado — core + UI completos (72 tests passing) |
 | `ConfigService` | ✅ Implementado |
 
 ### Arquitectura Multi-Proceso
@@ -160,11 +160,10 @@ Replicar y mejorar las capacidades core del SAM original:
 - ✅ Filtros de logros (All, Unlocked, Locked, Hidden)
 - ✅ Favorites (juegos anclados con estrella, persistidos)
 - ✅ Orden por favoritos y recientes
-- ✅ Desbloqueo inteligente con delays aleatorios (SmartUnlockService)
+- ✅ Desbloqueo inteligente con delays aleatorios (SmartUnlockService — core + UI implementados, 72 tests)
 - ✅ Caché de imágenes local
 - ✅ UI moderna con WPFUI (Dark theme, Fluent design)
 - ✅ Multi-proceso (launcher + helper independientes)
-- ✅ Caché de imágenes local
 
 ### Futuro (v2.0+) - Tier 2, 3 y 4
 > Documentado aquí para desarrollo futuro. NO implementar en v1.0.
@@ -175,7 +174,7 @@ Replicar y mejorar las capacidades core del SAM original:
 - Requiere investigación de viabilidad con `steamclient.dll`
 
 **Tier 3 - Funcionalidades sociales y datos:**
-- Porcentaje global de obtención por logro
+- Porcentaje global de obtención por logro (requiere Steam Web API key o scraping de community pages; no disponible sin autenticación ni API key pública)
 - Progreso de logros por juego (X/50 desbloqueados)
 - Amigos en línea + avatares
 - Rich Presence de amigos
@@ -191,6 +190,8 @@ Replicar y mejorar las capacidades core del SAM original:
 ---
 
 ## Estructura del Proyecto
+
+> **Nota histórica**: Esta es la estructura planificada originally. No todos los archivos se implementaron como se indicaba. La estructura real del proyecto se encuentra en [DEVELOPMENT.md](DEVELOPMENT.md#project-structure).
 
 ```
 SteamManager/
@@ -233,7 +234,7 @@ SteamManager/
 │   ├── Controls/                       # Controles custom
 │   │   ├── GameCard.xaml               # Tarjeta de juego (portada + nombre)
 │   │   ├── AchievementCard.xaml        # Tarjeta de logro (icono + nombre + check)
-│   │   └── ProgressOverlay.xaml        # Overlay de progreso de desbloqueo
+│   │   └── ProgressOverlay.xaml        # Overlay de progreso de desbloqueo ✅ implementado en Dialogs/
 │   │
 │   ├── Services/                       # Servicios de negocio
 │   │   ├── IGameLibraryService.cs      # Interfaz: obtener juegos del usuario
@@ -250,8 +251,8 @@ SteamManager/
 │   │   └── PercentageToColorConverter.cs
 │   │
 │   ├── Helpers/                        # Utilidades
-│   │   ├── Paths.cs                    # Rutas de caché, datos, etc.
-│   │   └── NativeMethods.cs            # P/Invoke auxiliares
+│   │   ├── Paths.cs                    # Rutas de caché, datos, etc. (not implemented — see Config.cs)
+│   │   └── NativeMethods.cs            # P/Invoke auxiliares (moved to Steam/)
 │   │
 │   ├── Resources/                      # Recursos estáticos
 │   │   ├── Styles.xaml                 # Estilos globales
@@ -393,7 +394,7 @@ MainWindow
   └── ContentControl (bound a CurrentView)
         ├── GamePickerView (por defecto)
         ├── GameManagerView (al seleccionar juego)
-        └── SettingsView
+        └── SettingsView (not implemented)
 ```
 
 El `MainViewModel` tiene un `CurrentView` que cambia via `ObservableProperty`. Sin Frame, sin URIs, swap directo de ViewModels.
@@ -489,7 +490,6 @@ Contenido:
 | **Desbloqueo inteligente** | Delay aleatorio entre 15-45s por logro |
 | **Multi-selección** | Seleccionar múltiples logros y desbloquear en lote |
 | **Filtros de logros** | Secretos, desbloqueados, bloqueados |
-| **Porcentaje de obtención** | Mostrar % global de cada logro |
 | **Favorites** | Anclar juegos frecuentes arriba |
 | **Búsqueda predictiva** | Filtrado instantáneo de juegos por nombre |
 | **Stats editor** | Habilitar/deshabilitar con disclaimer |
@@ -521,7 +521,7 @@ Contenido:
 ├─────────────────────────────────────────────────┤
 │              Services (Negocio)                 │
 │  SmartUnlockService    ImageCacheService        │
-│  GameLibraryService    ConfigService            │
+│  SteamGameLibraryService    ConfigService     │
 ├─────────────────────────────────────────────────┤
 │              Steam API Layer                    │
 │  SteamClient  SteamAchievements  SteamStats     │

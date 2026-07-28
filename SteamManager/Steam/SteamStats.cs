@@ -5,7 +5,7 @@ namespace SteamManager.Steam;
 /// <summary>
 /// Provides read/write access to Steam stats for the current app.
 /// </summary>
-public class SteamStats
+public class SteamStats : ISteamStats
 {
     private readonly SteamClient _client;
 
@@ -60,5 +60,13 @@ public class SteamStats
     public bool ResetAllStats(bool achievementsToo)
     {
         return _client.UserStats.ResetAllStats(achievementsToo);
+    }
+
+    /// <summary>
+    /// Requests current stats from Steam servers.
+    /// </summary>
+    public bool RequestCurrentStats()
+    {
+        return _client.RequestCurrentStats();
     }
 }

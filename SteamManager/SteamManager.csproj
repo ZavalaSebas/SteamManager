@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>SteamManager</AssemblyName>
     <RootNamespace>SteamManager</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <Authors>SteamManager</Authors>
     <Description>Modern Steam Achievement Manager</Description>

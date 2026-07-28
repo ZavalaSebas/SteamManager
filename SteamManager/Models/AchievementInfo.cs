@@ -42,9 +42,14 @@ public class AchievementInfo : INotifyPropertyChanged
     public uint UnlockTime { get; set; }
     public int IconHandle { get; set; }
     public bool IsHidden { get; set; }
+    public int Permission { get; set; }
+    public bool PermissionVerified { get; set; }
     public BitmapSource? Icon { get; set; }
     public string? IconUrl { get; set; }
     public string? IconLockedUrl { get; set; }
+
+    public bool IsProtected => PermissionVerified && (Permission & 3) != 0;
+    public bool IsUnverified => !PermissionVerified;
 
     public void NotifyIconChanged() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
 }

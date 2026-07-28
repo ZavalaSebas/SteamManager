@@ -5,7 +5,7 @@ namespace SteamManager.Steam;
 /// <summary>
 /// Provides read/write access to Steam achievements for the current app.
 /// </summary>
-public class SteamAchievements
+public class SteamAchievements : ISteamAchievements
 {
     private readonly SteamClient _client;
 
@@ -39,18 +39,28 @@ public class SteamAchievements
     }
 
     /// <summary>
-    /// Sets (unlocks) a specific achievement.
+    /// Sets (unlocks) a specific achievement if permission allows it.
+    /// Returns false if the achievement is protected (permission & 3) != 0.
     /// </summary>
-    public bool SetAchievement(string name)
+    public bool SetAchievement(string name, int permission)
     {
+        if ((permission & 3) != 0)
+        {
+            return false;
+        }
         return _client.UserStats.SetAchievement(name);
     }
 
     /// <summary>
-    /// Clears (locks) a specific achievement.
+    /// Clears (locks) a specific achievement if permission allows it.
+    /// Returns false if the achievement is protected (permission & 3) != 0.
     /// </summary>
-    public bool ClearAchievement(string name)
+    public bool ClearAchievement(string name, int permission)
     {
+        if ((permission & 3) != 0)
+        {
+            return false;
+        }
         return _client.UserStats.ClearAchievement(name);
     }
 
@@ -90,7 +100,7 @@ public class SteamAchievements
     /// <summary>
     /// Gets all achievements for the current app.
     /// </summary>
-    public List<AchievementInfo> GetAllAchievements()
+    public IEnumerable<AchievementInfo> GetAllAchievements()
     {
         var achievements = new List<AchievementInfo>();
         uint count = GetAchievementCount();

@@ -9,8 +9,8 @@ public class SteamContext : IDisposable
     private SteamClient _client;
 
     public SteamClient Client => _client;
-    public SteamAchievements Achievements { get; private set; }
-    public SteamStats Stats { get; private set; }
+    public ISteamAchievements Achievements { get; private set; }
+    public ISteamStats Stats { get; private set; }
     public SteamApps Apps { get; private set; }
     public SteamIcons Icons { get; private set; }
 

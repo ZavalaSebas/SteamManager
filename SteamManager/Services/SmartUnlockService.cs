@@ -4,72 +4,130 @@ namespace SteamManager.Services;
 
 public class SmartUnlockService : ISmartUnlockService
 {
-    private readonly SteamContext _steamContext;
+    private readonly ISteamAchievements _achievements;
+    private readonly ISteamStats _stats;
     private readonly Random _random = new();
 
-    public SmartUnlockService(SteamContext steamContext)
+    public SmartUnlockService(ISteamAchievements achievements, ISteamStats stats)
     {
-        _steamContext = steamContext;
+        _achievements = achievements;
+        _stats = stats;
     }
 
-    public async Task UnlockAchievementsAsync(
-        IEnumerable<string> achievementIds,
+    public async Task<SmartUnlockResult> UnlockAchievementsAsync(
+        IEnumerable<(string Id, int Permission)> achievements,
         TimeSpan minDelay,
         TimeSpan maxDelay,
-        IProgress<int>? progress = null,
+        IProgress<SmartUnlockProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        var ids = achievementIds.ToList();
-        var total = ids.Count;
-        var current = 0;
+        var achList = achievements.ToList();
+        var total = achList.Count;
+        int applied = 0;
+        int protectedCount = 0;
+        int failed = 0;
 
-        foreach (var id in ids)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            _steamContext.Achievements.SetAchievement(id);
-            _steamContext.Stats.StoreStats();
-
-            current++;
-            var percent = (int)((double)current / total * 100);
-            progress?.Report(percent);
-
-            if (current < total)
+            for (int i = 0; i < achList.Count; i++)
             {
-                var delay = GetRandomDelay(minDelay, maxDelay);
-                await Task.Delay(delay, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var (id, permission) = achList[i];
+
+                if ((permission & 3) != 0)
+                {
+                    protectedCount++;
+                }
+                else
+                {
+                    bool success = _achievements.SetAchievement(id, permission);
+                    if (success)
+                    {
+                        applied++;
+                    }
+                    else
+                    {
+                        failed++;
+                    }
+                }
+
+                progress?.Report(new SmartUnlockProgress(i + 1, total, applied, protectedCount, failed));
+
+                if (i < achList.Count - 1)
+                {
+                    var delay = GetRandomDelay(minDelay, maxDelay);
+                    await Task.Delay(delay, cancellationToken);
+                }
             }
         }
+        finally
+        {
+            if (applied > 0)
+            {
+                _stats.StoreStats();
+            }
+        }
+
+        return new SmartUnlockResult(applied, protectedCount, failed);
     }
 
-    public async Task LockAchievementsAsync(
-        IEnumerable<string> achievementIds,
+    public async Task<SmartUnlockResult> LockAchievementsAsync(
+        IEnumerable<(string Id, int Permission)> achievements,
         TimeSpan minDelay,
         TimeSpan maxDelay,
-        IProgress<int>? progress = null,
+        IProgress<SmartUnlockProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        var ids = achievementIds.ToList();
-        var total = ids.Count;
-        var current = 0;
+        var achList = achievements.ToList();
+        var total = achList.Count;
+        int applied = 0;
+        int protectedCount = 0;
+        int failed = 0;
 
-        foreach (var id in ids)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            _steamContext.Achievements.ClearAchievement(id);
-            _steamContext.Stats.StoreStats();
-
-            current++;
-            var percent = (int)((double)current / total * 100);
-            progress?.Report(percent);
-
-            if (current < total)
+            for (int i = 0; i < achList.Count; i++)
             {
-                var delay = GetRandomDelay(minDelay, maxDelay);
-                await Task.Delay(delay, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var (id, permission) = achList[i];
+
+                if ((permission & 3) != 0)
+                {
+                    protectedCount++;
+                }
+                else
+                {
+                    bool success = _achievements.ClearAchievement(id, permission);
+                    if (success)
+                    {
+                        applied++;
+                    }
+                    else
+                    {
+                        failed++;
+                    }
+                }
+
+                progress?.Report(new SmartUnlockProgress(i + 1, total, applied, protectedCount, failed));
+
+                if (i < achList.Count - 1)
+                {
+                    var delay = GetRandomDelay(minDelay, maxDelay);
+                    await Task.Delay(delay, cancellationToken);
+                }
             }
         }
+        finally
+        {
+            if (applied > 0)
+            {
+                _stats.StoreStats();
+            }
+        }
+
+        return new SmartUnlockResult(applied, protectedCount, failed);
     }
 
     private TimeSpan GetRandomDelay(TimeSpan min, TimeSpan max)

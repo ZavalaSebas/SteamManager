@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using SteamManager.Models;
 using SteamManager.Services;
 using SteamManager.Steam;
@@ -20,7 +22,12 @@ public partial class GameManagerViewModel : ObservableObject
 {
     private readonly SteamContext _steamContext;
     private readonly IImageCacheService? _imageCacheService;
+    private readonly GameSchemaService? _gameSchemaService;
+    private readonly ILogger<GameManagerViewModel>? _logger;
+    private bool _schemaLoadFailed;
     private ObservableCollection<AchievementInfo> _allAchievements = new();
+    private System.Threading.CancellationTokenSource? _smartUnlockCts;
+    private readonly IMessageBoxService _messageBoxService;
 
     [ObservableProperty]
     private GameInfo? _selectedGame;
@@ -59,6 +66,36 @@ public partial class GameManagerViewModel : ObservableObject
     private string? _selectedStat;
 
     public int SelectedCount => _allAchievements.Count(a => a.IsSelected);
+
+    [ObservableProperty]
+    private bool _isSmartUnlockRunning;
+
+    [ObservableProperty]
+    private bool _isSmartUnlockUiBlocked;
+
+    [ObservableProperty]
+    private int _smartUnlockProcessed;
+
+    [ObservableProperty]
+    private int _smartUnlockTotal;
+
+    [ObservableProperty]
+    private int _smartUnlockAppliedCount;
+
+    [ObservableProperty]
+    private int _smartUnlockProtectedCount;
+
+    [ObservableProperty]
+    private int _smartUnlockFailedCount;
+
+    [ObservableProperty]
+    private int _smartUnlockProgressPercent;
+
+    public bool IsSmartUnlockOverlayVisible => IsSmartUnlockRunning;
+
+    public string SmartUnlockStatusMessage { get; private set; } = string.Empty;
+
+    public bool SmartUnlockWasCancelled { get; private set; }
 
     [RelayCommand]
     private void SelectAll()
@@ -103,10 +140,17 @@ public partial class GameManagerViewModel : ObservableObject
         Achievements = new ObservableCollection<AchievementInfo>(GetFilteredAchievements());
     }
 
-    public GameManagerViewModel(SteamContext steamContext, IImageCacheService? imageCacheService = null)
+    public GameManagerViewModel(SteamContext steamContext, IImageCacheService? imageCacheService = null, ILogger<GameManagerViewModel>? logger = null, IMessageBoxService? messageBoxService = null)
     {
         _steamContext = steamContext;
         _imageCacheService = imageCacheService;
+        _logger = logger;
+        _messageBoxService = messageBoxService ?? new MessageBoxService();
+        string? steamPath = SteamLoader.GetSteamInstallPath();
+        if (!string.IsNullOrEmpty(steamPath))
+        {
+            _gameSchemaService = new GameSchemaService(steamPath);
+        }
     }
 
     [RelayCommand]
@@ -152,8 +196,42 @@ public partial class GameManagerViewModel : ObservableObject
                     }
                 }
 
+                if (_gameSchemaService != null && SelectedGame != null)
+                {
+                    var (schemaAchievements, _) = _gameSchemaService.LoadSchema(SelectedGame.AppId);
+
+                    if (schemaAchievements.Count == 0)
+                    {
+                        _schemaLoadFailed = true;
+                        _logger?.LogWarning("[GameSchema] Failed to load schema for app {AppId} - protection status could not be verified", SelectedGame.AppId);
+                    }
+                    else
+                    {
+                        _schemaLoadFailed = false;
+                        var schemaDict = schemaAchievements.ToDictionary(s => s.Id, s => s.Permission);
+                        int unmatched = 0;
+                        foreach (var ach in achievements)
+                        {
+                            if (schemaDict.TryGetValue(ach.ApiName, out int permission))
+                            {
+                                ach.Permission = permission;
+                                ach.PermissionVerified = true;
+                            }
+                            else
+                            {
+                                ach.PermissionVerified = false;
+                                unmatched++;
+                            }
+                        }
+                        if (unmatched > 0)
+                        {
+                            _logger?.LogWarning("[GameSchema] {Unmatched}/{Total} achievements had no matching schema entry", unmatched, achievements.Count());
+                        }
+                    }
+                }
+
                 _allAchievements = new ObservableCollection<AchievementInfo>(achievements);
-                TotalCount = achievements.Count;
+                TotalCount = achievements.Count();
                 UnlockedCount = achievements.Count(a => a.IsUnlocked);
                 StatusMessage = $"{UnlockedCount}/{TotalCount} achievements unlocked";
 
@@ -234,16 +312,34 @@ public partial class GameManagerViewModel : ObservableObject
     [RelayCommand]
     private void ToggleAchievement(AchievementInfo achievement)
     {
+        if (_schemaLoadFailed)
+        {
+            StatusMessage = "Warning: Could not verify achievement protection status - schema not loaded";
+            return;
+        }
+
+        if (achievement.IsUnverified)
+        {
+            StatusMessage = $"Could not verify protection status for '{achievement.DisplayName}' - skipping";
+            return;
+        }
+
+        if (achievement.IsProtected)
+        {
+            StatusMessage = $"Achievement '{achievement.DisplayName}' is protected and cannot be modified";
+            return;
+        }
+
         try
         {
             bool success;
             if (achievement.IsUnlocked)
             {
-                success = _steamContext.Achievements.ClearAchievement(achievement.ApiName);
+                success = _steamContext.Achievements.ClearAchievement(achievement.ApiName, achievement.Permission);
             }
             else
             {
-                success = _steamContext.Achievements.SetAchievement(achievement.ApiName);
+                success = _steamContext.Achievements.SetAchievement(achievement.ApiName, achievement.Permission);
             }
 
             if (success)
@@ -284,6 +380,12 @@ public partial class GameManagerViewModel : ObservableObject
     [RelayCommand]
     private void LockAll()
     {
+        if (_schemaLoadFailed)
+        {
+            StatusMessage = "Warning: Could not verify achievement protection status - schema not loaded";
+            return;
+        }
+
         try
         {
             var targetAchievements = _allAchievements.Where(a => a.IsSelected).Any()
@@ -291,12 +393,23 @@ public partial class GameManagerViewModel : ObservableObject
                 : _allAchievements;
 
             int count = 0;
+            int protectedSkipped = 0;
+            int unverifiedSkipped = 0;
             foreach (var ach in targetAchievements)
             {
                 if (!ach.IsUnlocked)
                     continue;
 
-                if (_steamContext.Achievements.ClearAchievement(ach.ApiName))
+                if (ach.IsProtected || ach.IsUnverified)
+                {
+                    if (ach.IsUnverified)
+                        unverifiedSkipped++;
+                    else
+                        protectedSkipped++;
+                    continue;
+                }
+
+                if (_steamContext.Achievements.ClearAchievement(ach.ApiName, ach.Permission))
                 {
                     ach.IsUnlocked = false;
                     ach.IsSelected = false;
@@ -309,9 +422,27 @@ public partial class GameManagerViewModel : ObservableObject
             {
                 _steamContext.Stats.StoreStats();
                 UnlockedCount = _allAchievements.Count(a => a.IsUnlocked);
-                StatusMessage = $"Locked {count} achievements";
+                string msg = $"Locked {count} achievements";
+                if (protectedSkipped > 0)
+                {
+                    msg += $" ({protectedSkipped} protected skipped)";
+                }
+                if (unverifiedSkipped > 0)
+                {
+                    msg += $" ({unverifiedSkipped} unverified skipped)";
+                }
+                StatusMessage = msg;
                 ApplyFilter();
                 OnPropertyChanged(nameof(SelectedCount));
+            }
+            else if (protectedSkipped > 0 || unverifiedSkipped > 0)
+            {
+                string msg = "No achievements locked";
+                if (protectedSkipped > 0)
+                    msg += $" ({protectedSkipped} protected)";
+                if (unverifiedSkipped > 0)
+                    msg += $" ({unverifiedSkipped} unverified)";
+                StatusMessage = msg;
             }
         }
         catch (Exception ex)
@@ -323,6 +454,12 @@ public partial class GameManagerViewModel : ObservableObject
     [RelayCommand]
     private void UnlockAll()
     {
+        if (_schemaLoadFailed)
+        {
+            StatusMessage = "Warning: Could not verify achievement protection status - schema not loaded";
+            return;
+        }
+
         try
         {
             var targetAchievements = _allAchievements.Where(a => a.IsSelected).Any()
@@ -330,12 +467,23 @@ public partial class GameManagerViewModel : ObservableObject
                 : _allAchievements;
 
             int count = 0;
+            int protectedSkipped = 0;
+            int unverifiedSkipped = 0;
             foreach (var ach in targetAchievements)
             {
                 if (ach.IsUnlocked)
                     continue;
 
-                if (_steamContext.Achievements.SetAchievement(ach.ApiName))
+                if (ach.IsProtected || ach.IsUnverified)
+                {
+                    if (ach.IsUnverified)
+                        unverifiedSkipped++;
+                    else
+                        protectedSkipped++;
+                    continue;
+                }
+
+                if (_steamContext.Achievements.SetAchievement(ach.ApiName, ach.Permission))
                 {
                     ach.IsUnlocked = true;
                     ach.IsSelected = false;
@@ -348,9 +496,27 @@ public partial class GameManagerViewModel : ObservableObject
             {
                 _steamContext.Stats.StoreStats();
                 UnlockedCount = _allAchievements.Count(a => a.IsUnlocked);
-                StatusMessage = $"Unlocked {count} achievements";
+                string msg = $"Unlocked {count} achievements";
+                if (protectedSkipped > 0)
+                {
+                    msg += $" ({protectedSkipped} protected skipped)";
+                }
+                if (unverifiedSkipped > 0)
+                {
+                    msg += $" ({unverifiedSkipped} unverified skipped)";
+                }
+                StatusMessage = msg;
                 ApplyFilter();
                 OnPropertyChanged(nameof(SelectedCount));
+            }
+            else if (protectedSkipped > 0 || unverifiedSkipped > 0)
+            {
+                string msg = "No achievements unlocked";
+                if (protectedSkipped > 0)
+                    msg += $" ({protectedSkipped} protected)";
+                if (unverifiedSkipped > 0)
+                    msg += $" ({unverifiedSkipped} unverified)";
+                StatusMessage = msg;
             }
         }
         catch (Exception ex)
@@ -437,28 +603,49 @@ public partial class GameManagerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ResetAllStats()
+    private async Task ResetAllStats()
     {
         try
         {
-            var result = System.Windows.MessageBox.Show(
-                "Are you sure you want to reset ALL stats?\nThis cannot be undone.",
+            var firstResult = System.Windows.MessageBox.Show(
+                "Are you sure you want to reset all statistics?\nThis cannot be undone.",
                 "Reset Stats",
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Warning);
 
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (firstResult != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            var achievementsResult = System.Windows.MessageBox.Show(
+                "Do you also want to reset achievements?\nThis cannot be undone.",
+                "Reset Achievements",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            bool resetAchievements = achievementsResult == System.Windows.MessageBoxResult.Yes;
+
+            var finalResult = System.Windows.MessageBox.Show(
+                "Are you absolutely sure?\nAll progress will be permanently lost.",
+                "Final Confirmation",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Error);
+
+            if (finalResult != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            if (_steamContext.Stats.ResetAllStats(resetAchievements))
             {
-                if (_steamContext.Stats.ResetAllStats(false))
-                {
-                    StatName = string.Empty;
-                    StatValue = string.Empty;
-                    StatusMessage = "All stats reset";
-                }
-                else
-                {
-                    StatusMessage = "Failed to reset stats";
-                }
+                StatName = string.Empty;
+                StatValue = string.Empty;
+                StatusMessage = resetAchievements
+                    ? "All stats and achievements reset. Reopen the stats editor or reselect the stat to see updated values."
+                    : "All stats reset. Reopen the stats editor or reselect the stat to see updated values.";
+
+                await LoadAchievementsAsync();
+            }
+            else
+            {
+                StatusMessage = "Failed to reset stats - Steam may have blocked the operation";
             }
         }
         catch (Exception ex)
@@ -483,5 +670,150 @@ public partial class GameManagerViewModel : ObservableObject
     private void Back()
     {
         System.Windows.Application.Current.Shutdown();
+    }
+
+    public bool TryNavigateDuringSmartUnlock(out bool userCancelledSmartUnlock)
+    {
+        userCancelledSmartUnlock = false;
+        if (!IsSmartUnlockRunning)
+            return true;
+
+        int processed = SmartUnlockAppliedCount + SmartUnlockProtectedCount + SmartUnlockFailedCount;
+        var result = _messageBoxService.Show(
+            $"Switching games will cancel the current operation.\n{processed} achievements have already been processed.\n\n[Stay] Keep Smart Unlock running\n[Switch and Cancel] Cancel and switch games",
+            "Smart Unlock in Progress",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result == System.Windows.MessageBoxResult.Yes)
+            return false;
+
+        _smartUnlockCts?.Cancel();
+        userCancelledSmartUnlock = true;
+        return true;
+    }
+
+    public void CancelSmartUnlock()
+    {
+        _smartUnlockCts?.Cancel();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExecuteSmartUnlock))]
+    private async Task SmartUnlockAsync()
+    {
+        await ExecuteSmartUnlockAsync(500, 1500);
+    }
+
+    public async Task ExecuteSmartUnlockAsync(int minDelayMs, int maxDelayMs, bool showOverlay = true)
+    {
+        if (SelectedGame == null)
+            return;
+
+        var targetAchievements = _allAchievements.Where(a => a.IsSelected).Any()
+            ? _allAchievements.Where(a => a.IsSelected).ToList()
+            : _allAchievements.ToList();
+
+        if (targetAchievements.Count == 0)
+        {
+            StatusMessage = "No achievements selected";
+            return;
+        }
+
+        IsSmartUnlockRunning = true;
+        IsSmartUnlockUiBlocked = true;
+        _smartUnlockCts = new System.Threading.CancellationTokenSource();
+        _smartUnlockAppliedCount = 0;
+        _smartUnlockProtectedCount = 0;
+        _smartUnlockFailedCount = 0;
+        _smartUnlockProgressPercent = 0;
+        SmartUnlockWasCancelled = false;
+        SmartUnlockTotal = targetAchievements.Count;
+        SmartUnlockStatusMessage = "Smart Unlock: 0/" + targetAchievements.Count + " achievements processed (0 protected, 0 failed)";
+
+        var achList = targetAchievements
+            .Select(a => (a.ApiName, a.Permission))
+            .ToList();
+
+        ISmartUnlockService? smartUnlockService = null;
+        try
+        {
+            smartUnlockService = new SmartUnlockService(_steamContext.Achievements, _steamContext.Stats);
+            var progress = new Progress<SmartUnlockProgress>(p =>
+            {
+                SmartUnlockStatusMessage = $"Smart Unlock: {p.Processed}/{p.Total} achievements processed ({p.Protected} protected, {p.Failed} failed)";
+                _smartUnlockProgressPercent = p.Total > 0 ? (int)((double)p.Processed / p.Total * 100) : 0;
+                SmartUnlockProcessed = p.Processed;
+                SmartUnlockAppliedCount = p.Applied;
+                SmartUnlockProtectedCount = p.Protected;
+                SmartUnlockFailedCount = p.Failed;
+            });
+
+            var result = await smartUnlockService.UnlockAchievementsAsync(
+                achList,
+                TimeSpan.FromMilliseconds(minDelayMs),
+                TimeSpan.FromMilliseconds(maxDelayMs),
+                progress,
+                _smartUnlockCts.Token);
+
+            _smartUnlockProgressPercent = 100;
+            SmartUnlockProcessed = result.Applied + result.Protected + result.Failed;
+            SmartUnlockAppliedCount = result.Applied;
+            SmartUnlockProtectedCount = result.Protected;
+            SmartUnlockFailedCount = result.Failed;
+
+            bool hasProblems = result.Protected > 0 || result.Failed > 0;
+            if (hasProblems)
+            {
+                SmartUnlockStatusMessage = $"Smart Unlock complete: {result.Applied} applied, {result.Protected} protected, {result.Failed} failed";
+            }
+            else
+            {
+                SmartUnlockStatusMessage = result.Applied > 0
+                    ? $"Smart Unlock complete: {result.Applied} achievements unlocked"
+                    : "Smart Unlock: no achievements to unlock";
+            }
+
+            foreach (var ach in _allAchievements)
+            {
+                if (achList.Any(x => x.Item1 == ach.ApiName))
+                {
+                    if (ach.Permission == 0)
+                    {
+                        ach.IsUnlocked = true;
+                    }
+                }
+            }
+            UnlockedCount = _allAchievements.Count(a => a.IsUnlocked);
+            ApplyFilter();
+
+            return;
+        }
+        catch (OperationCanceledException)
+        {
+            SmartUnlockWasCancelled = true;
+            SmartUnlockStatusMessage = $"Smart Unlock cancelled: {SmartUnlockAppliedCount} applied, {SmartUnlockProtectedCount} protected, {SmartUnlockFailedCount} failed";
+        }
+        catch (Exception ex)
+        {
+            SmartUnlockStatusMessage = $"Smart Unlock error: {ex.Message}";
+        }
+        finally
+        {
+            IsSmartUnlockRunning = false;
+            IsSmartUnlockUiBlocked = false;
+            _smartUnlockCts?.Dispose();
+            _smartUnlockCts = null;
+        }
+    }
+
+    private bool CanExecuteSmartUnlock()
+    {
+        if (IsSmartUnlockRunning)
+            return false;
+        if (_schemaLoadFailed)
+            return false;
+        if (_allAchievements.Count == 0)
+            return false;
+        return true;
     }
 }

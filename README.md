@@ -26,7 +26,7 @@ SteamManager replaces the aging [Steam Achievement Manager (SAM)](https://github
 
 No memory injection. No process hooking. No modified files. Just the official Steamworks API doing what it was designed to do.
 
-> Born from the idea behind Steam Achievement Manager by Gibbed, rebuilt from scratch in .NET 10 with a native WPF interface and the official Steamworks SDK.
+> Born from the idea behind Steam Achievement Manager by Gibbed, rebuilt from scratch in .NET 10 with a native WPF interface and the internal `steamclient.dll` library.
 
 ---
 
@@ -82,7 +82,7 @@ dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-con
 
 - **Game Library** — Browse your entire Steam library with covers, playtime, and achievement progress
 - **Achievement Manager** — Lock, unlock, or toggle individual achievements with one click
-- **Smart Unlock** — Anti-detection delays (15-45s random) to protect your account from tracking sites
+- **Smart Unlock** — Delays between operations to reduce detection risk. Configure delay range and track progress in real time.
 - **Stats Editor** — View and modify game statistics with protection warnings
 - **Batch Operations** — Select multiple achievements and unlock/lock them all at once
 - **Achievement Filters** — Filter by locked, unlocked, hidden, or search by name
@@ -96,7 +96,7 @@ dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-con
 
 ## Architecture
 
-No MVVM frameworks, no NuGet bloat — pure .NET with minimal packages.
+Modern .NET with a focused tech stack — no unnecessary dependencies.
 
 - **Native Interop** — Loads `steamclient.dll` from Steam installation, calls via vtable
 - **MVVM** — CommunityToolkit.Mvvm source generators, no code-behind

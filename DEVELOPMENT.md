@@ -23,7 +23,7 @@ SteamManager replaces it with:
 ├─────────────────────────────────────────────────┤
 │              Services (Business Logic)          │
 │  SmartUnlockService  ·  ImageCacheService       │
-│  GameLibraryService  ·  ConfigService           │
+│  SteamGameLibraryService  ·  ConfigService      │
 ├─────────────────────────────────────────────────┤
 │              Steam API Layer                    │
 │  SteamClient  ·  SteamAchievements              │
@@ -82,8 +82,7 @@ SteamManager/
 │   ├── Controls/                      # Custom controls
 │   ├── Services/                      # Business logic
 │   ├── Converters/                    # Value converters
-│   ├── Helpers/                       # Utilities
-│   └── Resources/                     # Styles, icons, images
+│   └── Resources/                     # Styles (Styles.xaml)
 ├── SteamManager.Tests/                  # xUnit test project
 ├── .github/workflows/release.yml      # CI/CD pipeline
 ├── README.md
@@ -576,26 +575,21 @@ public class FakeSteamAchievements : ISteamAchievements { }
 
 ### Code Quality
 
-Add to `.csproj` for consistent code style:
+Code style is enforced through the project's coding standards and conventions documented in this file. Consistent naming, file organization, and async patterns are described throughout.
 
-```xml
-<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.*">
-  <PrivateAssets>all</PrivateAssets>
-</PackageReference>
-```
+### View Navigation
 
-### WPFUI Navigation
-
-Use WPFUI's `NavigationView` for page navigation:
+Navigation is handled via `MainViewModel.CurrentViewModel` — swap the ViewModel and WPF's DataTemplates render the appropriate View:
 
 ```csharp
 // MainViewModel
-public void NavigateToGame(GameInfo game)
+public void SelectGame(GameInfo game)
 {
-    // WPFUI handles page lifecycle and transitions
-    _navigationService.NavigateTo(new GameManagerView(game));
+    CurrentViewModel = new GameManagerViewModel(game);
 }
 ```
+
+WPF automatically renders the correct View via `DataTemplate` mappings in `App.xaml`.
 
 ### Key Packages
 
@@ -605,7 +599,6 @@ public void NavigateToGame(GameInfo game)
 | `CommunityToolkit.Mvvm` | 8.4.0 | MVVM source generators |
 | `Microsoft.Extensions.DependencyInjection` | (add) | Service management |
 | `Microsoft.Extensions.Logging` | (add) | Structured logging |
-| `StyleCop.Analyzers` | 1.2.0-beta | Code style enforcement |
 
 ## Coding Standards
 
@@ -863,6 +856,68 @@ Switch to `steamclient.dll` — the internal Steam client library that ships wit
 - `SteamClient.cs` → updated — initialization sequence now gets `ISteamUtils` first for AppId verification
 - `SteamCallbackHandler.cs` → updated — uses `Steam_BGetCallback` polling instead of `SteamAPI_RunCallbacks`
 
+### ADR-005: Port KeyValue binary parser from SAM vs. reimplement from scratch
+
+**Status:** Accepted
+
+**Context:**
+SteamManager needed to read `UserGameStatsSchema_{appId}.bin` files to extract `Permission` flags for protected achievements. A binary Key-Value format parser was required.
+
+**Decision:**
+Port the KeyValue parser from Gibbed's SAM (zlib license, GPL-compatible) instead of writing from scratch.
+
+**Reasons:**
+- SAM's parser is proven: 15+ years of use, handles all real Steam schema variants
+- Tested against 355 real schemas during development — zero failures
+- `Permission` field extraction verified on real games (1134700, 1203220, etc.)
+- zlib license requires attribution only (see ATTRIBUTIONS.md)
+- Reimplementing would introduce bugs in an obscure binary format with no test vectors
+
+**Consequences:**
+- ✅ Proven correct parser, no R&D needed
+- ✅ Attribution in ATTRIBUTIONS.md satisfies zlib requirements
+- ✅ Same approach as original SAM (which works correctly)
+- ⚠️ One known limitation: nested `Type.None` parent→child not handled (see Known Limitations)
+
+### ADR-006: SmartUnlockService — core implemented, UI integration deferred
+
+**Status:** Accepted
+
+**Context:**
+`SmartUnlockService` was implemented during the protected achievements work. It provides anti-detection delays between unlock/lock operations and correctly validates permissions internally. However, it was never connected to any UI element.
+
+**Decision:**
+Leave `SmartUnlockService` as standalone core logic (tested, correct) and defer UI integration to a future release.
+
+**Reasons:**
+- UI integration requires: invocation button, achievement selection UI, progress display
+- Connecting untested code creates the exact inconsistency found in the README (feature claimed but not working)
+- Core validation is sound; only the invocation layer is missing
+- Code is safe to exist without being called — protection works correctly via `ToggleAchievement/LockAll/UnlockAll`
+
+**Consequences:**
+- ✅ Core smart unlock logic is tested and correct
+- ✅ README/PLAN.md updated to reflect "pending UI integration"
+- ⚠️ SmartUnlockService appears in DI but has no caller — accepted trade-off
+
+**See:** `SmartUnlockService.cs`, `ISmartUnlockService.cs`, `SmartUnlockResult`
+
+## Protected Achievement Validation
+
+Steam schemas can mark achievements as protected via a `Permission` field in `UserGameStatsSchema_{appId}.bin`. SteamManager validates protection at two layers:
+
+**Layer 1 — Service (`SteamAchievements.cs`)**
+`SetAchievement(name, permission)` and `ClearAchievement(name, permission)` check `(permission & 3) != 0` before calling UserStats. Returns `false` if protected. This is the business rule enforcement.
+
+**Layer 2 — UX (`GameManagerViewModel.cs`)**
+`ToggleAchievement`, `LockAll`, and `UnlockAll` check `_schemaLoadFailed`, `IsProtected`, and `IsUnverified` before any Steam call. Shows clear user-facing messages for each case:
+- Schema load failed: "Could not verify achievement protection status - schema not loaded"
+- Achievement unverified (ApiName not found in schema): "Could not verify protection status for '{name}' - skipping"
+- Achievement protected: "Achievement '{name}' is protected and cannot be modified"
+
+**Schema loading (`GameSchemaService.cs`)**
+Loads `UserGameStatsSchema_{appId}.bin` from Steam's appcache via the ported KeyValue binary parser. Matches achievements by `ApiName`. Sets `PermissionVerified = true` on match, `false` on miss. Logs unmatched achievements via `ILogger`.
+
 ## Release Checklist
 
 > **Follow this checklist before every release.**
@@ -944,7 +999,7 @@ If critical bug found after release:
 | `SteamManager/App.xaml` | WPF-UI theme (`Dark`) + DataTemplates for ViewModel→View mapping |
 | `SteamManager/App.xaml.cs` | DI setup, async Steam init, callback DispatcherTimer |
 | `SteamManager/MainWindow.xaml/.cs` | Shell window — `ContentControl` bound to `MainViewModel.CurrentViewModel` |
-| `SteamManager.Tests/` | xUnit test project (13 tests — verified locally, not CI) |
+| `SteamManager.Tests/` | xUnit test project covering core models, converters, and services (verified locally, not CI) |
 | `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, `workflow_dispatch` only) |
 | `PLAN.md` | Full project plan with phases and features |
 | `CHANGELOG.md` | Version history (v0.1.0 → v1.0.0 with full feature set) |
@@ -963,6 +1018,9 @@ If critical bug found after release:
 | **32-bit (x86) platform only** | Steam ships only a 32-bit `steamclient.dll`; Windows cannot load a 32-bit DLL into a 64-bit process | Project targets `win-x86` (`<RuntimeIdentifier>win-x86</RuntimeIdentifier>`); publish native exe with `dotnet publish -r win-x86` |
 | **vtable layouts byte-aligned to SAM** | `steamclient.dll` is a C++ object with a per-version vtable; padding/extra entries from one SDK version break ours | Vtable structs in `ISteam*.cs` are copied 1-to-1 from gibbed/SAM and must NOT be reordered or padded. See `SAM.API/Interfaces/` |
 | **No playtime, no achievement details from library** | SAM approach (`games.xml` + `IsSubscribedApp`) only tells if user owns a game — no per-user data (playtime, achievements, stats) | Steam Web API `GetOwnedGames` returns playtime but requires API key. Alternative: parse `steamcommunity.com/profiles/{id}/games/?xml=1` with session cookies (requires login flow). See `SteamWebApiKey` constant in `Config.cs` for future implementation. |
+| **KeyValue parser: nested Type.None nodes** | The binary KeyValue parser does not correctly handle `Type.None` parent nodes containing `Type.None` children — the inner termination marker is misinterpreted | Validated against 355 real schemas with zero impact (no real Steam schema uses this pattern). Risk is very low. See `KeyValue.ReadAsBinary()` and skipped test `ReadAsBinary_ParsesNestedKeyValue`. |
+| **Stats editor not refreshed after ResetAllStats** | No observable stats collection exists in the ViewModel — `GetStat(name, out value)` reads one stat at a time, no callback updates UI | After reset, user must re-query each stat individually. Future: add an observable `Statistics` collection that gets updated when `RequestStats()` callback fires. |
+| **Smart Unlock UI requires manual smoke test before release** | `steamclient.dll` is not available in the test environment; no automated smoke test can open the three Smart Unlock dialogs (SmartUnlockDialog, ProgressOverlay, SmartUnlockResultDialog) or verify the dropdown entry point | Before any release, verify manually with Steam running: (1) dropdown appears in game manager toolbar, (2) SmartUnlockDialog opens with correct defaults (15-45s), (3) Smart Unlock execution shows ProgressOverlay with live counters, (4) result dialog shows correct icon and auto-dismiss behavior. No automated CI coverage possible. |
 
 ## Known Issues & Resolutions
 

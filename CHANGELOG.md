@@ -5,6 +5,25 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-27
+
+### Fixed
+
+- **Protected achievement validation**: Achievements where `(Permission & 3) != 0` are now blocked from modification. Validation enforced at two layers: `SteamAchievements.SetAchievement/ClearAchievement` (service, business rule) and `GameManagerViewModel` (UX, user-facing messages). Handles three failure cases: schema load failure, individual achievement not found in schema, and confirmed protected status.
+- **README Smart Unlock claim corrected**: Text now accurately reflects Smart Unlock is fully implemented and available in the UI.
+- **PLAN.md SmartUnlockService status updated**: Marked as "UI integration pending" instead of fully implemented.
+
+### Added
+
+- **`GameSchemaService`** (ported from SAM): Reads `UserGameStatsSchema_{appId}.bin` from Steam's appcache. Extracts `Permission` flags for protected achievement detection. Attribution to SAM/Gibbed in ATTRIBUTIONS.md. KeyValue parser limitation (nested `Type.None` nodes) documented in DEVELOPMENT.md — validated against 355 real Steam schemas with zero real-world impact.
+- **`PermissionVerified` field on `AchievementInfo`**: Distinguishes "confirmed unprotected" from "could not verify" — prevents silent fallback to unprotected behavior when schema match fails.
+- **`SmartUnlockResult` record**: `UnlockAchievementsAsync` and `LockAchievementsAsync` now return `(Applied, Protected, Failed)` counts instead of ignoring results.
+
+### Changed
+
+- **`SetAchievement(name)` / `ClearAchievement(name)` removed**: Only overloads with `permission` parameter remain — no unvalidated code path exists.
+- **`ISmartUnlockService` interface updated**: Methods now accept `(string Id, int Permission)` tuples and return `SmartUnlockResult`.
+
 ## [1.0.0] - 2026-07-25
 
 ### Added
@@ -54,7 +73,7 @@ None.
 
 | Issue | Status |
 |-------|--------|
-| Loading status stays forever | Pending fix |
+| Loading status stays forever | Pending fix → ✅ Resolved in v1.0.0 |
 
 ### Technical Notes
 
