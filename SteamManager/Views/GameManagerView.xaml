@@ -77,17 +77,28 @@
                     </Button.Style>
                 </Button>
 
-                <!-- Game Thumbnail -->
+                <!-- Game Thumbnail Banner -->
                 <Border Grid.Column="1"
-                        Width="64"
-                        Height="64"
-                        CornerRadius="8"
+                        Width="140"
+                        Height="60"
+                        CornerRadius="6"
                         ClipToBounds="True"
                         Background="#252525"
                         VerticalAlignment="Center"
                         Margin="12,0,0,0">
-                    <Image Source="{Binding SelectedGame.CoverUrl, Converter={StaticResource UrlToCachedImageConverter}}"
-                           Stretch="UniformToFill"/>
+                    <Grid>
+                        <Image Source="{Binding SelectedGame.CoverUrl, Converter={StaticResource UrlToCachedImageConverter}}"
+                               Stretch="UniformToFill"/>
+                        <Border Height="40"
+                                VerticalAlignment="Bottom">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#00000000" Offset="0"/>
+                                    <GradientStop Color="#99000000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </Grid>
                 </Border>
 
                 <!-- Game Title & Stats -->
