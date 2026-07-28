@@ -31,7 +31,8 @@
             CornerRadius="6"
             Padding="0"
             Cursor="Hand"
-            RenderTransformOrigin="0.5,0.5">
+            RenderTransformOrigin="0.5,0.5"
+            MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="ToolTip" Value="Click to lock"/>
@@ -243,8 +244,7 @@
                             CornerRadius="14"
                             VerticalAlignment="Center"
                             Margin="12,0,0,0"
-                            Cursor="Hand"
-                            MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
+                            Cursor="Hand">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Background" Value="#3A3A3A"/>

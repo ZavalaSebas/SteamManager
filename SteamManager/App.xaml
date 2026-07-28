@@ -20,6 +20,8 @@
             <converters:FilterToBackgroundConverter x:Key="FilterToBackgroundConverter"/>
             <converters:FilterToForegroundConverter x:Key="FilterToForegroundConverter"/>
             <converters:ProgressToArcConverter x:Key="ProgressToArcConverter"/>
+            <converters:PercentToArcMultiConverter x:Key="PercentToArcMultiConverter"/>
+            <converters:PercentToTextMultiConverter x:Key="PercentToTextMultiConverter"/>
             <converters:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColorConverter"/>
             <converters:SelectedBorderConverter x:Key="SelectedBorderConverter"/>
             <converters:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter"/>
