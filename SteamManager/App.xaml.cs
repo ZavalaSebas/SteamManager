@@ -23,6 +23,9 @@ public partial class App : Application
     private static Mutex? _launcherMutex;
     private const string LauncherMutexName = "SteamManager_Launcher_Mutex";
 
+    public static string? PendingUpdateTag { get; private set; }
+    public static string? PendingUpdateUrl { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -71,6 +74,9 @@ public partial class App : Application
             var welcomeWindow = new WelcomeWindow { Owner = mainWindow };
             welcomeWindow.ShowDialog();
         }
+
+        Updater.CleanupOldExe();
+        _ = CheckForUpdateAsync(mainWindow);
 
         await InitializeSteamAsync(mainViewModel);
         await mainViewModel.LoadGamesCommand.ExecuteAsync(null);
@@ -258,4 +264,26 @@ public partial class App : Application
 
     [DllImport("ole32.dll")]
     private static extern void CoUninitialize();
+
+    private static async Task CheckForUpdateAsync(Window ownerWindow)
+    {
+        try
+        {
+            var (needsUpdate, tagName, downloadUrl) = await Updater.CheckForUpdateAsync();
+
+            if (!needsUpdate || string.IsNullOrEmpty(downloadUrl)) return;
+
+            var updateWindow = new UpdateWindow(tagName!, downloadUrl) { Owner = ownerWindow };
+            updateWindow.ShowDialog();
+
+            if (!updateWindow.WasSkipped)
+            {
+                return;
+            }
+
+            PendingUpdateTag = tagName;
+            PendingUpdateUrl = downloadUrl;
+        }
+        catch { }
+    }
 }
