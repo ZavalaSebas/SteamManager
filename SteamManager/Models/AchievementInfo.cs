@@ -40,6 +40,25 @@ public class AchievementInfo : INotifyPropertyChanged
     }
 
     public uint UnlockTime { get; set; }
+
+    public string UnlockTimeText
+    {
+        get
+        {
+            if (UnlockTime == 0)
+                return string.Empty;
+            try
+            {
+                var date = DateTimeOffset.FromUnixTimeSeconds(UnlockTime).DateTime;
+                return date.ToString("yyyy-MM-dd HH:mm");
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+    }
+
     public int IconHandle { get; set; }
     public bool IsHidden { get; set; }
     public int Permission { get; set; }

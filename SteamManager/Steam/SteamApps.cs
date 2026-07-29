@@ -23,6 +23,14 @@ public class SteamApps
     }
 
     /// <summary>
+    /// Checks if the user has access to a specific app via Family Sharing.
+    /// </summary>
+    public bool IsSubscribedFromFamilySharing(uint appId)
+    {
+        return _client.Apps.IsSubscribedFromFamilySharing(appId);
+    }
+
+    /// <summary>
     /// Gets app metadata (name, logo, etc.) from steamclient.dll.
     /// </summary>
     public string? GetAppData(uint appId, string key)

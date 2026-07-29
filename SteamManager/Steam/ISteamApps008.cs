@@ -48,11 +48,20 @@ public class SteamApps008 : NativeWrapper<ISteamApps008>
     private delegate bool NativeIsSubscribedApp(IntPtr self, uint appId);
 
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private delegate bool NativeIsSubscribedFromFamilySharing(IntPtr self, uint appId);
+
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     private delegate IntPtr NativeGetCurrentGameLanguage(IntPtr self);
 
     public bool IsSubscribedApp(uint appId)
     {
         return Call<bool, NativeIsSubscribedApp>(Functions.IsSubscribedApp, appId);
+    }
+
+    public bool IsSubscribedFromFamilySharing(uint appId)
+    {
+        return Call<bool, NativeIsSubscribedFromFamilySharing>(Functions.IsSubscribedFromFamilySharing, appId);
     }
 
     public string GetCurrentGameLanguage()

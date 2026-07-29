@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SteamManager.Converters;
+using SteamManager.Dialogs;
 using SteamManager.Models;
 using SteamManager.Services;
 using SteamManager.Steam;
@@ -63,6 +65,12 @@ public partial class App : Application
         mainWindow.Closing += MainWindow_Closing;
         MainWindow = mainWindow;
         mainWindow.Show();
+
+        if (WelcomeWindow.ShouldShow())
+        {
+            var welcomeWindow = new WelcomeWindow { Owner = mainWindow };
+            welcomeWindow.ShowDialog();
+        }
 
         await InitializeSteamAsync(mainViewModel);
         await mainViewModel.LoadGamesCommand.ExecuteAsync(null);

@@ -1,4 +1,5 @@
-﻿using Wpf.Ui.Controls;
+﻿using System.Diagnostics;
+using Wpf.Ui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using SteamManager.ViewModels;
 
@@ -28,5 +29,18 @@ public partial class MainWindow : FluentWindow
         {
             DragMove();
         }
+    }
+
+    private void Heart_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Config.KofiUrl,
+                UseShellExecute = true,
+            });
+        }
+        catch { }
     }
 }

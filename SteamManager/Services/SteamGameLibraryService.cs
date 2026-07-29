@@ -1,6 +1,6 @@
 using System.IO;
 using System.Net.Http;
-using System.Xml;
+using System.Xml.XPath;
 using SteamManager.Models;
 using SteamManager.Steam;
 
@@ -24,6 +24,7 @@ public class SteamGameLibraryService : IGameLibraryService
         var games = new List<GameInfo>();
 
         FileLogger.LogSection("DOWNLOADING GAME LIST");
+        FileLogger.Log($"Steam ID: {_steamContext.SteamId}");
         List<uint> appIds = await DownloadGameListAsync();
         FileLogger.Log($"Total appIds downloaded: {appIds.Count}");
 
@@ -32,6 +33,8 @@ public class SteamGameLibraryService : IGameLibraryService
         int owned = 0;
         int errors = 0;
         int lastLogged = 0;
+        int ownGames = 0;
+        int familySharedGames = 0;
 
         foreach (var appId in appIds)
         {
@@ -51,6 +54,12 @@ public class SteamGameLibraryService : IGameLibraryService
                 if (isOwned)
                 {
                     owned++;
+                    bool isFamilyShared = _steamContext.Apps.IsSubscribedFromFamilySharing(appId);
+                    if (isFamilyShared)
+                        familySharedGames++;
+                    else
+                        ownGames++;
+
                     string name = _steamContext.Apps.GetAppData(appId, "name") ?? $"Game {appId}";
 
                     games.Add(new GameInfo
@@ -67,7 +76,7 @@ public class SteamGameLibraryService : IGameLibraryService
 
                     if (owned <= 10 || owned % 50 == 0)
                     {
-                        FileLogger.Log($"  Owned: {appId} - {name}");
+                        FileLogger.Log($"  Owned: {appId} - {name}" + (isFamilyShared ? " [FAMILY SHARED]" : ""));
                     }
                 }
             }
@@ -79,16 +88,17 @@ public class SteamGameLibraryService : IGameLibraryService
 
             if (checkedCount - lastLogged >= 5000)
             {
-                FileLogger.Log($"Progress: checked {checkedCount}/{appIds.Count}, owned {owned}, errors {errors}");
+                FileLogger.Log($"Progress: checked {checkedCount}/{appIds.Count}, owned {owned}, own {ownGames}, family {familySharedGames}, errors {errors}");
                 lastLogged = checkedCount;
             }
         }
 
         FileLogger.LogSection("RESULTS");
         FileLogger.Log($"Total checked: {checkedCount}");
-        FileLogger.Log($"Total owned: {owned}");
+        FileLogger.Log($"Total owned (all): {owned}");
+        FileLogger.Log($"  Own games (not family shared): {ownGames}");
+        FileLogger.Log($"  Family shared games: {familySharedGames}");
         FileLogger.Log($"Total errors: {errors}");
-        FileLogger.Log($"Log file: {FileLogger.GetLastLogPath()}");
 
         return games;
     }
@@ -97,32 +107,20 @@ public class SteamGameLibraryService : IGameLibraryService
     {
         var appIds = new List<uint>();
 
-        FileLogger.Log("Downloading from gib.me/sam/games.xml");
-
         string xml = await _httpClient.GetStringAsync(GamesListUrl);
-        FileLogger.Log($"Downloaded XML length: {xml.Length} chars");
 
         using var stringReader = new StringReader(xml);
-        var settings = new XmlReaderSettings
-        {
-            DtdProcessing = DtdProcessing.Ignore,
-            XmlResolver = null
-        };
+        var document = new XPathDocument(stringReader);
+        var navigator = document.CreateNavigator();
+        var nodes = navigator.Select("/games/game");
 
-        using var xmlReader = XmlReader.Create(stringReader, settings);
-
-        while (xmlReader.Read())
+        while (nodes.MoveNext())
         {
-            if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "game")
+            if (uint.TryParse(nodes.Current.Value, out uint appId) && appId > 0)
             {
-                if (uint.TryParse(xmlReader.ReadElementContentAsString(), out uint appId) && appId > 0)
-                {
-                    appIds.Add(appId);
-                }
+                appIds.Add(appId);
             }
         }
-
-        FileLogger.Log($"Parsed {appIds.Count} appIds from XML");
 
         return appIds;
     }

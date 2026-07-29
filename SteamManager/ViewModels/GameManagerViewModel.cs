@@ -40,6 +40,9 @@ public partial class GameManagerViewModel : ObservableObject
     private AchievementFilterType _achievementFilter = AchievementFilterType.All;
 
     [ObservableProperty]
+    private string _achievementSearchText = string.Empty;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -118,20 +121,135 @@ public partial class GameManagerViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedCount));
     }
 
+    [RelayCommand]
+    private void InvertSelection()
+    {
+        foreach (var ach in _allAchievements)
+        {
+            ach.IsSelected = !ach.IsSelected;
+        }
+        OnPropertyChanged(nameof(SelectedCount));
+    }
+
+    [RelayCommand]
+    private async Task RefreshAchievementsAsync()
+    {
+        await LoadAchievementsAsync();
+    }
+
+    [RelayCommand]
+    private async Task ResetAchievementsAsync()
+    {
+        if (_schemaLoadFailed)
+        {
+            StatusMessage = "Warning: Could not verify achievement protection status - schema not loaded";
+            return;
+        }
+
+        try
+        {
+            var result = System.Windows.MessageBox.Show(
+                "Are you sure you want to RESET all achievements?\nThis will clear ALL achievements back to locked state.\n\nThis cannot be undone!",
+                "Reset Achievements",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            var confirmResult = System.Windows.MessageBox.Show(
+                "Are you ABSOLUTELY sure?\nAll achievement progress will be permanently lost!",
+                "Final Confirmation",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Error);
+
+            if (confirmResult != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            int count = 0;
+            int protectedSkipped = 0;
+            int unverifiedSkipped = 0;
+
+            foreach (var ach in _allAchievements)
+            {
+                if (!ach.IsUnlocked)
+                    continue;
+
+                if (ach.IsProtected || ach.IsUnverified)
+                {
+                    if (ach.IsUnverified)
+                        unverifiedSkipped++;
+                    else
+                        protectedSkipped++;
+                    continue;
+                }
+
+                if (_steamContext.Achievements.ClearAchievement(ach.ApiName, ach.Permission))
+                {
+                    ach.IsUnlocked = false;
+                    count++;
+                    _ = RefreshAchievementIconAsync(ach);
+                }
+            }
+
+            if (count > 0)
+            {
+                _steamContext.Stats.StoreStats();
+                UnlockedCount = _allAchievements.Count(a => a.IsUnlocked);
+                string msg = $"Reset {count} achievements";
+                if (protectedSkipped > 0)
+                    msg += $" ({protectedSkipped} protected skipped)";
+                if (unverifiedSkipped > 0)
+                    msg += $" ({unverifiedSkipped} unverified skipped)";
+                StatusMessage = msg;
+                ApplyFilter();
+            }
+            else if (protectedSkipped > 0 || unverifiedSkipped > 0)
+            {
+                string msg = "No achievements reset";
+                if (protectedSkipped > 0)
+                    msg += $" ({protectedSkipped} protected)";
+                if (unverifiedSkipped > 0)
+                    msg += $" ({unverifiedSkipped} unverified)";
+                StatusMessage = msg;
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error resetting achievements: {ex.Message}";
+        }
+    }
+
     public IEnumerable<AchievementInfo> FilteredAchievements => GetFilteredAchievements();
 
     private IEnumerable<AchievementInfo> GetFilteredAchievements()
     {
-        return AchievementFilter switch
+        var filtered = AchievementFilter switch
         {
             AchievementFilterType.Unlocked => _allAchievements.Where(a => a.IsUnlocked),
             AchievementFilterType.Locked => _allAchievements.Where(a => !a.IsUnlocked),
             AchievementFilterType.Hidden => _allAchievements.Where(a => a.IsHidden),
             _ => _allAchievements
         };
+
+        if (!string.IsNullOrWhiteSpace(AchievementSearchText))
+        {
+            var searchLower = AchievementSearchText.ToLowerInvariant();
+            filtered = filtered.Where(a =>
+                a.DisplayName.ToLowerInvariant().Contains(searchLower) ||
+                a.Description.ToLowerInvariant().Contains(searchLower) ||
+                a.ApiName.ToLowerInvariant().Contains(searchLower));
+        }
+
+        return filtered;
     }
 
     partial void OnAchievementFilterChanged(AchievementFilterType value)
+    {
+        Achievements = new ObservableCollection<AchievementInfo>(GetFilteredAchievements());
+    }
+
+    partial void OnAchievementSearchTextChanged(string value)
     {
         Achievements = new ObservableCollection<AchievementInfo>(GetFilteredAchievements());
     }

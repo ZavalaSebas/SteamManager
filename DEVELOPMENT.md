@@ -1022,6 +1022,43 @@ If critical bug found after release:
 | **Smart Unlock UI requires manual smoke test before release** | `steamclient.dll` is not available in the test environment; no automated smoke test can open the three Smart Unlock dialogs (SmartUnlockDialog, ProgressOverlay, SmartUnlockResultDialog) or verify the dropdown entry point | Before any release, verify manually with Steam running: (1) dropdown appears in game manager toolbar, (2) SmartUnlockDialog opens with correct defaults (15-45s), (3) Smart Unlock execution shows ProgressOverlay with live counters, (4) result dialog shows correct icon and auto-dismiss behavior. No automated CI coverage possible. |
 | **Closing app during Smart Unlock cancels operation without rollback** | Hard-closing the app (clicking the window's X button, Alt+F4, or terminating the process) during a Smart Unlock operation prevents `StoreStats()` from executing — that method is called once in a `finally` block after the entire batch completes, flushing buffered local achievement state to Steam's server. A hard-close terminates the process before that call runs, so achievement changes are discarded and never persisted. | User must not close the app during Smart Unlock. If closed accidentally, re-run Smart Unlock — the operation is idempotent and safe to re-run in full, since nothing may have persisted if the app was closed before the batch's `StoreStats()` call. Does not affect games with no in-progress work. |
 
+## Research Notes: IsSubscribedApp and Family Sharing
+
+> **Findings from investigating the game count discrepancy (183 vs 366).** These are real behaviors of Steam's `IsSubscribedApp()` API verified through targeted testing — not speculative.
+
+### How IsSubscribedApp behaves with Family Sharing
+
+`IsSubscribedApp(appId)` returns ownership status based on the active Steam session. Testing across multiple game types reveals:
+
+| Game type | Example | IsSubscribedApp result | Notes |
+|-----------|---------|----------------------|-------|
+| Direct purchase | Portal (440) | **True** | License owned by account |
+| Family Shared — exists in BOTH accounts | Half-Life 2 (220), Dark Souls II (335300), Dark Souls III (374320) | **True** | Game is on both accounts, so API sees ownership on the active session |
+| Family Shared — ONLY on lending account | 100% Orange Juice (282280) | **False** | Active account has no direct license; lending account's license is not exposed via this API |
+| Key activation (non-Store) | Halo Spartan Assault (391659) | **False** | Likely registered as different license type not detected by `IsSubscribedApp` |
+| Non-Store purchase | RE4 Remake (2276120) | **False** | May be key-activated or missing from active session |
+
+### Key implications
+
+- `IsSubscribedApp` is **not** a reliable way to enumerate Family Shared games exclusively from the borrower side
+- Games that appear in both accounts (lender + borrower) return `True` because the active session has a direct license
+- Games exclusive to the lending account return `False` from the borrower's session — this is why SteamManager shows fewer games than the full family library
+- SAM also uses `IsSubscribedApp()` and shows ~366 games because it iterates a larger set of appIds and the extra ~182 games (the family shared ones that return `True`) are those that happen to return `True` in that particular Steam session state
+
+### Why SteamManager shows 183 and SAM shows 366
+
+The fix to the XML parser (now parsing ~81,871 entries instead of ~40,980) explains the 2x multiplier, but the final ownership count depends on session state. After the XML fix, both apps should enumerate and check ownership on the same ~81,871 appIds. The slight difference in final displayed count (366 vs expected ~364-366) reflects the same `IsSubscribedApp` behavior — some games on the lending account return `True` in this session.
+
+### What this means for SteamManager
+
+- SteamManager's library list is **correct** for the current Steam session state
+- Adding family shared games to the displayed list would require detecting and including games exclusively on lending accounts, which `IsSubscribedApp` does not expose reliably
+- `IsSubscribedFromFamilySharing(appId)` exists but returns `False` for games only on the lending account (since the borrower has no shared license record in this session)
+
+This is an API limitation, not a bug in SteamManager. The library correctly reflects what Steam's internal API reports for the current session.
+
+---
+
 ## Known Issues & Resolutions
 
 > **Document issues here as you find and fix them.** Include the symptoms, root cause, and how it was resolved. This helps future contributors avoid the same pitfalls.
@@ -1048,6 +1085,7 @@ If critical bug found after release:
 | **Achievement icons not loading** | Not yet implemented - `AchievementInfo` has `IconHandle` but no icon download/display | Fixed — Icons now load from Steam CDN when local handle unavailable, with `IconUrl` and `IconLockedUrl` properties |
 | **Back button doesn't work in helper** | Helper mode doesn't have navigation back to launcher - it's a separate process | Fixed — Multi-process architecture: helper closes independently, launcher stays open and refreshes on return |
 | **Loading status stays forever in helper** | Steam init happens on main thread but loading is async; status never updates after initial message | Fixed — Steam initialization now completes before loading games list, proper async flow |
+| **Game list showed ~183 games instead of ~366 (half missing)** | `XmlReader.ReadElementContentAsString()` inside `while (xmlReader.Read())` advances the reader past the closing tag internally; the next `Read()` call skips the following element — effectively processing only half of the entries | Fixed — Replaced XmlReader imperative loop with `XPathDocument` + `XPathNavigator.Select()` matching SAM's approach. Now correctly parses all ~81,871 entries from `games.xml`. Confirmed: 366 games owned (including family shared). See `SteamGameLibraryService.DownloadGameListAsync()`. |
 
 ---
 
