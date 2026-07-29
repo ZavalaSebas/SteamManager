@@ -5,14 +5,23 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2026-07-29
 
 ### Added
 
-- **Achievement global rarity (rarity percentage)**: Each achievement card now shows the global percentage of players who have unlocked it. Data sourced from Steam's `ISteamUserStats013` API (`RequestGlobalAchievementPercentages` + `GetAchievementAchievedPercent`). Displayed with color coding: green (≥50%), yellow (10-50%), red (<10%). Closes the gap with the original SAM which had access to this API.
-- **Refresh button in game picker**: Added a refresh button to re-download the game list from gib.me without restarting the app.
+- **Achievement global rarity (rarity percentage)**: Each achievement card now shows the global percentage of players who have unlocked it. Data sourced from Steam's `ISteamUserStats013` API (`RequestGlobalAchievementPercentages` + `GetAchievementAchievedPercent`). Displayed with color coding: green (≥50%), yellow (10-50%), red (<10%).
+- **Achievement search**: Search box to filter achievements by name or description.
+- **Invert selection**: Button to quickly toggle the selection state of all achievements.
+- **Achievement unlock date**: Each achievement card displays the unlock date/time when available.
+- **Refresh achievements button**: Reload achievements without restarting the app.
+- **Reset achievements button**: Reset all achievements back to locked state with double confirmation.
+- **Refresh button in game picker**: Re-download the game list from gib.me without restarting the app.
 - **Game type filters**: Filter games by type (games, demos, mods, junk) using checkboxes in the toolbar. Game type is retrieved from Steam API via `GetAppData(appId, "type")`.
 - **Add Game by App ID**: Input field + button to manually add any owned game by its App ID. Validates ownership via `IsSubscribedApp()` before adding.
+- **Welcome dialog**: First-run dialog showing "What's New" changelog. Reappears after each update.
+- **Auto-updater**: Checks GitHub releases for new versions. Shows update dialog with progress bar and Skip/Update options.
+- **Hamburger menu**: Title bar menu with About & Credits, Check for Updates, Ko-fi, and GitHub Sponsors options.
+- **Heart in status bar**: Click the heart in the status bar to open Ko-fi donation page.
 
 ### Fixed
 
