@@ -344,7 +344,7 @@ Implemented in **v1.2.0**.
 ### Implementation
 - `Services/Updater.cs` — update check, download, swap, cleanup
 - `Services/NetworkHelper.cs` — HTTP client with User-Agent, JSON fetching
-- `Views/UpdateWindow.xaml` — download progress UI
+- `Dialogs/UpdateWindow.xaml/.cs` — download progress UI
 - Config keys: `GitHubApiUrl`, `RequestTimeout`
 
 ### Welcome Dialog

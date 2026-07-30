@@ -28,7 +28,7 @@ jobs:
       - id: check
         shell: pwsh
         run: |
-          $old = git show HEAD~1:SteamManager/SteamManager.csproj 2>$null
+          $old = git show ${{ github.event.before }}:SteamManager/SteamManager.csproj 2>$null
           $new = Get-Content SteamManager/SteamManager.csproj -Raw
           $oldVer = [regex]::Match($old, '<Version>(.*?)</Version>').Groups[1].Value
           $newVer = [regex]::Match($new, '<Version>(.*?)</Version>').Groups[1].Value

@@ -39,8 +39,6 @@ The way Steam manages achievements is through its internal client library. Steam
 4. Toggle achievements, edit statistics, or use smart unlock
 5. Changes are committed to Steam's servers via the official API
 
-The fake process runs until you close it. Steam keeps detecting it the entire time. Since achievement management doesn't involve kernel-level anti-cheat, there's nothing watching for API calls.
-
 ---
 
 ## Features

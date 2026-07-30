@@ -123,11 +123,11 @@ SteamManager/
 **Single source of truth**: `<Version>` in `SteamManager/SteamManager.csproj`
 
 ```xml
-<Version>1.2.0</Version>
+<Version>1.3.0</Version>
 <AssemblyVersion>$(Version).0</AssemblyVersion>
 ```
 
-- `AssemblyVersion` derives from `$(Version)` so assembly version is correct (e.g., `1.2.0.0`)
+- `AssemblyVersion` derives from `$(Version)` so assembly version is correct (e.g., `1.3.0.0`)
 - The Updater compares remote tag vs local version using `Version.TryParse`
 
 **To bump the version**: edit `<Version>` in the csproj, commit with a descriptive message, push to `main`.
@@ -568,7 +568,7 @@ If critical bug found after release:
 | `SteamManager/MainWindow.xaml/.cs` | Shell window — `ContentControl` bound to `MainViewModel.CurrentViewModel` |
 | `SteamManager.Tests/` | xUnit test project covering core models, converters, and services (verified locally, not CI) |
 | `.github/workflows/release.yml` | CI/CD pipeline (`win-x86`, triggers on push/PR to main) |
-| `CHANGELOG.md` | Version history (v0.1.0 → v1.2.0) |
+| `CHANGELOG.md` | Version history (v0.1.0 → v1.3.0) |
 
 ---
 
