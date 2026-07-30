@@ -104,7 +104,7 @@
                 <!-- Game Title & Stats -->
                 <Grid Grid.Column="2" Margin="16,0,0,0" VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MaxWidth="320"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
