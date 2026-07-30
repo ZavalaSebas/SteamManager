@@ -147,8 +147,8 @@
                                 </Path.Data>
                             </Path>
                         </Grid>
-                        <StackPanel VerticalAlignment="Top" Margin="14,0,0,0">
-                            <TextBlock Foreground="#C0C0C0" FontSize="16">
+                        <StackPanel VerticalAlignment="Top" Margin="8,0,0,0">
+                            <TextBlock Foreground="#C0C0C0" FontSize="14">
                                 <Run Text="{Binding UnlockedCount, Mode=OneWay}" FontWeight="Bold" Foreground="#2ECC71"/>
                                 <Run Text="/"/>
                                 <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Bold"/>
