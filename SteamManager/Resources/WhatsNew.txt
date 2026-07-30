@@ -7,3 +7,4 @@
 - AchievementCard descriptions no longer cut off
 - Long game names wrap to 2 lines instead of truncating or pushing stats
 - "Achievements" text size reduced to 14px to prevent clipping
+- Update dialog now uses FluentWindow with Mica and custom title bar

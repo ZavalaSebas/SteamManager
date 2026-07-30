@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **UpdateWindow WPFUI visual refresh**: Converted from plain `Window` to `FluentWindow` with Mica backdrop and custom title bar — consistent with the rest of the app's aesthetic. Includes drag-to-move, consistent button/background styling, and refreshed progress bar.
 - **App icon**: Custom icon (SM.ico/SM.png) now used for the executable, window taskbar, and About dialog.
 - **WelcomeWindow WPFUI visual refresh**: Changed from plain `Window` to `FluentWindow` with Mica backdrop and custom title bar — consistent with the rest of the app's aesthetic.
 - **Launcher visual refresh**: GamePickerView redesigned with toggle chips (pill-style filters), square refresh button (40×40), and standalone Add Game button.
