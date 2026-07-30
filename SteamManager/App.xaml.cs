@@ -55,18 +55,25 @@ public partial class App : Application
 
     private async Task StartLauncherMode()
     {
-        _launcherMutex = new Mutex(true, LauncherMutexName, out bool createdNew);
-        if (!createdNew)
+        try
         {
-            var existingWindow = Current.MainWindow;
-            if (existingWindow != null)
+            _launcherMutex = new Mutex(true, LauncherMutexName, out bool createdNew);
+            if (!createdNew)
             {
-                existingWindow.WindowState = WindowState.Normal;
-                existingWindow.Show();
-                existingWindow.Activate();
+                var existingWindow = Current.MainWindow;
+                if (existingWindow != null)
+                {
+                    existingWindow.WindowState = WindowState.Normal;
+                    existingWindow.Show();
+                    existingWindow.Activate();
+                }
+                Shutdown();
+                return;
             }
-            Shutdown();
-            return;
+        }
+        catch (AbandonedMutexException)
+        {
+            // Mutex was abandoned by a crashed process — we inherited ownership, proceed normally
         }
 
         var services = new ServiceCollection();

@@ -8,7 +8,6 @@
         xmlns:views="clr-namespace:SteamManager.Views"
         mc:Ignorable="d"
         Title="SteamManager"
-         Icon="Resources/SM.ico"
          Height="750" Width="1150"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
