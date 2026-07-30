@@ -1,198 +1,849 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SteamManager - Modern Steam Achievement Manager</title>
-    <meta name="description" content="A modern Windows desktop application for managing Steam game achievements and statistics. Built in C# / .NET 10.">
-    <meta property="og:title" content="SteamManager">
-    <meta property="og:description" content="Modern Steam Achievement Manager - Built in C# / .NET 10">
-    <meta property="og:type" content="website">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SteamManager — Your Steam Library, Local &amp; Fast</title>
+  <meta name="description" content="Free, open-source Steam game library manager with offline-first achievement tracking. Browse, search, and manage your Steam games locally without launching Steam." />
+  <meta name="keywords" content="steam manager, steam library manager, steam achievement tracker, steam game organizer, steam backup, steam library tool, offline steam library, steam manager windows, steam game list, steam achievement viewer, local steam library, steam library offline" />
+  <meta name="author" content="ZavalaSebas" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://zavalasebas.github.io/SteamManager/" />
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
-        }
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zavalasebas.github.io/SteamManager/" />
+  <meta property="og:title" content="SteamManager — Your Steam Library, Local &amp; Fast" />
+  <meta property="og:description" content="Free, open-source Steam game library manager. Browse, search, and track achievements offline without launching Steam." />
+  <meta property="og:image" content="https://zavalasebas.github.io/SteamManager/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="SteamManager" />
+  <meta property="og:locale" content="en_US" />
 
-        .container {
-            max-width: 600px;
-        }
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SteamManager — Your Steam Library, Local &amp; Fast" />
+  <meta name="twitter:description" content="Free, open-source Steam game library manager with offline achievement tracking." />
+  <meta name="twitter:image" content="https://zavalasebas.github.io/SteamManager/og-image.svg" />
 
-        h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "SteamManager",
+    "url": "https://zavalasebas.github.io/SteamManager/",
+    "description": "Free, open-source Steam game library manager with offline-first achievement tracking. Browse, search, and manage your Steam games locally.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Windows 10/11",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": {
+      "@type": "Person",
+      "name": "ZavalaSebas",
+      "url": "https://github.com/ZavalaSebas"
+    },
+    "softwareVersion": "1.3.0",
+    "downloadUrl": "https://github.com/ZavalaSebas/SteamManager/releases/latest",
+    "featureList": [
+      "Browse Steam games offline",
+      "Achievement tracking with global rarity",
+      "Search and filter by name or type",
+      "Favorite and bookmark games",
+      "Refresh game list from gib.me",
+      "Add games by App ID",
+      "Auto-updater",
+      "Dark WPFUI theme"
+    ]
+  }
+  </script>
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: #888;
-            margin-bottom: 2rem;
-        }
+  <meta name="theme-color" content="#66C0F4" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231A1A1A'/%3E%3Ctext x='50' y='72' font-family='Segoe MDL2 Assets' font-size='60' fill='%2366C0F4' text-anchor='middle'%3E%26%23xE7BC%3B%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-        .version {
-            display: inline-block;
-            background: #1a1a2e;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 0.3rem 0.8rem;
-            font-size: 0.85rem;
-            color: #aaa;
-            margin-bottom: 2rem;
-        }
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .description {
-            font-size: 1rem;
-            color: #999;
-            line-height: 1.6;
-            margin-bottom: 2.5rem;
-        }
+    :root {
+      --steam: #66C0F4;
+      --steam-light: #8FCDFF;
+      --steam-dark: #417A9B;
+      --green: #2ECC71;
+      --green-dark: #27AE60;
+      --red: #E74C3C;
+      --yellow: #F1C40F;
+      --bg: #0F0F0F;
+      --bg-card: #1A1A1A;
+      --bg-card-hover: #222222;
+      --bg-elevated: #252525;
+      --text: #E8E8E8;
+      --text-muted: #8A8A8A;
+      --text-dim: #5A5A5A;
+      --border: rgba(102, 192, 244, 0.12);
+      --glow: rgba(102, 192, 244, 0.25);
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
 
-        .btn {
-            display: inline-block;
-            padding: 0.8rem 2rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-        }
+    html { scroll-behavior: smooth; }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-        }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    section { padding: 6rem 0; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--steam);
+      margin-bottom: 0.6rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .section-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin-bottom: 3rem;
+    }
 
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid #333;
-            color: #ccc;
-            margin-left: 1rem;
-        }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.8rem;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
 
-        .btn-secondary:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
+    .btn-primary {
+      background: var(--steam);
+      color: #FFFFFF;
+      box-shadow: 0 4px 24px rgba(102, 192, 244, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--steam-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(102, 192, 244, 0.4);
+    }
 
-        .features {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 3rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-2px);
+    }
 
-        .feature {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 12px;
-            padding: 1.2rem;
-            width: 160px;
-            text-align: center;
-        }
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(102,192,244,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102,192,244,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
 
-        .feature-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
+    .bg-glow {
+      position: fixed;
+      top: -30vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 60vh;
+      background: radial-gradient(ellipse at center, rgba(102,192,244,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-        .feature-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #ddd;
-        }
+    .orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.15;
+      animation: orb-float 20s ease-in-out infinite;
+    }
+    .orb:nth-child(1) {
+      width: 400px; height: 400px;
+      background: var(--steam);
+      top: -10%; left: -10%;
+      animation-delay: 0s;
+      animation-duration: 25s;
+    }
+    .orb:nth-child(2) {
+      width: 300px; height: 300px;
+      background: var(--green);
+      bottom: -5%; right: -5%;
+      animation-delay: -5s;
+      animation-duration: 20s;
+    }
+    .orb:nth-child(3) {
+      width: 200px; height: 200px;
+      background: var(--steam);
+      top: 50%; left: 60%;
+      animation-delay: -10s;
+      animation-duration: 18s;
+    }
 
-        .footer {
-            margin-top: 4rem;
-            color: #555;
-            font-size: 0.8rem;
-        }
+    @keyframes orb-float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(30px, -40px) scale(1.05); }
+      50% { transform: translate(-20px, 20px) scale(0.95); }
+      75% { transform: translate(40px, 30px) scale(1.02); }
+    }
 
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    nav.scrolled {
+      background: rgba(15,15,15,0.85);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 var(--border);
+    }
 
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .nav-brand-icon {
+      width: 32px; height: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--steam);
+      font-family: 'Segoe MDL2 Assets', sans-serif;
+    }
+    .nav-links { display: flex; align-items: center; gap: 0.2rem; }
+    .nav-links a {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .nav-links .btn-primary { padding: 0.5rem 1.2rem; font-size: 0.82rem; margin-left: 0.5rem; }
+
+    @media (max-width: 640px) {
+      .nav-links a:not(.btn-primary) { display: none; }
+      nav { padding: 0 1rem; }
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(102,192,244,0.08);
+      border: 1px solid rgba(102,192,244,0.2);
+      border-radius: 100px;
+      padding: 0.45rem 1.1rem;
+      font-size: 0.8rem;
+      color: var(--steam-light);
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-badge .dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+
+    .hero-icon {
+      width: 88px; height: 88px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.8rem;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 40px rgba(102,192,244,0.15);
+    }
+    .hero-icon span {
+      font-family: 'Segoe MDL2 Assets', sans-serif;
+      font-size: 44px;
+      color: var(--steam);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 1.2rem;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--steam-light), var(--steam), var(--steam-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--steam-light), var(--steam));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: var(--text-muted);
+      max-width: 560px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      margin-top: 4rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--steam);
+      line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+    .hero-stat-divider { width: 1px; background: var(--border); }
+
+    @media (max-width: 480px) {
+      .hero-stats { gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    }
+
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+    .steps-track { position: relative; padding-top: 50px; }
+    .steps-connector {
+      position: absolute;
+      top: 66px;
+      left: calc(12.5% + 20px);
+      right: calc(12.5% + 20px);
+      height: 1px;
+      background: linear-gradient(to right, var(--border), rgba(102,192,244,0.2), var(--border));
+    }
+    .step { text-align: center; padding: 0 1.2rem; position: relative; }
+    .step-number {
+      width: 36px; height: 36px;
+      margin: 0 auto 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--steam);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+    .step:hover .step-number {
+      background: var(--steam);
+      color: #fff;
+      border-color: var(--steam);
+      box-shadow: 0 0 20px rgba(102,192,244,0.3);
+      transform: scale(1.1);
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .step p { color: var(--text-muted); font-size: 0.82rem; line-height: 1.65; max-width: 220px; margin: 0 auto; }
+
+    @media (max-width: 768px) {
+      .steps { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
+      .steps-track { padding-top: 0; }
+      .steps-connector { display: none; }
+      .step { text-align: left; }
+      .step p { margin: 0; }
+      .step-number { margin: 0 0 1rem; }
+    }
+    @media (max-width: 400px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+
+    .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; }
+    .bento-item {
+      border-radius: var(--radius); padding: 2rem; position: relative; overflow: hidden;
+      display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+    }
+    .bento-item:hover { transform: translateY(-2px); }
+    .bento-item h3 { font-weight: 800; letter-spacing: -0.01em; position: relative; z-index: 1; font-size: 1.1rem; margin-bottom: 0.4rem; }
+    .bento-item p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.65; position: relative; z-index: 1; }
+
+    .bento-hero {
+      grid-column: span 8; grid-row: span 2;
+      background: var(--bg-card); border: 1px solid var(--border);
+      justify-content: center; align-items: flex-start;
+    }
+    .bento-hero .giant {
+      font-size: clamp(3rem, 6vw, 5rem); font-weight: 900; line-height: 0.92;
+      letter-spacing: -0.05em;
+      background: linear-gradient(135deg, var(--steam-light), var(--steam), var(--steam-dark));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 1.5rem;
+    }
+
+    .bento-stat {
+      grid-column: span 4; grid-row: span 2;
+      background: linear-gradient(135deg, var(--steam-dark), #2A4A6B);
+      justify-content: center; align-items: center; text-align: center;
+    }
+    .bento-stat .big {
+      font-size: clamp(4rem, 7vw, 6rem); font-weight: 900; line-height: 1;
+      opacity: 0.15; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .bento-stat h3 { color: #fff; font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .bento-stat p { color: rgba(255,255,255,0.65); font-size: 0.82rem; }
+
+    .bento-border {
+      grid-column: span 5;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-left: 3px solid var(--green); justify-content: center;
+    }
+    .bento-border h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+
+    .bento-dark {
+      grid-column: span 7;
+      background: rgba(102,192,244,0.04); border: 1px solid rgba(102,192,244,0.08);
+      justify-content: center;
+    }
+    .bento-dark .bento-icon { font-size: 1.8rem; margin-bottom: 0.8rem; position: relative; z-index: 1; }
+    .bento-dark h3 { font-size: 1.15rem; margin-bottom: 0.4rem; }
+    .bento-dark p { max-width: 420px; }
+
+    .bento-stripe {
+      grid-column: span 12;
+      background: var(--bg-card); border: 1px solid var(--border);
+      flex-direction: row; align-items: center; gap: 2.5rem; padding: 2rem 2.5rem;
+    }
+    .bento-stripe::before {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(-45deg,
+        transparent, transparent 24px,
+        rgba(102,192,244,0.02) 24px, rgba(102,192,244,0.02) 48px);
+      pointer-events: none;
+    }
+    .bento-stripe-left { flex-shrink: 0; position: relative; z-index: 1; }
+    .bento-stripe-left h3 { font-size: 1.2rem; margin-bottom: 0.2rem; }
+    .bento-stripe-left p { font-size: 0.85rem; }
+    .bento-stripe-right { position: relative; z-index: 1; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .bento-pill {
+      background: rgba(102,192,244,0.08); border: 1px solid rgba(102,192,244,0.15);
+      border-radius: 100px; padding: 0.4rem 1rem;
+      font-size: 0.78rem; font-weight: 600; color: var(--steam-light); white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .bento { grid-template-columns: 1fr; }
+      .bento-hero, .bento-stat, .bento-border, .bento-dark, .bento-stripe { grid-column: span 1; }
+      .bento-hero { grid-row: span 1; }
+      .bento-stat { grid-row: span 1; }
+      .bento-stripe { flex-direction: column; gap: 1rem; padding: 1.5rem; align-items: flex-start; }
+    }
+
+    .screenshots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .screenshot-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+      cursor: pointer;
+    }
+    .screenshot-card:hover { border-color: var(--steam); transform: scale(1.01); }
+    .screenshot-card img { width: 100%; display: block; aspect-ratio: 16/10; object-fit: cover; background: #111; }
+    .screenshot-placeholder { aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 0.85rem; background: #111; }
+
+    @media (max-width: 640px) { .screenshots-grid { grid-template-columns: 1fr; } }
+
+    .lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+      z-index: 1000; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+    .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.25s ease-out; }
+    .lightbox.open img { transform: scale(1); }
+    .lightbox-close {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      width: 40px; height: 40px; background: rgba(255,255,255,0.08);
+      border: none; border-radius: 50%; color: #fff; font-size: 1.3rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s ease;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.15); }
+
+    .safety-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .safety-header { padding: 1.8rem 2.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap; }
+    .safety-header h3 { font-size: 1.2rem; font-weight: 800; }
+    .safety-verdict { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--green); background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2); border-radius: 100px; padding: 0.25rem 0.8rem; }
+    .safety-body { display: grid; grid-template-columns: 1fr 1px 1fr; }
+    .safety-col { padding: 2rem 2.5rem; }
+    .safety-divider { background: var(--border); }
+    .safety-col-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-dim); margin-bottom: 1rem; }
+    .safety-col p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.75; margin-bottom: 1rem; }
+    .safety-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .safety-list li { font-size: 0.85rem; color: var(--text-muted); padding-left: 1.2rem; position: relative; }
+    .safety-list li::before { content: ''; position: absolute; left: 0; top: 7px; width: 5px; height: 5px; border-radius: 50%; }
+    .safety-do .safety-list li::before { background: var(--green); }
+    .safety-dont .safety-list li::before { background: var(--red); }
+
+    .disclaimer { margin-top: 1.5rem; padding: 1.2rem 1.8rem; border-left: 2px solid var(--text-dim); }
+    .disclaimer p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.7; }
+    .disclaimer strong { color: var(--text); font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .safety-body { grid-template-columns: 1fr; }
+      .safety-divider { height: 1px; width: 100%; }
+      .safety-col { padding: 1.5rem; }
+      .safety-header { padding: 1.2rem 1.5rem; }
+    }
+
+    .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item summary { list-style: none; padding: 1rem 0; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: color 0.2s ease; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: '+'; font-size: 1.1rem; color: var(--steam); transition: transform 0.2s ease; }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item summary:hover { color: var(--steam-light); }
+    .faq-item p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.7; padding-bottom: 1rem; }
+
+    @media (max-width: 640px) { .faq-grid { grid-template-columns: 1fr; } }
+
+    .cta { text-align: center; padding: 8rem 0; position: relative; }
+    .cta::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1px; height: 50px; background: linear-gradient(to bottom, transparent, var(--steam)); }
+    .cta h2 { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; }
+    .cta p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem; }
+
+    footer { text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.82rem; }
+    footer a { color: var(--steam-light); text-decoration: none; transition: color 0.2s ease; }
+    footer a:hover { color: var(--steam); text-decoration: underline; }
+    .footer-support { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin-bottom: 1.2rem; font-size: 0.8rem; flex-wrap: wrap; }
+    .footer-support-label { color: var(--text-dim); font-size: 0.78rem; }
+    .footer-support-link { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.9rem; border-radius: 100px; font-weight: 600; font-size: 0.78rem; transition: all 0.2s ease; text-decoration: none !important; }
+    .footer-support-link.ko-fi { color: var(--red) !important; background: rgba(231,76,60,0.06); border: 1px solid rgba(231,76,60,0.15); }
+    .footer-support-link.ko-fi:hover { background: rgba(231,76,60,0.12); border-color: rgba(231,76,60,0.3); }
+    .footer-support-link.github { color: var(--text) !important; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .footer-support-link.github:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); }
+    .footer-divider { display: inline-block; width: 3px; height: 3px; background: var(--text-dim); border-radius: 50%; margin: 0 0.5rem; vertical-align: middle; opacity: 0.4; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3A3A3A; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>SteamManager</h1>
-        <p class="subtitle">Modern Steam Achievement Manager</p>
 
-        <span class="version" id="version">v1.1.0</span>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="orbs">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
 
-        <p class="description">
-            A modern Windows desktop application for managing Steam game achievements
-            and statistics. Built with C# / .NET 10 and the internal `steamclient.dll` library.
-        </p>
-
-        <div>
-            <a href="https://github.com/ZavalaSebas/SteamManager/releases/latest" class="btn btn-primary" id="download-btn">
-                Download Latest
-            </a>
-            <a href="https://github.com/ZavalaSebas/SteamManager" class="btn btn-secondary">
-                View on GitHub
-            </a>
-        </div>
-
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">&#x1F3AE;</div>
-                <div class="feature-title">Game Library</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">&#x1F3C6;</div>
-                <div class="feature-title">Achievement Manager</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">&#x23F1;</div>
-                <div class="feature-title">Smart Unlock</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">&#x2699;</div>
-                <div class="feature-title">Stats Editor</div>
-            </div>
-        </div>
-
-        <div class="footer">
-            Made with care by <a href="https://github.com/ZavalaSebas">ZavalaSebas</a>
-        </div>
+  <nav id="navbar">
+    <a href="#" class="nav-brand">
+      <span class="nav-brand-icon">&#xE7BC;</span>
+      SteamManager
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/ZavalaSebas/SteamManager/releases/latest" class="btn btn-primary">&#11015; Download</a>
     </div>
+  </nav>
 
-    <script>
-        // Auto-update version from GitHub Releases API
-        fetch('https://api.github.com/repos/ZavalaSebas/SteamManager/releases/latest')
-            .then(r => r.json())
-            .then(data => {
-                if (data.tag_name) {
-                    document.getElementById('version').textContent = data.tag_name;
-                }
-            })
-            .catch(() => {});
-    </script>
+  <header class="hero">
+    <div class="hero-badge"><span class="dot"></span>Free &amp; Open Source</div>
+    <div class="hero-icon"><span>&#xE7BC;</span></div>
+    <h1><span class="gradient">SteamManager</span><br/><span class="highlight">Your Library, Local.</span></h1>
+    <p class="hero-sub">
+      Browse, search, and manage your Steam games offline. Track achievements with global rarity,
+      organize your favorites, and never launch Steam just to look at your library again.
+    </p>
+    <div class="hero-buttons">
+      <a href="https://github.com/ZavalaSebas/SteamManager/releases/latest" class="btn btn-primary">&#11015; Download SteamManager</a>
+      <a href="https://github.com/ZavalaSebas/SteamManager" class="btn btn-secondary" target="_blank">View on GitHub &rarr;</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">1.3.0</div><div class="hero-stat-label">Latest Version</div></div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat"><div class="hero-stat-num">5 MB</div><div class="hero-stat-label">Download Size</div></div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat"><div class="hero-stat-num">100%</div><div class="hero-stat-label">Offline Mode</div></div>
+    </div>
+  </header>
+
+  <main>
+    <section id="how">
+      <div class="container">
+        <p class="section-label">How it works</p>
+        <h2 class="section-title">One sync. Full control.</h2>
+        <p class="section-desc">SteamManager reads your local Steam user data and lets you browse everything without connecting to Steam's servers. When you want fresh data, one click syncs it.</p>
+        <div class="steps-track">
+          <div class="steps-connector"></div>
+          <div class="steps">
+            <div class="step"><div class="step-number">1</div><h3>Launch &amp; sync</h3><p>Open SteamManager. It reads your local Steam profile and fetches your owned games from the Steam API automatically.</p></div>
+            <div class="step"><div class="step-number">2</div><h3>Browse offline</h3><p>Your entire library is cached locally. Search, filter by type, and browse results instantly — no internet required.</p></div>
+            <div class="step"><div class="step-number">3</div><h3>Track achievements</h3><p>Select any game and see full achievement details: unlock date, global rarity, and search/filter by name. All offline.</p></div>
+            <div class="step"><div class="step-number">4</div><h3>Refresh when ready</h3><p>Sync new games or updated achievements with one click. The app auto-updates itself when a new version is available.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <p class="section-label">Features</p>
+        <h2 class="section-title">Built for Steam power users</h2>
+        <p class="section-desc">Everything you need to manage your library without opening Steam. Fast, local, and privacy-first.</p>
+        <div class="bento">
+          <div class="bento-item bento-hero"><div class="giant">No<br/>Steam.</div><h3>Full library access without launching Steam</h3><p>Browse, search, and manage every game you own. Filters by type and instant search.</p></div>
+          <div class="bento-item bento-stat"><div class="big">S</div><h3>Smart Filters</h3><p>Filter by game type, search by name, sort by favorites.</p></div>
+          <div class="bento-item bento-border"><h3>Global Achievement Rarity</h3><p>Every achievement shows the global unlock percentage from Steam. Color-coded by rarity.</p></div>
+          <div class="bento-item bento-dark"><div class="bento-icon">&#x2605;</div><h3>Favorites &amp; Bookmarks</h3><p>Star your most-played games for quick access. Favorites are highlighted with a gold accent.</p></div>
+          <div class="bento-item bento-stripe">
+            <div class="bento-stripe-left"><h3>Everything included</h3><p>No ads, no sign-up, no telemetry.</p></div>
+            <div class="bento-stripe-right">
+              <span class="bento-pill">Offline mode</span>
+              <span class="bento-pill">Achievement search</span>
+              <span class="bento-pill">Global rarity</span>
+              <span class="bento-pill">WPFUI theme</span>
+              <span class="bento-pill">Auto-updater</span>
+              <span class="bento-pill">Add by App ID</span>
+              <span class="bento-pill">Favorite system</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screenshots">
+      <div class="container">
+        <p class="section-label">Screenshots</p>
+        <h2 class="section-title">See it in action</h2>
+        <p class="section-desc">Clean, dark interface built with WPFUI. Every element designed for clarity and speed.</p>
+        <div class="screenshots-grid">
+          <div class="screenshot-card"><div class="screenshot-placeholder"><span>Main Library View</span></div></div>
+          <div class="screenshot-card"><div class="screenshot-placeholder"><span>Achievement Manager</span></div></div>
+          <div class="screenshot-card"><div class="screenshot-placeholder"><span>Game Picker with Filters</span></div></div>
+          <div class="screenshot-card"><div class="screenshot-placeholder"><span>About &amp; Welcome Dialogs</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-label">Privacy</p>
+        <h2 class="section-title">Your data stays yours</h2>
+        <p class="section-desc">SteamManager is designed with privacy first. No accounts, no telemetry, no data collection.</p>
+        <div class="safety-box">
+          <div class="safety-header"><h3>SteamManager</h3><span class="safety-verdict">Safe &amp; Private</span></div>
+          <div class="safety-body">
+            <div class="safety-col safety-do">
+              <p class="safety-col-label">What it does</p>
+              <p>Reads your local Steam userdata directory and fetches game/achievement data from Steam's public API. All game data is cached locally for offline access.</p>
+              <ul class="safety-list">
+                <li>Reads local Steam userdata</li><li>Fetches achievements via Steam API</li><li>Syncs game list from gib.me</li><li>Caches everything for offline mode</li>
+              </ul>
+            </div>
+            <div class="safety-divider"></div>
+            <div class="safety-col safety-dont">
+              <p class="safety-col-label">What it never does</p>
+              <p>SteamManager never sends your data anywhere. No telemetry, no analytics, no tracking of any kind.</p>
+              <ul class="safety-list">
+                <li>No telemetry or analytics</li><li>No account required</li><li>No login credentials stored</li><li>No data sent to third parties</li><li>No background processes</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="disclaimer">
+          <p>SteamManager is a <strong>third-party tool built for educational purposes</strong>. It uses Steam's official public API methods and reads local userdata files. You are responsible for compliance with <strong>Steam's Terms of Service</strong>. This project is not affiliated with Valve Corporation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="container">
+        <p class="section-label">FAQ</p>
+        <h2 class="section-title">Common questions</h2>
+        <div class="faq-grid">
+          <details class="faq-item"><summary>Does this replace the Steam client?</summary><p>No. SteamManager is a companion tool for browsing your library, tracking achievements, and organizing games. You still need Steam installed to download and play your games.</p></details>
+          <details class="faq-item"><summary>Can I use it without internet?</summary><p>Yes. After the initial sync, all game and achievement data is cached locally. You can browse, search, and filter your entire library completely offline.</p></details>
+          <details class="faq-item"><summary>How do achievements work?</summary><p>Achievement data is fetched from Steam's public API and cached locally. Each achievement shows its name, description, icon, unlock date, and global rarity percentage.</p></details>
+          <details class="faq-item"><summary>Is my Steam account safe?</summary><p>Yes. SteamManager only uses read-only public API endpoints. No credentials are ever stored, no login is required, and no write operations are performed on your account.</p></details>
+          <details class="faq-item"><summary>How do I add a game not in my library?</summary><p>Use the "Add by App ID" feature. Enter any Steam App ID and SteamManager will verify ownership before adding it.</p></details>
+          <details class="faq-item"><summary>How do I update SteamManager?</summary><p>SteamManager includes a built-in auto-updater. You'll be prompted on launch. Click "Update Now" and the app updates itself and restarts automatically.</p></details>
+          <details class="faq-item"><summary>Does it support Steam Deck or Linux?</summary><p>Currently, SteamManager is built for Windows 10/11 only (.NET 8 + WPFUI). Linux/macOS support is not planned at this time.</p></details>
+          <details class="faq-item"><summary>Is this open source?</summary><p>Yes. Fully open source under the GPL-3.0 license. The entire source code is available on GitHub.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container">
+        <h2>Ready to take control of your library?</h2>
+        <p>Free, open source, and built for Steam enthusiasts.</p>
+        <div class="hero-buttons" style="justify-content: center;">
+          <a href="https://github.com/ZavalaSebas/SteamManager/releases/latest" class="btn btn-primary">&#11015; Download Latest</a>
+          <a href="https://github.com/ZavalaSebas/SteamManager" class="btn btn-secondary" target="_blank">View Source Code &rarr;</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-support">
+      <span class="footer-support-label">Support SteamManager:</span>
+      <a href="https://github.com/sponsors/ZavalaSebas?frequency=one-time" target="_blank" class="footer-support-link github">&#9829; GitHub Sponsors</a>
+      <a href="https://ko-fi.com/sebastianzavala82573" target="_blank" class="footer-support-link ko-fi">&#9749; Ko-fi</a>
+    </div>
+    <p>
+      Built with &#9829; by <a href="https://github.com/ZavalaSebas" target="_blank">ZavalaSebas</a>
+      <span class="footer-divider"></span>
+      <a href="https://github.com/ZavalaSebas/SteamManager/blob/main/LICENSE" target="_blank">GPL-3.0 License</a>
+      <span class="footer-divider"></span>
+      <a href="https://github.com/ZavalaSebas/SteamManager" target="_blank">GitHub</a>
+    </p>
+  </footer>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <img id="lightboxImg" src="" alt="Screenshot preview" />
+  </div>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 20); });
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    document.querySelectorAll('.screenshot-card').forEach(card => {
+      const placeholder = card.querySelector('.screenshot-placeholder');
+      if (placeholder) {
+        card.addEventListener('click', () => {
+          lightboxImg.alt = placeholder.textContent.trim();
+          lightbox.classList.add('open');
+        });
+      }
+    });
+
+    lightboxClose.addEventListener('click', () => lightbox.classList.remove('open'));
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+
+    fetch('https://api.github.com/repos/ZavalaSebas/SteamManager/releases/latest')
+      .then(r => r.json())
+      .then(data => {
+        if (data.tag_name) {
+          const v = data.tag_name.replace(/^v/, '');
+          document.querySelectorAll('.btn-primary').forEach(btn => {
+            if (btn.textContent.includes('Download')) btn.innerHTML = '&#11015; Download v' + v;
+          });
+          const verEl = document.querySelector('.hero-stat:first-child .hero-stat-num');
+          if (verEl) verEl.textContent = v;
+        }
+      }).catch(() => {});
+  </script>
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  <script>
+    kofiWidgetOverlay.draw('sebastianzavala82573', {
+      type: 'floating-chat',
+      'floating-chat.donateButton.text': 'Support me',
+      'floating-chat.donateButton.background-color': '#d9534f',
+      'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
 </body>
 </html>
