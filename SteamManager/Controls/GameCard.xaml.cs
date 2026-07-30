@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using SteamManager.Models;
 
 namespace SteamManager.Controls;
 
@@ -30,23 +29,6 @@ public partial class GameCard : UserControl
     {
         InitializeComponent();
         MouseLeftButtonUp += OnMouseLeftButtonUp;
-        DataContextChanged += OnDataContextChanged;
-    }
-
-    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-    {
-        if (e.NewValue is GameInfo game)
-        {
-            UpdateFavoriteState(game.IsFavorite);
-        }
-    }
-
-    private void UpdateFavoriteState(bool isFavorite)
-    {
-        if (FavoriteGlow != null)
-        {
-            FavoriteGlow.Opacity = isFavorite ? 0.6 : 0;
-        }
     }
 
     private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -62,6 +44,10 @@ public partial class GameCard : UserControl
     private void OnFavoriteClick(object sender, RoutedEventArgs e)
     {
         e.Handled = true;
+
+        var sb = TryFindResource("FavoritePop") as Storyboard;
+        sb?.Begin(this);
+
         RaiseEvent(new RoutedEventArgs(FavoriteToggleEvent, this));
     }
 }

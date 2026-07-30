@@ -7,6 +7,22 @@
              Width="180"
              Cursor="Hand">
     <UserControl.Resources>
+        <Storyboard x:Key="FavoritePop">
+            <DoubleAnimation Storyboard.TargetName="FavoriteStarIcon"
+                            Storyboard.TargetProperty="RenderTransform.ScaleX"
+                            To="1.35" Duration="0:0:0.1" AutoReverse="True">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="FavoriteStarIcon"
+                            Storyboard.TargetProperty="RenderTransform.ScaleY"
+                            To="1.35" Duration="0:0:0.1" AutoReverse="True">
+                <DoubleAnimation.EasingFunction>
+                    <QuadraticEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
         <Storyboard x:Key="HoverEnter">
             <DoubleAnimation Storyboard.TargetName="CardScale"
                            Storyboard.TargetProperty="ScaleX"
@@ -119,28 +135,6 @@
                                    Stretch="UniformToFill"
                                    Height="105"/>
 
-                            <!-- Favorite Glow Effect -->
-                            <Border x:Name="FavoriteGlow"
-                                    CornerRadius="0">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Opacity" Value="0"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
-                                                <Setter Property="Opacity" Value="0.4"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#60FFD700" Offset="0"/>
-                                        <GradientStop Color="#00FFD700" Offset="0.4"/>
-                                        <GradientStop Color="#00FFD700" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                            </Border>
-
                             <!-- Gradient Bottom Fade -->
                             <Border Height="40"
                                     VerticalAlignment="Bottom">
@@ -162,17 +156,27 @@
                                     Margin="6"
                                     Padding="6"
                                     Cursor="Hand">
-                                <Border Background="#99000000"
+                                <Border x:Name="StarContainer"
+                                        Background="#99000000"
                                         CornerRadius="20"
-                                        Padding="6">
-                                    <TextBlock Text="&#xE734;"
+                                        Padding="6"
+                                        RenderTransformOrigin="0.5,0.5">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    </Border.RenderTransform>
+                                    <TextBlock x:Name="FavoriteStarIcon"
                                                FontFamily="Segoe MDL2 Assets"
                                                FontSize="16"
                                                VerticalAlignment="Center"
-                                               HorizontalAlignment="Center">
+                                               HorizontalAlignment="Center"
+                                               RenderTransformOrigin="0.5,0.5">
+                                        <TextBlock.RenderTransform>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        </TextBlock.RenderTransform>
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="#60FFFFFF"/>
+                                                <Setter Property="Text" Value="&#xE734;"/>
+                                                <Setter Property="Foreground" Value="#90FFFFFF"/>
                                                 <Setter Property="Effect">
                                                     <Setter.Value>
                                                         <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.5"/>
@@ -180,6 +184,7 @@
                                                 </Setter>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                        <Setter Property="Text" Value="&#xE735;"/>
                                                         <Setter Property="Foreground" Value="#FFD700"/>
                                                         <Setter Property="Effect">
                                                             <Setter.Value>
