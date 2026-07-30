@@ -1,2 +1,4 @@
-Custom app icon — new look for the .exe and taskbar
-Welcome screen refresh — now matches the app's WPFUI aesthetic
+- Launcher visual refresh: toggle chip filters, centered refresh button, standalone Add Game
+- Favorite star animation with pop effect and dynamic filled/outline icons
+- Improved text contrast across the game picker view
+- About dialog redesigned with FluentWindow, app info card, and support section

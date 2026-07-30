@@ -11,11 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **App icon**: Custom icon (SM.ico/SM.png) now used for the executable, window taskbar, and About dialog.
 - **WelcomeWindow WPFUI visual refresh**: Changed from plain `Window` to `FluentWindow` with Mica backdrop and custom title bar — consistent with the rest of the app's aesthetic.
+- **Launcher visual refresh**: GamePickerView redesigned with toggle chips (pill-style filters), square refresh button (40×40), and standalone Add Game button.
+- **Favorite star animation**: Pop-scale animation (1.0→1.35→1.0) when toggling favorite. Dynamic star icon — outline `&#xE734;` when not favorited, filled `&#xE735;` when favorited.
+- **AboutDialog WPFUI visual refresh**: Converted from plain `Window` to `FluentWindow` with Mica backdrop and custom title bar. Redesigned layout with app info card, "How it works" section, credits, and support card (Ko-fi + GitHub Sponsor). Removed standalone disclaimer in favor of cleaner card-based layout.
+
+### Changed
+
+- **Filter checkboxes → toggle chips**: Replaced flat checkboxes with styled `ToggleButton` pills — selected state shows accent background (`#2A4A6B`) and border (`#66C0F4`).
+- **Improved text contrast**: Labels ("Show:", "Add:", tagline), search icon, and game count now use lighter shades (`#AAAAAA`, `#8A8A8A`, `#6B6B6B`) for readability on dark background.
+- **Favorite glow simplified**: Removed gold gradient overlay on card cover; indicator now uses card border accent + star only.
+- **WelcomeWindow content styling**: Cards, buttons, text, and checkbox now match the launcher's WPFUI aesthetic with consistent colors, shadows, and typography.
 
 ### Fixed
 
 - **WelcomeWindow animation**: Removed stale `HeaderBorder` animation reference after the visual refresh.
 - **AboutDialog icon**: Replaced generic Segoe MDL2 icon with the actual app icon (SM.png).
+- **Tooltip font inheritance**: Heart button tooltip now uses `Segoe UI` explicitly instead of inheriting `Segoe MDL2 Assets` (was rendering squares).
+- **Ko-fi icon rendering**: Fixed missing icon by using `Segoe MDL2 Assets` font for the icon character.
+- **Add Game double-boxing**: Moved `+` button outside the input border.
 
 ---
 

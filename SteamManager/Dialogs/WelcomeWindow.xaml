@@ -32,7 +32,12 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="/Resources/SM.png" Width="20" Height="20" Margin="0,0,10,0"/>
+                    <TextBlock Text="&#xE7BC;"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="18"
+                               Foreground="#66C0F4"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
                     <TextBlock Text="Welcome to SteamManager"
                                FontSize="13"
                                Foreground="#FFFFFF"
@@ -47,6 +52,45 @@
 
         <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="24,12,24,0">
+            <StackPanel>
+
+            <!-- App Info Card -->
+            <Border Background="#1E1E1E"
+                    CornerRadius="10"
+                    Padding="20,16"
+                    Margin="0,0,0,16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="3"
+                                      Direction="270" Color="Black" Opacity="0.3"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Width="56" Height="56"
+                            Background="#2A2A2A"
+                            CornerRadius="12"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="&#xE7BC;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="28"
+                                   Foreground="#66C0F4"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <TextBlock Text="SteamManager"
+                                   FontSize="20" FontWeight="SemiBold"
+                                   Foreground="#FFFFFF"/>
+                        <TextBlock x:Name="VersionText"
+                                   Text=""
+                                   FontSize="12"
+                                   Foreground="#8A8A8A"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
             <!-- What's New Section -->
             <StackPanel>
@@ -242,6 +286,7 @@
                 </Border>
 
             </StackPanel>
+        </StackPanel>
         </ScrollViewer>
 
         <!-- Footer -->

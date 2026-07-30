@@ -13,6 +13,7 @@ public partial class WelcomeWindow : Wpf.Ui.Controls.FluentWindow
     public WelcomeWindow()
     {
         InitializeComponent();
+        VersionText.Text = $"Version {Config.AssemblyVersion}";
         Loaded += OnLoaded;
     }
 
