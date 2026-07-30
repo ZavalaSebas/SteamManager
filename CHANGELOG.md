@@ -5,6 +5,24 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-07-30
+
+### Added
+
+- **Game library disk cache**: Owned games list cached to `games.json`. Subsequent launches display instantly from cache while refreshing in background.
+- **Background Steam init**: Steam initialization now runs in parallel with Welcome/What's New dialog — zero waiting when dismissed.
+
+### Fixed
+
+- **SmartUnlockDialog not responding**: Added `Click="StartButton_Click"` and `Click="CancelButton_Click"` to buttons — neither was wired, so `DialogResult` was never set and `ShowDialog()` blocked forever.
+- **Single-file publish crash**: Removed `Icon="Resources/SM.ico"` from `MainWindow.xaml` — `pack://siteoforigin:,,,/` paths fail in single-file mode because there's no site folder to resolve against.
+- **Abandoned mutex on startup**: Added `catch(AbandonedMutexException)` around mutex creation — if a previous instance crashed, the abandoned mutex ownership is inherited correctly.
+- **App crash on startup**: Removed `Current.Shutdown()` from exception handler in `SafeStartLauncherMode` to prevent silent exits during early startup errors.
+
+### Changed
+
+- **SmartUnlockDialog WPFUI refresh**: Converted from plain `Window` to `FluentWindow` with Mica backdrop and custom title bar — consistent with the rest of the app.
+
 ## [1.4.0] - 2026-07-30
 
 ### Added
