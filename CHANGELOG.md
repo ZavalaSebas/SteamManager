@@ -5,6 +5,30 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-07-30
+
+### Added
+
+- **games.xml disk caching**: Game list from gib.me is now cached locally with conditional HTTP requests (ETag/If-None-Match) — subsequent launches load instantly without re-downloading.
+- **Parallel image loading**: `LoadCoversAsync` and `LoadIconsFromCdnAsync` now use `Parallel.ForEachAsync` with `MaxDegreeOfParallelism=4` for faster library and achievement browsing.
+
+### Changed
+
+- **AchievementList virtualization**: Replaced `StackPanel` with `VirtualizingStackPanel` in `GameManagerView` — only visible achievements are rendered in the visual tree, drastically reducing memory and improving scroll performance for libraries with 500+ achievements.
+- **Converter brush caching**: All color converters (`GlobalPercentageToColorConverter`, `FilterToBackground/ Foreground`, `BoolToFavoriteColor`) now cache `SolidColorBrush` instances as static fields instead of allocating new brushes on every conversion.
+- **Filter string optimization**: Achievement search filter changed from `ToLowerInvariant().Contains()` to `IndexOf(OrdinalIgnoreCase)` — zero string allocations per filter operation.
+- **Smart Unlock post-loop optimization**: Changed O(n*m) `Any()` lookup to O(1) `HashSet<string>` for post-unlock achievement state refresh.
+- **FileLogger buffering**: Replaced `File.AppendAllText` (open/write/close per call) with a buffered `StreamWriter` for significantly faster logging during game library loading.
+- **Games list favorite lookup**: Changed `List.Contains()` to `HashSet.Contains()` for O(1) favorite lookups during library rendering.
+
+### Fixed
+
+- **UrlToCachedImageConverter thread safety**: Replaced unsynchronized `Dictionary` with `ConcurrentDictionary` to prevent race conditions during concurrent WPF binding evaluations.
+- **Fire-and-forget exception handling**: Wrapped all `_ = Task(...)` fire-and-forget calls with try/catch and debug logging to prevent unobserved task exceptions from crashing the process.
+- **Empty catch blocks**: Replaced 15+ empty `catch { }` blocks throughout the codebase with proper exception logging — `App.xaml.cs`, `MainWindow.xaml.cs`, converters, and services now surface errors via `Debug.WriteLine`.
+- **Smart Unlock double-iteration**: `ExecuteSmartUnlockAsync` no longer calls `.Any()` then `.Where()` — iterates the selection once with `.ToList()`.
+- **App startup exception safety**: Wrapped `StartLauncherMode` in a try/catch so exceptions during early startup don't silently crash the process.
+
 ## [1.3.0] - 2026-07-30
 
 ### Added

@@ -36,7 +36,20 @@ public partial class App : Application
         }
         else
         {
-            _ = StartLauncherMode();
+            _ = SafeStartLauncherMode();
+        }
+    }
+
+    private async Task SafeStartLauncherMode()
+    {
+        try
+        {
+            await StartLauncherMode();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Startup failed: {ex}");
+            Current.Shutdown();
         }
     }
 
@@ -76,7 +89,7 @@ public partial class App : Application
         }
 
         Updater.CleanupOldExe();
-        _ = CheckForUpdateAsync(mainWindow);
+        _ = SafeCheckForUpdateAsync(mainWindow);
 
         await InitializeSteamAsync(mainViewModel);
         await mainViewModel.LoadGamesCommand.ExecuteAsync(null);
@@ -199,8 +212,9 @@ public partial class App : Application
                 {
                     return SteamContext.Initialize(Config.SpacewarAppId);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Steam init failed: {ex.Message}");
                     return false;
                 }
                 finally
@@ -242,8 +256,9 @@ public partial class App : Application
             {
                 SteamContext?.RunCallbacks();
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"RunCallbacks error: {ex.Message}");
             }
         };
 
@@ -265,6 +280,12 @@ public partial class App : Application
     [DllImport("ole32.dll")]
     private static extern void CoUninitialize();
 
+    private static async Task SafeCheckForUpdateAsync(Window ownerWindow)
+    {
+        try { await CheckForUpdateAsync(ownerWindow); }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Update check failed: {ex}"); }
+    }
+
     private static async Task CheckForUpdateAsync(Window ownerWindow)
     {
         try
@@ -284,6 +305,6 @@ public partial class App : Application
             PendingUpdateTag = tagName;
             PendingUpdateUrl = downloadUrl;
         }
-        catch { }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Update check failed: {ex}"); }
     }
 }

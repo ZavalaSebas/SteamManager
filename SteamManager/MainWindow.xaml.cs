@@ -44,7 +44,7 @@ public partial class MainWindow : FluentWindow
                 UseShellExecute = true,
             });
         }
-        catch { }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to open URL: {ex.Message}"); }
     }
 
     private void HamburgerMenu_Click(object sender, RoutedEventArgs e)
@@ -80,8 +80,9 @@ public partial class MainWindow : FluentWindow
             var updateWindow = new UpdateWindow(tagName!, downloadUrl) { Owner = this };
             updateWindow.ShowDialog();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Update check failed: {ex.Message}");
             var errorDialog = new InfoDialog("Update Check Failed",
                 "Unable to check for updates.",
                 "Please try again later.");
@@ -101,7 +102,7 @@ public partial class MainWindow : FluentWindow
                 UseShellExecute = true,
             });
         }
-        catch { }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to open URL: {ex.Message}"); }
     }
 
     private void KofiMenuItem_Click(object sender, RoutedEventArgs e)
@@ -115,7 +116,7 @@ public partial class MainWindow : FluentWindow
                 UseShellExecute = true,
             });
         }
-        catch { }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to open URL: {ex.Message}"); }
     }
 
     private void GitHubSponsorMenuItem_Click(object sender, RoutedEventArgs e)

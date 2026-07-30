@@ -1,10 +1,7 @@
-- Launcher visual refresh: toggle chip filters, centered refresh button, standalone Add Game
-- Favorite star animation with pop effect and dynamic filled/outline icons
-- Improved text contrast across the game picker view
-- About dialog redesigned with FluentWindow, app info card, and support section
-- Achievement progress circle no-text inside; smaller percentage below counter
-- Title & stats split in header for long game name support
-- AchievementCard descriptions no longer cut off
-- Long game names wrap to 2 lines instead of truncating or pushing stats
-- "Achievements" text size reduced to 14px to prevent clipping
-- Update dialog now uses FluentWindow with Mica and custom title bar
+- Achievement list virtualization: smooth scrolling with 500+ achievements
+- Faster startup with games.xml disk cache
+- Parallel image loading for covers and achievement icons
+- Optimized filter/search: zero allocations per keystroke
+- Improved error handling throughout the app
+- Thread-safe image converter and cached brushes
+- Buffered file logging for faster game library loading

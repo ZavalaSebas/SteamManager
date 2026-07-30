@@ -123,11 +123,11 @@ SteamManager/
 **Single source of truth**: `<Version>` in `SteamManager/SteamManager.csproj`
 
 ```xml
-<Version>1.3.0</Version>
+<Version>1.4.0</Version>
 <AssemblyVersion>$(Version).0</AssemblyVersion>
 ```
 
-- `AssemblyVersion` derives from `$(Version)` so assembly version is correct (e.g., `1.3.0.0`)
+- `AssemblyVersion` derives from `$(Version)` so assembly version is correct (e.g., `1.4.0.0`)
 - The Updater compares remote tag vs local version using `Version.TryParse`
 
 **To bump the version**: edit `<Version>` in the csproj, commit with a descriptive message, push to `main`.

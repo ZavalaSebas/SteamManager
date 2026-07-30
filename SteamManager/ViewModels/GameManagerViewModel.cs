@@ -234,11 +234,11 @@ public partial class GameManagerViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(AchievementSearchText))
         {
-            var searchLower = AchievementSearchText.ToLowerInvariant();
+            var search = AchievementSearchText;
             filtered = filtered.Where(a =>
-                a.DisplayName.ToLowerInvariant().Contains(searchLower) ||
-                a.Description.ToLowerInvariant().Contains(searchLower) ||
-                a.ApiName.ToLowerInvariant().Contains(searchLower));
+                a.DisplayName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                a.Description.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                a.ApiName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         return filtered;
@@ -850,9 +850,9 @@ public partial class GameManagerViewModel : ObservableObject
         if (SelectedGame == null)
             return;
 
-        var targetAchievements = _allAchievements.Where(a => a.IsSelected).Any()
-            ? _allAchievements.Where(a => a.IsSelected).ToList()
-            : _allAchievements.ToList();
+        var targetAchievements = _allAchievements.Where(a => a.IsSelected).ToList();
+        if (targetAchievements.Count == 0)
+            targetAchievements = [.. _allAchievements];
 
         if (targetAchievements.Count == 0)
         {
@@ -871,6 +871,7 @@ public partial class GameManagerViewModel : ObservableObject
         SmartUnlockTotal = targetAchievements.Count;
         SmartUnlockStatusMessage = "Smart Unlock: 0/" + targetAchievements.Count + " achievements processed (0 protected, 0 failed)";
 
+        var achNames = new HashSet<string>(targetAchievements.Select(a => a.ApiName));
         var achList = targetAchievements
             .Select(a => (a.ApiName, a.Permission))
             .ToList();
@@ -914,13 +915,8 @@ public partial class GameManagerViewModel : ObservableObject
 
             foreach (var ach in _allAchievements)
             {
-                if (achList.Any(x => x.Item1 == ach.ApiName))
-                {
-                    if (ach.Permission == 0)
-                    {
-                        ach.IsUnlocked = true;
-                    }
-                }
+                if (achNames.Contains(ach.ApiName) && ach.Permission == 0)
+                    ach.IsUnlocked = true;
             }
             UnlockedCount = _allAchievements.Count(a => a.IsUnlocked);
             ApplyFilter();

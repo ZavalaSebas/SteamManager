@@ -67,7 +67,7 @@ public partial class GamePickerViewModel : ObservableObject
         {
             _allGames = await _gameLibraryService.GetOwnedGamesAsync();
 
-            var favoriteIds = _configService.FavoriteGameIds;
+            var favoriteIds = new HashSet<uint>(_configService.FavoriteGameIds);
             foreach (var game in _allGames)
             {
                 game.IsFavorite = favoriteIds.Contains(game.AppId);
@@ -157,17 +157,15 @@ public partial class GamePickerViewModel : ObservableObject
 
     private async Task LoadCoversAsync()
     {
-        foreach (var game in _allGames)
+        var candidates = _allGames.Where(g => g.CoverImage == null && !string.IsNullOrEmpty(g.CoverUrl)).ToList();
+        await Parallel.ForEachAsync(candidates, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (game, ct) =>
         {
-            if (game.CoverImage != null || string.IsNullOrEmpty(game.CoverUrl))
-                continue;
-
             var image = await _imageCacheService.GetOrDownloadAsync(game.CoverUrl!);
             if (image != null)
             {
                 game.CoverImage = image;
             }
-        }
+        });
     }
 
     [RelayCommand]
@@ -265,7 +263,7 @@ public partial class GamePickerViewModel : ObservableObject
 
     private void RefreshGameStates()
     {
-        var favoriteIds = _configService.FavoriteGameIds;
+        var favoriteIds = new HashSet<uint>(_configService.FavoriteGameIds);
         foreach (var game in _allGames)
         {
             game.IsFavorite = favoriteIds.Contains(game.AppId);

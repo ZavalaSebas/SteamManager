@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
@@ -8,7 +9,7 @@ namespace SteamManager.Converters;
 public class UrlToCachedImageConverter : IValueConverter
 {
     private static IImageCacheService? _cacheService;
-    private static readonly Dictionary<string, BitmapImage> _imageCache = new();
+    private static readonly ConcurrentDictionary<string, BitmapImage> _imageCache = new();
 
     public static void SetCacheService(IImageCacheService cacheService)
     {
@@ -37,21 +38,31 @@ public class UrlToCachedImageConverter : IValueConverter
 
             _ = LoadImageAsync(url);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Image cache lookup failed: {ex.Message}");
+        }
 
         return null;
     }
 
-    private static async Task LoadImageAsync(string url)
+    private async Task LoadImageAsync(string url)
     {
-        if (_cacheService == null || _imageCache.ContainsKey(url))
-            return;
-
-        var image = await _cacheService.GetOrDownloadAsync(url);
-        if (image != null)
+        try
         {
-            _imageCache[url] = image;
-            OnImageLoaded(url, image);
+            if (_cacheService == null || _imageCache.ContainsKey(url))
+                return;
+
+            var image = await _cacheService.GetOrDownloadAsync(url);
+            if (image != null)
+            {
+                _imageCache[url] = image;
+                OnImageLoaded(url, image);
+            }
+        }
+        catch
+        {
+            // Suppress exceptions in fire-and-forget
         }
     }
 
