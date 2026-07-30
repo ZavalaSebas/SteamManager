@@ -88,7 +88,7 @@ Built with **C# / .NET 10** and the same `steamclient.dll` approach used by the 
 <td width="33%" align="center"><b>🛡️ Protected Validation</b><br/><sub>Auto-detects developer-protected achievements. Blocks unsafe changes.</sub></td>
 </tr>
 <tr>
-<td width="33%" align="center"><b>⏱️ Smart Unlock</b><br/><sub>Configurable delays between operations. Reduces detection risk.</sub></td>
+<td width="33%" align="center"><b>⏱️ Smart Unlock</b><br/><sub>Configurable delays between operations for controlled unlocking.</sub></td>
 <td width="33%" align="center"><b>➕ Add by App ID</b><br/><sub>Manually add any owned game by entering its Steam App ID.</sub></td>
 <td width="33%" align="center"><b>🔄 Auto-Updater</b><br/><sub>Checks for updates on launch. One-click download &amp; restart.</sub></td>
 </tr>
