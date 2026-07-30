@@ -2,3 +2,6 @@
 - Favorite star animation with pop effect and dynamic filled/outline icons
 - Improved text contrast across the game picker view
 - About dialog redesigned with FluentWindow, app info card, and support section
+- Achievement progress circle no-text inside; smaller percentage below counter
+- Title & stats split in header for long game name support
+- AchievementCard descriptions no longer cut off

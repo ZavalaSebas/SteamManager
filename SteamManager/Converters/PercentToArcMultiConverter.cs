@@ -17,9 +17,9 @@ public class PercentToArcMultiConverter : IMultiValueConverter
         double percentage = (double)unlocked / total * 100;
         percentage = Math.Min(percentage, 100);
 
-        double centerX = 11;
-        double centerY = 11;
-        double radius = 8.5;
+        double centerX = 24;
+        double centerY = 24;
+        double radius = 20;
         double startAngleRad = -90 * Math.PI / 180;
 
         double sweepAngleRad = (percentage / 100.0) * 2 * Math.PI;
