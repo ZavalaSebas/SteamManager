@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Header layout improvement**: GameManagerView header now uses a two-block layout — game title on the left with `MaxWidth="400"` and truncation, stats (circle + counter + percentage) on the right, top-aligned with the circle.
 - **Progress circle clean-up**: Removed percentage text overlay from inside the 48×48 progress circle. Percentage now displayed below the achievement counter in smaller text (`FontSize="14"`, `SemiBold`, `#66C0F4`).
 - **AchievementCard description space**: Removed `MaxWidth="350"` restrictions on both achievement name and description so they expand to fill available card width without being cut off.
+- **Game title wraps to two lines**: Changed header to Grid layout so long game names wrap to a second line (`TextWrapping="Wrap"`, `MaxHeight="72"`) instead of being truncated or pushing stats off-screen.
 - **Filter checkboxes → toggle chips**: Replaced flat checkboxes with styled `ToggleButton` pills — selected state shows accent background (`#2A4A6B`) and border (`#66C0F4`).
 - **Improved text contrast**: Labels ("Show:", "Add:", tagline), search icon, and game count now use lighter shades (`#AAAAAA`, `#8A8A8A`, `#6B6B6B`) for readability on dark background.
 - **Favorite glow simplified**: Removed gold gradient overlay on card cover; indicator now uses card border accent + star only.

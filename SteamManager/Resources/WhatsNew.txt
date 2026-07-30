@@ -5,3 +5,4 @@
 - Achievement progress circle no-text inside; smaller percentage below counter
 - Title & stats split in header for long game name support
 - AchievementCard descriptions no longer cut off
+- Long game names wrap to 2 lines instead of truncating

@@ -102,27 +102,36 @@
                 </Border>
 
                 <!-- Game Title & Stats -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                    <Border Width="4"
-                            Height="36"
-                            CornerRadius="2"
-                            Margin="0,0,14,0">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#66C0F4" Offset="0"/>
-                                <GradientStop Color="#417A9B" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
-                    <TextBlock Text="{Binding SelectedGame.Name}"
-                               FontSize="28"
-                               FontWeight="SemiBold"
-                               Foreground="#FFFFFF"
-                               TextTrimming="CharacterEllipsis"
-                               MaxWidth="400"
-                               VerticalAlignment="Center"/>
-                    <Border Width="1" Height="36" Background="#3A3A3A" Margin="16,0"/>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                <Grid Grid.Column="2" Margin="16,0,0,0" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MaxWidth="400"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="4"
+                                Height="36"
+                                CornerRadius="2"
+                                Margin="0,0,14,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#66C0F4" Offset="0"/>
+                                    <GradientStop Color="#417A9B" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        <TextBlock Text="{Binding SelectedGame.Name}"
+                                   FontSize="28"
+                                   FontWeight="SemiBold"
+                                   Foreground="#FFFFFF"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="400"
+                                   MaxHeight="72"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="1" Height="36" Background="#3A3A3A" Margin="16,0"/>
                         <Grid Width="48" Height="48">
                             <Ellipse Stroke="#3A3A3A" StrokeThickness="4" Fill="Transparent"/>
                             <Path Stroke="#66C0F4"
@@ -155,7 +164,7 @@
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
 
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
