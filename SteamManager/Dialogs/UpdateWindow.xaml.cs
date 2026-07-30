@@ -1,10 +1,11 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 using SteamManager.Services;
 
 namespace SteamManager.Dialogs;
 
-public partial class UpdateWindow : Window
+public partial class UpdateWindow : Wpf.Ui.Controls.FluentWindow
 {
     private readonly string _tagName;
     private readonly string _downloadUrl;
@@ -17,6 +18,12 @@ public partial class UpdateWindow : Window
         _tagName = tagName;
         _downloadUrl = downloadUrl;
         VersionText.Text = $"SteamManager {tagName} is available";
+        Owner = Application.Current.MainWindow;
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        DragMove();
     }
 
     private async void UpdateNow_Click(object sender, RoutedEventArgs e)
@@ -31,7 +38,7 @@ public partial class UpdateWindow : Window
                 Dispatcher.BeginInvoke(() =>
                 {
                     var pct = Math.Min(100, (int)(p * 100));
-                    ProgressBar.Width = (ActualWidth - 48) * p;
+                    ProgressBar.Width = (ActualWidth - 56) * p;
                     ProgressText.Text = pct >= 100 ? "Restarting..." : $"{pct}%";
                 });
             }));
