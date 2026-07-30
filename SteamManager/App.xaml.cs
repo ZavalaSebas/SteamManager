@@ -82,16 +82,18 @@ public partial class App : Application
         MainWindow = mainWindow;
         mainWindow.Show();
 
+        Updater.CleanupOldExe();
+        _ = SafeCheckForUpdateAsync(mainWindow);
+
+        var steamInitTask = InitializeSteamAsync(mainViewModel);
+
         if (WelcomeWindow.ShouldShow())
         {
             var welcomeWindow = new WelcomeWindow { Owner = mainWindow };
             welcomeWindow.ShowDialog();
         }
 
-        Updater.CleanupOldExe();
-        _ = SafeCheckForUpdateAsync(mainWindow);
-
-        await InitializeSteamAsync(mainViewModel);
+        await steamInitTask;
         await mainViewModel.LoadGamesCommand.ExecuteAsync(null);
     }
 
