@@ -1,8 +1,9 @@
 using System.Windows;
+using System.Windows.Input;
 
 namespace SteamManager.Dialogs;
 
-public partial class SmartUnlockDialog : Window
+public partial class SmartUnlockDialog : Wpf.Ui.Controls.FluentWindow
 {
     public int MinDelay { get; private set; } = 15;
     public int MaxDelay { get; private set; } = 45;
@@ -23,6 +24,11 @@ public partial class SmartUnlockDialog : Window
         MinDelayTextBox.Text = currentMinDelay.ToString();
         MaxDelayTextBox.Text = currentMaxDelay.ToString();
         ShowOverlayCheckBox.IsChecked = showOverlay;
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        DragMove();
     }
 
     private void StartButton_Click(object sender, RoutedEventArgs e)
