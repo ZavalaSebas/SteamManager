@@ -8,7 +8,8 @@
         xmlns:views="clr-namespace:SteamManager.Views"
         mc:Ignorable="d"
         Title="SteamManager"
-        Height="750" Width="1150"
+         Icon="Resources/SM.ico"
+         Height="750" Width="1150"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
@@ -301,14 +302,17 @@
                                Margin="12,0"
                                VerticalAlignment="Center"/>
                     <TextBlock x:Name="HeartButton"
-                               Text="&#xE00E;"
-                               FontFamily="Segoe MDL2 Assets"
-                               FontSize="14"
-                               Foreground="#E74C3C"
-                               VerticalAlignment="Center"
-                               Cursor="Hand"
-                               ToolTip="Enjoying SteamManager? Buy me a coffee!"
-                               MouseLeftButtonDown="Heart_Click"/>
+                                Text="&#xEB51;"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="14"
+                                Foreground="#E74C3C"
+                                VerticalAlignment="Center"
+                                Cursor="Hand"
+                                MouseLeftButtonDown="Heart_Click">
+                        <TextBlock.ToolTip>
+                            <ToolTip FontFamily="Segoe UI" Content="Support SteamManager on Ko-fi"/>
+                        </TextBlock.ToolTip>
+                    </TextBlock>
                 </StackPanel>
             </Grid>
         </Border>

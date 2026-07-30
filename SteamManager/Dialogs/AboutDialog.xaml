@@ -30,12 +30,10 @@
                         Background="#2A2A2A"
                         CornerRadius="10"
                         VerticalAlignment="Center">
-                    <TextBlock Text="&#xE7FC;"
-                               FontFamily="Segoe MDL2 Assets"
-                               FontSize="22"
-                               Foreground="#66C0F4"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                    <Image Source="/Resources/SM.png"
+                           Width="32" Height="32"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
                 </Border>
                 <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
                     <TextBlock Text="SteamManager"
@@ -87,10 +85,17 @@
                 </TextBlock>
             </Border>
 
+            <!-- Made with care -->
+            <TextBlock Text="Made with care by ZavalaSebas"
+                       FontSize="11"
+                       Foreground="#5A5A5A"
+                       HorizontalAlignment="Center"
+                       Margin="0,16,0,0"/>
+
             <!-- Buttons -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
-                        Margin="0,20,0,0">
+                        Margin="0,12,0,0">
                 <Button Content="Support (Ko-fi)"
                         Padding="16,10"
                         Cursor="Hand"

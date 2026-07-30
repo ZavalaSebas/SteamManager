@@ -8,7 +8,6 @@
 [![.NET 10](https://img.shields.io/badge/.NET-10-purple.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-0078d4.svg)](https://www.microsoft.com/windows)
 [![WPF](https://img.shields.io/badge/UI-WPF%20%2B%20WPFUI-9b59b6.svg)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
-[![Version](https://img.shields.io/badge/Version-1.0.0-2ecc71.svg)](https://github.com/ZavalaSebas/SteamManager/releases)
 
 Manage your Steam achievements and statistics with a modern, clean interface.
 
@@ -30,16 +29,6 @@ No memory injection. No process hooking. No modified files. Just the official St
 
 ---
 
-## Screenshot
-
-<div align="center">
-
-> Screenshot coming soon — v1.0.0
-
-</div>
-
----
-
 ## How It Works
 
 The way Steam manages achievements is through its internal client library. SteamManager loads `steamclient.dll` from your Steam installation, initializes a session for a specific game, reads all achievement and stat data, displays it in a modern UI, and writes changes back through the same internal API that the original SAM uses.
@@ -51,6 +40,30 @@ The way Steam manages achievements is through its internal client library. Steam
 5. Changes are committed to Steam's servers via the official API
 
 The fake process runs until you close it. Steam keeps detecting it the entire time. Since achievement management doesn't involve kernel-level anti-cheat, there's nothing watching for API calls.
+
+---
+
+## Features
+
+- **Game Library** — Browse your entire Steam library with covers and achievement progress
+- **Achievement Manager** — Lock, unlock, or toggle individual achievements with one click
+- **Smart Unlock** — Delays between operations to reduce detection risk. Configure delay range and track progress in real time.
+- **Protected Achievement Validation** — Automatically detects and blocks modification of developer-protected achievements
+- **Achievement Global Rarity** — Each achievement shows the global unlock percentage with color coding
+- **Stats Editor** — View and modify game statistics with protection warnings
+- **Batch Operations** — Select multiple achievements and unlock/lock them all at once
+- **Achievement Filters** — Filter by locked, unlocked, hidden, or search by name
+- **Invert Selection** — Quickly toggle the selection state of all achievements
+- **Achievement Search** — Filter achievements by name or description
+- **Image Caching** — Game covers and achievement icons cached locally for fast loading
+- **UI Virtualization** — Smooth performance even with 500+ games in your library
+- **Dark Theme** — Modern dark UI with Mica, rounded corners, and smooth animations
+- **Single Executable** — One portable `.exe`, no installation, no dependencies
+- **Favorites** — Pin your most-used games to the top of the library
+- **Game Type Filters** — Filter games by type (games, demos, mods, junk)
+- **Add Game by App ID** — Manually add any owned game by entering its App ID
+- **Auto-Updater** — Checks for new versions on launch with one-click update
+- **Welcome Dialog** — "What's New" dialog shown after each update
 
 ---
 
@@ -75,22 +88,6 @@ dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-con
 - **Windows 10 or 11** (x86 — 32-bit, required because Steam ships a 32-bit `steamclient.dll`)
 - **[Steam client](https://store.steampowered.com/about/)** running and logged in
 - **.NET 10 Runtime** (or self-contained publish — note: publish with `-r win-x86`)
-
----
-
-## Features
-
-- **Game Library** — Browse your entire Steam library with covers and achievement progress
-- **Achievement Manager** — Lock, unlock, or toggle individual achievements with one click
-- **Smart Unlock** — Delays between operations to reduce detection risk. Configure delay range and track progress in real time.
-- **Stats Editor** — View and modify game statistics with protection warnings
-- **Batch Operations** — Select multiple achievements and unlock/lock them all at once
-- **Achievement Filters** — Filter by locked, unlocked, hidden, or search by name
-- **Image Caching** — Game covers and achievement icons cached locally for fast loading
-- **UI Virtualization** — Smooth performance even with 500+ games in your library
-- **Dark Theme** — Modern dark UI with Mica, rounded corners, and smooth animations
-- **Single Executable** — One portable `.exe`, no installation, no dependencies
-- **Favorites** — Pin your most-used games to the top of the library
 
 ---
 
@@ -128,52 +125,8 @@ Modern .NET with a focused tech stack — no unnecessary dependencies.
 
 ## Development
 
-### Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Language | C# 14 |
-| Runtime | .NET 10 |
-| UI | WPF + WPFUI |
-| MVVM | CommunityToolkit.Mvvm |
-| Testing | xUnit |
-| CI/CD | GitHub Actions |
-| Steam API | `steamclient.dll` via vtable/COM-style interop |
-
-### Build & Test
-
-```bash
-# Build
-dotnet build SteamManager.slnx -c Release
-
-# Test
-dotnet test SteamManager.slnx -c Release
-
-# Publish (single exe — 32-bit, required for steamclient.dll compatibility)
-dotnet publish SteamManager/SteamManager.csproj -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true
-```
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for the full project guide, architecture, and workflow rules.
-
----
-
-## Roadmap
-
-### v1.0 (Current)
-- Game library browser with covers
-- Achievement lock/unlock
-- Stats editor
-- Smart unlock with delays
-- Image caching
-- Favorites and search
-
-### v2.0 (Planned)
-- Auto-update system
-- Multi-idling (rotate through games automatically)
-- Achievement rarity percentages
-- Friend activity
-- Cloud save management
-- GitHub Pages landing page
+See [DEVELOPMENT.md](DEVELOPMENT.md) for workflow rules, test conventions, release process, and coding standards.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for design decisions, ADRs, and integration details.
 
 ---
 

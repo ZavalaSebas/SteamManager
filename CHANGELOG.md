@@ -5,6 +5,20 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-07-30
+
+### Added
+
+- **App icon**: Custom icon (SM.ico/SM.png) now used for the executable, window taskbar, and About dialog.
+- **WelcomeWindow WPFUI visual refresh**: Changed from plain `Window` to `FluentWindow` with Mica backdrop and custom title bar — consistent with the rest of the app's aesthetic.
+
+### Fixed
+
+- **WelcomeWindow animation**: Removed stale `HeaderBorder` animation reference after the visual refresh.
+- **AboutDialog icon**: Replaced generic Segoe MDL2 icon with the actual app icon (SM.png).
+
+---
+
 ## [1.2.0] - 2026-07-29
 
 ### Added
@@ -185,7 +199,7 @@ None.
 
 ### Changed
 
-- **Steam API approach**: Switched from `steam_api64.dll` (Steamworks SDK, distributed with games) to `steamclient.dll` (internal Steam client library, ships with every Steam installation). See [ADR-004](DEVELOPMENT.md#adr-004-use-steamclientdll-instead-of-steam_api64dll).
+- **Steam API approach**: Switched from `steam_api64.dll` (Steamworks SDK, distributed with games) to `steamclient.dll` (internal Steam client library, ships with every Steam installation). See [ADR-004](ARCHITECTURE.md#adr-004-use-steamclientdll-instead-of-steam_api64dll).
 - **Target platform**: Changed from `win-x64` to `win-x86` (32-bit). Steam ships only a 32-bit `steamclient.dll`; Windows cannot load a 32-bit DLL into a 64-bit process.
 - **Project structure**: Separated interface vtable definitions from wrapper classes. Each Steam interface (`ISteamClient018`, `ISteamUserStats013`, `ISteamApps008`, `ISteamUtils005`) now has its own file matching gibbed/SAM structure.
 - **String marshaling**: Version strings passed to `steamclient.dll` now use `IntPtr` + `NativeStrings.StringToStringHandle()` (UTF-8) instead of `string` (UTF-16) to match Steam's expected encoding.

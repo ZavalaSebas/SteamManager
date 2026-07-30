@@ -1,3 +1,10 @@
+> ⚠️ **HISTORICAL DOCUMENT** — This was the original project plan.
+> It no longer reflects the current state of SteamManager.
+> For current architecture, see ARCHITECTURE.md.
+> For development process, see DEVELOPMENT.md.
+
+---
+
 # SteamManager - Plan de Proyecto
 
 ## Estado Actual de Implementación

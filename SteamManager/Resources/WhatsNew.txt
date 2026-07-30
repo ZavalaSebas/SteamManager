@@ -1,8 +1,2 @@
-Achievement search — find achievements by name or description
-Invert selection — quickly toggle your achievement selection
-Achievement unlock date — see when each achievement was unlocked
-Refresh button — reload achievements without restarting
-Reset achievements — reset all achievements back to locked state
-Game type filters — filter games by type (games, demos, mods, junk)
-Add Game by App ID — manually add any owned game by its App ID
-Achievement global rarity — see how rare each achievement is worldwide
+Custom app icon — new look for the .exe and taskbar
+Welcome screen refresh — now matches the app's WPFUI aesthetic

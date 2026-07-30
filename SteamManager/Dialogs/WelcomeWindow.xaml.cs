@@ -8,7 +8,7 @@ using System.Windows.Controls;
 
 namespace SteamManager.Dialogs;
 
-public partial class WelcomeWindow : Window
+public partial class WelcomeWindow : Wpf.Ui.Controls.FluentWindow
 {
     public WelcomeWindow()
     {
@@ -16,15 +16,16 @@ public partial class WelcomeWindow : Window
         Loaded += OnLoaded;
     }
 
+    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        DragMove();
+    }
+
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         LoadWhatsNewFromChangelog();
 
         var ease = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
-
-        var headerSlide = new System.Windows.Media.TranslateTransform(0, -15);
-        HeaderBorder.RenderTransform = headerSlide;
-        HeaderBorder.Opacity = 0;
 
         var cards = new[] { CardWhatsNew, CardHowItWorks, CardSupport };
         var cardSlides = new System.Windows.Media.TranslateTransform[3];
@@ -39,10 +40,7 @@ public partial class WelcomeWindow : Window
         FooterBorder.RenderTransform = footerSlide;
         FooterBorder.Opacity = 0;
 
-        HeaderBorder.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromSeconds(0.35)) { EasingFunction = ease });
-        headerSlide.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, new System.Windows.Media.Animation.DoubleAnimation(-15, 0, TimeSpan.FromSeconds(0.35)) { EasingFunction = ease });
-
-        await Task.Delay(180);
+        await Task.Delay(100);
 
         for (int i = 0; i < 3; i++)
         {

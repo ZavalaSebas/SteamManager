@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>SteamManager</AssemblyName>
     <RootNamespace>SteamManager</RootNamespace>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <Authors>SteamManager</Authors>
     <Description>Modern Steam Achievement Manager</Description>
@@ -19,6 +19,7 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <PublishReadyToRun>true</PublishReadyToRun>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>Resources\SM.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +32,12 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\WhatsNew.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\SM.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
