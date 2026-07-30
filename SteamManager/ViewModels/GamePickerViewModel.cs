@@ -65,23 +65,24 @@ public partial class GamePickerViewModel : ObservableObject
 
         try
         {
-            _allGames = await _gameLibraryService.GetOwnedGamesAsync();
-
-            var favoriteIds = new HashSet<uint>(_configService.FavoriteGameIds);
-            foreach (var game in _allGames)
+            var cached = await _gameLibraryService.GetCachedGamesAsync();
+            if (cached.Count > 0)
             {
-                game.IsFavorite = favoriteIds.Contains(game.AppId);
+                _allGames = cached;
+                ApplyFavoriteSortAndDisplay();
+                StatusMessage = $"{_allGames.Count} games loaded";
+                IsLoading = false;
+
+                _ = RefreshGamesInBackgroundAsync();
+                _ = LoadCoversAsync();
+                return;
             }
 
-            var recentIds = _configService.RecentlyOpenedGameIds;
-            var sortedGames = _allGames
-                .OrderByDescending(g => g.IsFavorite)
-                .ThenBy(g => GetRecentIndex(g.AppId, recentIds))
-                .ThenBy(g => g.Name)
-                .ToList();
+            _allGames = await _gameLibraryService.GetOwnedGamesAsync();
+            await _gameLibraryService.SaveGamesCacheAsync(_allGames);
 
-            Games = new ObservableCollection<GameInfo>(sortedGames);
-            StatusMessage = $"{Games.Count} games loaded";
+            ApplyFavoriteSortAndDisplay();
+            StatusMessage = $"{_allGames.Count} games loaded";
 
             _ = LoadCoversAsync();
         }
@@ -93,6 +94,49 @@ public partial class GamePickerViewModel : ObservableObject
         {
             IsLoading = false;
         }
+    }
+
+    private async Task RefreshGamesInBackgroundAsync()
+    {
+        try
+        {
+            var fresh = await _gameLibraryService.GetOwnedGamesAsync();
+            var newIds = new HashSet<uint>(fresh.Select(g => g.AppId));
+            var oldIds = new HashSet<uint>(_allGames.Select(g => g.AppId));
+
+            bool changed = newIds.SetEquals(oldIds);
+            if (changed && _allGames.Count == fresh.Count)
+            {
+                var favoriteIds = new HashSet<uint>(_configService.FavoriteGameIds);
+                foreach (var game in _allGames)
+                    game.IsFavorite = favoriteIds.Contains(game.AppId);
+                return;
+            }
+
+            _allGames = fresh;
+            await _gameLibraryService.SaveGamesCacheAsync(_allGames);
+            ApplyFavoriteSortAndDisplay();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Background refresh failed: {ex.Message}");
+        }
+    }
+
+    private void ApplyFavoriteSortAndDisplay()
+    {
+        var favoriteIds = new HashSet<uint>(_configService.FavoriteGameIds);
+        foreach (var game in _allGames)
+            game.IsFavorite = favoriteIds.Contains(game.AppId);
+
+        var recentIds = _configService.RecentlyOpenedGameIds;
+        var sorted = _allGames
+            .OrderByDescending(g => g.IsFavorite)
+            .ThenBy(g => GetRecentIndex(g.AppId, recentIds))
+            .ThenBy(g => g.Name)
+            .ToList();
+
+        Games = new ObservableCollection<GameInfo>(sorted);
     }
 
     [RelayCommand]

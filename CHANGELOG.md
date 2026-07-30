@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **games.xml disk caching**: Game list from gib.me is now cached locally with conditional HTTP requests (ETag/If-None-Match) — subsequent launches load instantly without re-downloading.
+- **Game library disk cache**: Owned games list is cached to `games.json` after first load. Subsequent launches display games instantly from cache while refreshing in the background.
+- **Background library refresh**: After loading from cache, `RefreshGamesInBackgroundAsync` re-fetches the full list from Steam and only updates the UI if games were added or removed.
+- **Steam init during Welcome dialog**: Steam initialization runs in parallel with the Welcome/What's New dialog — zero waiting time when the user dismisses it.
 - **Parallel image loading**: `LoadCoversAsync` and `LoadIconsFromCdnAsync` now use `Parallel.ForEachAsync` with `MaxDegreeOfParallelism=4` for faster library and achievement browsing.
 
 ### Changed

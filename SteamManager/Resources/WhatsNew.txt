@@ -1,7 +1,9 @@
 - Achievement list virtualization: smooth scrolling with 500+ achievements
-- Faster startup with games.xml disk cache
+- Game library disk cache — instant load on subsequent launches
+- Background refresh after cache load to keep list up to date
 - Parallel image loading for covers and achievement icons
 - Optimized filter/search: zero allocations per keystroke
 - Improved error handling throughout the app
 - Thread-safe image converter and cached brushes
+- Steam init runs in background during Welcome dialog
 - Buffered file logging for faster game library loading
