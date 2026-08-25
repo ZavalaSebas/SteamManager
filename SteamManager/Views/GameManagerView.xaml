@@ -87,8 +87,14 @@
                         VerticalAlignment="Center"
                         Margin="12,0,0,0">
                     <Grid>
-                        <Image Source="{Binding SelectedGame.CoverUrl, Converter={StaticResource UrlToCachedImageConverter}}"
-                               Stretch="UniformToFill"/>
+                        <Image Stretch="UniformToFill">
+                            <Image.Source>
+                                <PriorityBinding FallbackValue="{x:Null}">
+                                    <Binding Path="SelectedGame.CoverImage" />
+                                    <Binding Path="SelectedGame.CoverUrl" Converter="{StaticResource UrlToCachedImageConverter}" />
+                                </PriorityBinding>
+                            </Image.Source>
+                        </Image>
                         <Border Height="24"
                                 VerticalAlignment="Bottom">
                             <Border.Background>

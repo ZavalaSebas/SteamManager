@@ -447,7 +447,22 @@ public partial class GameManagerViewModel : ObservableObject
         if (game == null) return;
         SelectedGame = game;
         AvailableStats = GameStats.GetStatsForGame(game.AppId);
+        _ = LoadSelectedGameCoverAsync();
         LoadAchievementsCommand.Execute(null);
+    }
+
+    private async Task LoadSelectedGameCoverAsync()
+    {
+        if (SelectedGame == null || _imageCacheService == null) return;
+        if (SelectedGame.CoverImage != null) return;
+        var url = SelectedGame.CoverUrl;
+        if (string.IsNullOrEmpty(url)) return;
+        try
+        {
+            var img = await _imageCacheService.GetOrDownloadAsync(url);
+            if (img != null) SelectedGame.CoverImage = img;
+        }
+        catch { }
     }
 
     [RelayCommand]

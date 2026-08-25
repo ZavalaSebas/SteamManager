@@ -5,6 +5,15 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-08-25
+
+### Fixed
+
+- **Images black after 7 days offline**: `ImageCacheService.GetOrDownloadAsync` now returns stale cached file when download fails (`catch` → `LoadImage` fallback) instead of `null`. Uses `UtcNow`/`LastWriteTimeUtc` and validates `0 bytes` files; corrupted files are deleted so next try re-downloads.
+- **Game header banner not showing in achievements**: `GameManagerView` now uses `PriorityBinding` `CoverImage` → `CoverUrl+Converter` and `GameManagerViewModel.SelectGame` pre-loads cover via `GetOrDownloadAsync` (helper mode `CoverUrl` only).
+- **Expired cache never cleaned**: `App.xaml.cs` now calls `CleanupExpired()` in background on startup; `ClearAll` also clears `UrlToCachedImageConverter` memory cache.
+- **Virtualization revert**: `GamePickerView` back to `ScrollViewer+ItemsControl/WrapPanel` (previous `VirtualizingWrapPanel` threw `Must call GenerateNext`).
+
 ## [1.4.1] - 2026-07-30
 
 ### Added

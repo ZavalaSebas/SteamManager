@@ -40,15 +40,12 @@ public class ImageCacheService : IImageCacheService
         if (File.Exists(filePath))
         {
             var fileInfo = new FileInfo(filePath);
-            if (DateTime.Now - fileInfo.LastWriteTime < _cacheTtl)
+            if (DateTime.UtcNow - fileInfo.LastWriteTimeUtc < _cacheTtl)
             {
                 var image = LoadImage(filePath);
                 if (image != null)
                 {
-                    lock (_lock)
-                    {
-                        _memoryCache[url] = image;
-                    }
+                    lock (_lock) _memoryCache[url] = image;
                     return image;
                 }
             }
@@ -57,20 +54,20 @@ public class ImageCacheService : IImageCacheService
         try
         {
             var imageBytes = await _httpClient.GetByteArrayAsync(url, cancellationToken);
+            if (imageBytes.Length == 0) throw new InvalidDataException("Empty image bytes");
             await File.WriteAllBytesAsync(filePath, imageBytes, cancellationToken);
-
             var image = LoadImage(filePath);
-            if (image != null)
-            {
-                lock (_lock)
-                {
-                    _memoryCache[url] = image;
-                }
-            }
+            if (image != null) { lock (_lock) _memoryCache[url] = image; }
             return image;
         }
         catch
         {
+            // stale-while-revalidate: if download fails, return expired file as fallback
+            if (File.Exists(filePath))
+            {
+                var stale = LoadImage(filePath);
+                if (stale != null) { lock (_lock) _memoryCache[url] = stale; return stale; }
+            }
             return null;
         }
     }
@@ -105,14 +102,11 @@ public class ImageCacheService : IImageCacheService
     {
         try
         {
-            var cutoff = DateTime.Now - _cacheTtl;
+            var cutoff = DateTime.UtcNow - _cacheTtl;
             foreach (var file in Directory.EnumerateFiles(_cacheDir, "*", SearchOption.AllDirectories))
             {
                 var fileInfo = new FileInfo(file);
-                if (fileInfo.LastWriteTime < cutoff)
-                {
-                    fileInfo.Delete();
-                }
+                if (fileInfo.LastWriteTimeUtc < cutoff) fileInfo.Delete();
             }
         }
         catch { }
@@ -120,17 +114,12 @@ public class ImageCacheService : IImageCacheService
 
     public void ClearAll()
     {
-        lock (_lock)
-        {
-            _memoryCache.Clear();
-        }
-
+        lock (_lock) _memoryCache.Clear();
+        try { Converters.UrlToCachedImageConverter.ClearCache(); } catch { }
         try
         {
             foreach (var file in Directory.EnumerateFiles(_cacheDir, "*", SearchOption.AllDirectories))
-            {
                 File.Delete(file);
-            }
         }
         catch { }
     }
@@ -161,6 +150,7 @@ public class ImageCacheService : IImageCacheService
         try
         {
             var bytes = File.ReadAllBytes(filePath);
+            if (bytes.Length == 0) return null;
             var image = new BitmapImage();
             using var ms = new MemoryStream(bytes);
             image.BeginInit();
@@ -172,6 +162,8 @@ public class ImageCacheService : IImageCacheService
         }
         catch
         {
+            // corrupted file — delete so next try re-downloads
+            try { File.Delete(filePath); } catch { }
             return null;
         }
     }

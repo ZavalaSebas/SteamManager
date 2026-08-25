@@ -46,24 +46,17 @@ public class UrlToCachedImageConverter : IValueConverter
         return null;
     }
 
+    public static void ClearCache() => _imageCache.Clear();
+
     private async Task LoadImageAsync(string url)
     {
         try
         {
-            if (_cacheService == null || _imageCache.ContainsKey(url))
-                return;
-
+            if (_cacheService == null || _imageCache.ContainsKey(url)) return;
             var image = await _cacheService.GetOrDownloadAsync(url);
-            if (image != null)
-            {
-                _imageCache[url] = image;
-                OnImageLoaded(url, image);
-            }
+            if (image != null) { _imageCache[url] = image; OnImageLoaded(url, image); }
         }
-        catch
-        {
-            // Suppress exceptions in fire-and-forget
-        }
+        catch { }
     }
 
     private static void OnImageLoaded(string url, BitmapImage image)

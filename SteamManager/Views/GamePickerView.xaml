@@ -530,9 +530,7 @@
                           HorizontalScrollBarVisibility="Disabled"
                           Margin="32,0,32,0"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                <ItemsControl ItemsSource="{Binding Games}"
-                              VirtualizingStackPanel.IsVirtualizing="True"
-                              VirtualizingStackPanel.VirtualizationMode="Recycling">
+                <ItemsControl ItemsSource="{Binding Games}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel/>

@@ -82,6 +82,8 @@ public partial class App : Application
 
         var imageCacheService = Services.GetRequiredService<IImageCacheService>();
         UrlToCachedImageConverter.SetCacheService(imageCacheService);
+        // background cleanup of expired images (7d TTL) — don't block startup
+        _ = Task.Run(() => imageCacheService.CleanupExpired());
 
         var mainViewModel = Services.GetRequiredService<MainViewModel>();
         var mainWindow = new MainWindow { DataContext = mainViewModel };
