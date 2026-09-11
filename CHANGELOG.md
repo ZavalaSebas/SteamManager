@@ -5,6 +5,14 @@ All notable changes to SteamManager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-09-11
+
+### Fixed
+
+- **Game covers grey on reopen**: `RefreshGamesInBackgroundAsync` replaced the game list with fresh objects without `CoverImage` and never reloaded covers — the initial `LoadCoversAsync` was working on discarded objects. Already-loaded covers are now preserved by `AppId` and missing ones are reloaded after the refresh.
+- **Covers not refreshing after load**: `LoadCoversAsync` assigned `CoverImage` from a thread-pool thread; assignments now go through the UI `Dispatcher` so bindings update.
+- **Stale covers deleted too early**: `CleanupExpired` deleted images at the 7-day TTL, defeating the stale-while-revalidate fallback in `GetOrDownloadAsync`. Cleanup now keeps files for 30 days while revalidation stays at 7 days.
+
 ## [1.4.2] - 2026-08-25
 
 ### Fixed
