@@ -104,8 +104,8 @@ public partial class GamePickerViewModel : ObservableObject
             var newIds = new HashSet<uint>(fresh.Select(g => g.AppId));
             var oldIds = new HashSet<uint>(_allGames.Select(g => g.AppId));
 
-            bool changed = newIds.SetEquals(oldIds);
-            if (changed && _allGames.Count == fresh.Count)
+            bool same = newIds.SetEquals(oldIds);
+            if (same && _allGames.Count == fresh.Count)
             {
                 var favoriteIds = new HashSet<uint>(_configService.FavoriteGameIds);
                 foreach (var game in _allGames)
@@ -113,9 +113,23 @@ public partial class GamePickerViewModel : ObservableObject
                 return;
             }
 
+            // Preservar las portadas ya cargadas: la lista fresca viene sin CoverImage
+            // y si la reemplazamos sin más, la UI se queda en gris (placeholder).
+            var loadedCovers = _allGames
+                .Where(g => g.CoverImage != null)
+                .ToDictionary(g => g.AppId, g => g.CoverImage!);
+            foreach (var game in fresh)
+            {
+                if (loadedCovers.TryGetValue(game.AppId, out var cover))
+                    game.CoverImage = cover;
+            }
+
             _allGames = fresh;
             await _gameLibraryService.SaveGamesCacheAsync(_allGames);
             ApplyFavoriteSortAndDisplay();
+            // Cargar las portadas que falten (juegos nuevos o aún no descargados).
+            // Sin esto, tras el reemplazo de la lista las cards se quedan en gris.
+            _ = LoadCoversAsync();
         }
         catch (Exception ex)
         {
@@ -202,12 +216,18 @@ public partial class GamePickerViewModel : ObservableObject
     private async Task LoadCoversAsync()
     {
         var candidates = _allGames.Where(g => g.CoverImage == null && !string.IsNullOrEmpty(g.CoverUrl)).ToList();
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
         await Parallel.ForEachAsync(candidates, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (game, ct) =>
         {
             var image = await _imageCacheService.GetOrDownloadAsync(game.CoverUrl!);
             if (image != null)
             {
-                game.CoverImage = image;
+                // GameInfo.CoverImage notifica a la UI: asignar en el hilo de UI
+                // para que el binding refresque (si no, las cards se quedan en gris).
+                if (dispatcher != null && !dispatcher.CheckAccess())
+                    await dispatcher.InvokeAsync(() => game.CoverImage = image);
+                else
+                    game.CoverImage = image;
             }
         });
     }

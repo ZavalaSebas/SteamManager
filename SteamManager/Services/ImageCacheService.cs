@@ -11,6 +11,11 @@ public class ImageCacheService : IImageCacheService
     private readonly HttpClient _httpClient;
     private readonly string _cacheDir;
     private readonly TimeSpan _cacheTtl = TimeSpan.FromDays(7);
+    // Grace period for disk cleanup: keep expired files longer so that
+    // stale-while-revalidate in GetOrDownloadAsync can still use them
+    // as fallback when the download fails. Deleting at TTL would leave
+    // the UI grey (placeholder) whenever re-download fails.
+    private readonly TimeSpan _cleanupGrace = TimeSpan.FromDays(30);
     private readonly Dictionary<string, BitmapImage> _memoryCache = [];
     private readonly object _lock = new();
 
@@ -102,7 +107,7 @@ public class ImageCacheService : IImageCacheService
     {
         try
         {
-            var cutoff = DateTime.UtcNow - _cacheTtl;
+            var cutoff = DateTime.UtcNow - _cleanupGrace;
             foreach (var file in Directory.EnumerateFiles(_cacheDir, "*", SearchOption.AllDirectories))
             {
                 var fileInfo = new FileInfo(file);
